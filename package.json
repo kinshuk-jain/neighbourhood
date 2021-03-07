@@ -1,0 +1,9 @@
+{
+  "name": "neighbourhood",
+  "version": "1.0.0",
+  "description": "neighbourhood project",
+  "main": "index.js",
+  "author": "kinshuk2jain@gmail.com",
+  "license": "UNLICENSED",
+  "private": true
+}

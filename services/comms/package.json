@@ -1,0 +1,11 @@
+{
+  "name": "comms",
+  "version": "1.0.0",
+  "description": "comms service",
+  "main": "index.js",
+  "license": "unlicensed",
+  "private": true,
+  "workspaces": [
+    "functions/*"
+  ]
+}
