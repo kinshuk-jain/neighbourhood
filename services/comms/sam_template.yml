@@ -62,14 +62,14 @@ Resources:
           Type: Api
           Condition: CreateDevResources
           Properties:
-            Path: /comms/email/{proxy}
+            Path: /comms/email/{proxy+}
             Method: ANY
             RestApiId: !Ref sendEmailApiDevelopment
         ApiStaging:
           Type: Api
           Condition: CreateStagingResources
           Properties:
-            Path: /comms/email/{proxy}
+            Path: /comms/email/{proxy+}
             Method: ANY
             RestApiId: !Ref sendEmailApiStaging
         ApiProd:
@@ -77,7 +77,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             RestApiId: !Ref sendEmailApiProd
-            Path: /comms/email/{proxy}
+            Path: /comms/email/{proxy+}
             Method: ANY
 
   sendEmailApiDevelopment:
@@ -191,8 +191,8 @@ Resources:
     Condition: CreateProdResources
     Properties:
       Tags:
-        Name: comms-api-prod
-      StageName: prod
+        Name: comms-api-production
+      StageName: production
       Models:
         BodyValidate:
           type: object
