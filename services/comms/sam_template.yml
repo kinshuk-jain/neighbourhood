@@ -43,8 +43,8 @@ Resources:
   sendEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/index.handler
-      CodeUri: functions/sendEmail
+      Handler: index.handler
+      CodeUri: functions/sendEmail/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -108,8 +108,8 @@ Resources:
       Auth:
         DefaultAuthorizer: AWS_IAM
       MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
+        - CachingEnabled: false
+        - MetricsEnabled: true
       GatewayResponses:
         ACCESS_DENIED:
           StatusCode: 404
@@ -161,8 +161,8 @@ Resources:
       Auth:
         DefaultAuthorizer: AWS_IAM
       MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
+        - CachingEnabled: false
+        - MetricsEnabled: true
       GatewayResponses:
         ACCESS_DENIED:
           StatusCode: 404
@@ -214,8 +214,8 @@ Resources:
       Auth:
         DefaultAuthorizer: AWS_IAM
       MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
+        - CachingEnabled: false
+        - MetricsEnabled: true
       GatewayResponses:
         ACCESS_DENIED:
           StatusCode: 404

@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "unlicensed",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
     "start:invoke": "../../scripts/run.sh invoke sendEmail -e 'test-events/sendEmailEvent.json'",
     "start:run": "../../scripts/run.sh run sendEmail"
   },
