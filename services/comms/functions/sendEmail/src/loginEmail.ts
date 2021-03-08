@@ -19,12 +19,13 @@ export function sendLoginCredsEmail(
   const subject = 'Your login for neighbourhood.com'
   const sender = 'Neighbourhood Login <no-reply@neighbourhood.com>'
 
-  sendEmail({
+  return sendEmail({
     from: sender,
     to: recipient,
     subject,
     bodyText: non_html_support_text,
     // FIXME: optimize this, We can store a stringified version already
+    // can create a template in SES and sendTemplatedEmail
     bodyHtml: ReactDOMServer.renderToString(
       React.createElement(LoginEmail, {})
     ),

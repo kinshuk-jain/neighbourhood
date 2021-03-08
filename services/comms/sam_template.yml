@@ -18,20 +18,28 @@ Parameters:
     Default: development
     Type: String
     AllowedValues:
-      - prod
+      - production
+      - staging
       - development
-    ConstraintDescription: must specify prod or development.
+    ConstraintDescription: must specify production, staging or development.
 
 Conditions:
   CreateProdResources: !Equals
     - !Ref EnvType
-    - prod
+    - production
+  CreateStagingResources: !Equals
+    - !Ref EnvType
+    - staging
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - development
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  # TODO: define IAM policies and roles for this lambda to allow it to access SES
   sendEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -43,10 +51,23 @@ Resources:
       Description: send emails
       Environment:
         Variables:
-          ENVIRONMENT: development
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
       Events:
+        ApiDevelopment:
+          Type: Api
+          Condition: CreateDevResources
+          Properties:
+            Path: /comms/email/{proxy}
+            Method: ANY
+            RestApiId: !Ref sendEmailApiDevelopment
         ApiStaging:
           Type: Api
+          Condition: CreateStagingResources
           Properties:
             Path: /comms/email/{proxy}
             Method: ANY
@@ -59,12 +80,13 @@ Resources:
             Path: /comms/email/{proxy}
             Method: ANY
 
-  sendEmailApiStaging:
+  sendEmailApiDevelopment:
     Type: AWS::Serverless::Api
+    Condition: CreateDevResources
     Properties:
       Tags:
-        Name: comms-api-staging
-      StageName: prod
+        Name: comms-api-development
+      StageName: development
       Models:
         BodyValidate:
           type: object
@@ -79,8 +101,59 @@ Resources:
               type: string
             params:
               type: object
-            from:
+            subject:
               type: string
+            recipients:
+              type: array
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+      MethodSettings:
+        CachingEnabled: false
+        MetricsEnabled: true
+      GatewayResponses:
+        ACCESS_DENIED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        AUTHORIZER_FAILURE:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        UNAUTHORIZED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+
+  sendEmailApiStaging:
+    Type: AWS::Serverless::Api
+    Condition: CreateStagingResources
+    Properties:
+      Tags:
+        Name: comms-api-staging
+      StageName: staging
+      Models:
+        BodyValidate:
+          type: object
+          required:
+            - template
+            - params
+            - from
+            - subject
+            - recipients
+          properties:
+            template:
+              type: string
+            params:
+              type: object
             subject:
               type: string
             recipients:
@@ -134,8 +207,6 @@ Resources:
               type: string
             params:
               type: object
-            from:
-              type: string
             subject:
               type: string
             recipients:

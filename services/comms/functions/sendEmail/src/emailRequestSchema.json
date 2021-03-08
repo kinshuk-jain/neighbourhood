@@ -1,0 +1,14 @@
+{
+  "id": "/comms/email",
+  "type": "object",
+  "properties": {
+    "template": { "type": "string" },
+    "params": { "type": "object" },
+    "subject": { "type": "string" },
+    "recipients": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "required": ["template", "params", "subject", "recipients"]
+}

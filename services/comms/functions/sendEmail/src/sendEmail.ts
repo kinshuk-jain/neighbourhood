@@ -48,11 +48,14 @@ export function sendEmail({
     // ConfigurationSetName: configuration_set
   }
 
-  SES.sendEmail(params, function (err, data) {
-    if (err) {
-      console.error(err)
-    } else {
-      console.log('Email sent! Message ID: ', data.MessageId)
-    }
-  })
+  return SES.sendEmail(params)
+    .promise()
+    .then((data) => {
+      console.log('email sent: ' + data.MessageId)
+    })
+    .catch((err) => {
+      if (err) {
+        console.error(err)
+      }
+    })
 }
