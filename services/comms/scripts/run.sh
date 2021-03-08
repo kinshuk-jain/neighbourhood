@@ -31,7 +31,7 @@ else
   display_usage
 fi
 
-sam build --template-file aws_sam_template.yml $function_name; exit_code=$?
+sam build --template-file sam_template.yml $function_name; exit_code=$?
 if [ $exit_code -ne 0 ]; then
   echo "build failed: ${exit_code}"
   exit 1
