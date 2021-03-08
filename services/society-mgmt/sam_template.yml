@@ -39,12 +39,11 @@ Conditions:
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  # TODO: define IAM policies and roles for this lambda to allow it to access SES
   createSocietyFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: dist/index.handler
-      CodeUri: functions/createSociety
+      CodeUri: functions/create-society
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -59,24 +58,24 @@ Resources:
             ]
       Events:
         ApiDevelopment:
-          Type: Api
+          Type: HttpApi
           Condition: CreateDevResources
           Properties:
             Path: /society
             Method: POST
-            RestApiId: !Ref createSocietyApiDevelopment
+            ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
-          Type: Api
+          Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /society
             Method: POST
-            RestApiId: !Ref createSocietyApiStaging
+            ApiId: !Ref crudHttpApiStaging
         ApiProd:
-          Type: Api
+          Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            RestApiId: !Ref createSocietyApiProd
+            ApiId: !Ref crudHttpApiProduction
             Path: /society
             Method: POST
 
@@ -84,7 +83,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: dist/index.handler
-      CodeUri: functions/readSociety
+      CodeUri: functions/read-society
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -99,24 +98,24 @@ Resources:
             ]
       Events:
         ApiDevelopment:
-          Type: Api
+          Type: HttpApi
           Condition: CreateDevResources
           Properties:
             Path: /society/{proxy+}
             Method: GET
-            RestApiId: !Ref readSocietyApiDevelopment
+            ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
-          Type: Api
+          Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /society/{proxy+}
             Method: GET
-            RestApiId: !Ref readSocietyApiStaging
+            ApiId: !Ref crudHttpApiStaging
         ApiProd:
-          Type: Api
+          Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            RestApiId: !Ref readSocietyApiProd
+            ApiId: !Ref crudHttpApiProduction
             Path: /society/{proxy+}
             Method: GET
 
@@ -124,7 +123,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: dist/index.handler
-      CodeUri: functions/deleteSociety
+      CodeUri: functions/delete-society
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -139,24 +138,24 @@ Resources:
             ]
       Events:
         ApiDevelopment:
-          Type: Api
+          Type: HttpApi
           Condition: CreateDevResources
           Properties:
             Path: /society/{proxy+}
             Method: DELETE
-            RestApiId: !Ref deleteSocietyApiDevelopment
+            ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
-          Type: Api
+          Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /society/{proxy+}/
             Method: DELETE
-            RestApiId: !Ref deleteSocietyApiStaging
+            ApiId: !Ref crudHttpApiStaging
         ApiProd:
-          Type: Api
+          Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            RestApiId: !Ref deleteSocietyApiProd
+            ApiId: !Ref crudHttpApiProduction
             Path: /society/{proxy+}/
             Method: DELETE
 
@@ -164,7 +163,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: dist/index.handler
-      CodeUri: functions/creteSociety
+      CodeUri: functions/update-society
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -179,610 +178,98 @@ Resources:
             ]
       Events:
         ApiDevelopment:
-          Type: Api
+          Type: HttpApi
           Condition: CreateDevResources
           Properties:
             Path: /society/{proxy+}/
             Method: POST
-            RestApiId: !Ref sendEmailApiDevelopment
+            ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
-          Type: Api
+          Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /society/{proxy+}/
             Method: POST
-            RestApiId: !Ref sendEmailApiStaging
+            ApiId: !Ref crudHttpApiStaging
         ApiProd:
           Type: Api
           Condition: CreateProdResources
           Properties:
-            RestApiId: !Ref sendEmailApiProd
+            ApiId: !Ref crudHttpApiProduction
             Path: /society/{proxy+}/
             Method: POST
 
-  createSocietyApiDevelopment:
-    Type: AWS::Serverless::Api
+  # Add a lambda authorizer to authenticate api access
+  crudHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
     Condition: CreateDevResources
-    Properties:
-      Tags:
-        Name: create-society-api-development
-      StageName: development
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+    StageName: development
+    Description: crud api for society management
+    DisableExecuteApiEndpoint: false
 
-  createSocietyApiStaging:
-    Type: AWS::Serverless::Api
-    Condition: CreateStagingResources
-    Properties:
-      Tags:
-        Name: create-society-api-staging
-      StageName: staging
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+  crudHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: staging
+    Description: crud api for society management
+    DisableExecuteApiEndpoint: false
 
-  createSocietyApiProd:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: create-society-api-production
-      StageName: production
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+  crudHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: production
+    Description: crud api for society management
+    DisableExecuteApiEndpoint: false
 
-   createSocietyApiProd:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: create-society-api-prod
-      StageName: prod
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-  
-  readSocietyApiDevelopment:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: read-society-api-development
-      StageName: development
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-             
-  readSocietyApiStaging:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: read-society-api-staging
-      StageName: staging
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-                       
-  readSocietyApiProd:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: read-society-api-production
-      StageName: production
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-
-
-
-
-   readSocietyApiDevelopment:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: read-society-api-development
-      StageName: development
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-   
-  deleteSocietyApiDevelopment:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: delete-society-api-development
-      StageName: development
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        
-  deleteSocietyApiStaging:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: delete-society-api-staging
-      StageName: staging
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-                       
-  deleteSocietyApiProd:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: delete-society-api-production
-      StageName: production
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        CachingEnabled: false
-        MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-              
+  # updateSocietyApiProd:
+  #   Type: AWS::Serverless::Api
+  #   Condition: CreateProdResources
+  #   Properties:
+  #     Tags:
+  #       Name: update-society-api-production
+  #     StageName: production
+  #     Models:
+  #       BodyValidate:
+  #         type: object
+  #         required:
+  #           - template
+  #           - params
+  #           - from
+  #           - subject
+  #           - recipients
+  #         properties:
+  #           template:
+  #             type: string
+  #           params:
+  #             type: object
+  #           subject:
+  #             type: string
+  #           recipients:
+  #             type: array
+  #     Auth:
+  #       DefaultAuthorizer: AWS_IAM
+  #     MethodSettings:
+  #       CachingEnabled: false
+  #       MetricsEnabled: true
+  #     GatewayResponses:
+  #       ACCESS_DENIED:
+  #         StatusCode: 404
+  #         ResponseTemplates:
+  #           'application/json': '{"error": not found }'
+  #         ResponseParameters:
+  #           Headers:
+  #             Access-Control-Allow-Origin: "'*'"
+  #       AUTHORIZER_FAILURE:
+  #         StatusCode: 404
+  #         ResponseTemplates:
+  #           'application/json': '{"error": not found }'
+  #         ResponseParameters:
+  #           Headers:
+  #             Access-Control-Allow-Origin: "'*'"
+  #       UNAUTHORIZED:
+  #         StatusCode: 404
+  #         ResponseTemplates:
+  #           'application/json': '{"error": not found }'
+  #         ResponseParameters:
+  #           Headers:
+  #             Access-Control-Allow-Origin: "'*'"

@@ -4,10 +4,16 @@
   "main": "index.js",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "tsc",
+    "start:invoke": "../../scripts/run.sh invoke create-society -e 'test-events/createSocietyEvent.json'",
+    "start:run": "../../scripts/run.sh run create-society"
+  },
   "dependencies": {
     "@middy/core": "^1.5.2",
     "@middy/http-error-handler": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
-    "jsonschema": "^1.4.0"
+    "jsonschema": "^1.4.0",
+    "uuid": "^8.3.2"
   }
 }
