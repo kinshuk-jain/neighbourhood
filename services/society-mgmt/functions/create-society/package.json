@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
     "start:invoke": "../../scripts/run.sh invoke create-society -e 'test-events/createSocietyEvent.json'",
     "start:run": "../../scripts/run.sh run create-society"
   },

@@ -1,0 +1,50 @@
+{
+  "correlation_id": "undefined",
+  "level": "info",
+  "message": {
+    "version": "2.0",
+    "routeKey": "GET /society/<path:proxy>",
+    "rawPath": "/society/123",
+    "rawQueryString": "",
+    "cookies": ["onfido-js-sdk-woopra=93znMs2G9wF1"],
+    "headers": {
+      "Host": "localhost:3000",
+      "Connection": "keep-alive",
+      "Cache-Control": "max-age=0",
+      "Sec-Ch-Ua": "\"Google Chrome\";v=\"87\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"87\"",
+      "Sec-Ch-Ua-Mobile": "?0",
+      "Upgrade-Insecure-Requests": "1",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+      "Sec-Fetch-Site": "none",
+      "Sec-Fetch-Mode": "navigate",
+      "Sec-Fetch-User": "?1",
+      "Sec-Fetch-Dest": "document",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cookie": "onfido-js-sdk-woopra=93znMs2G9wF1",
+      "X-Forwarded-Proto": "http",
+      "X-Forwarded-Port": "3000"
+    },
+    "queryStringParameters": {},
+    "requestContext": {
+      "accountId": "123456789012",
+      "apiId": "1234567890",
+      "http": {
+        "method": "GET",
+        "path": "/society/123",
+        "protocol": "HTTP/1.1",
+        "sourceIp": "127.0.0.1",
+        "userAgent": "Custom User Agent String"
+      },
+      "requestId": "7337f74a-9ee3-4d1e-ae87-f33e98af6fb1",
+      "routeKey": "GET /society/<path:proxy>",
+      "stage": "Prod"
+    },
+    "body": "",
+    "pathParameters": { "proxy": "123" },
+    "stageVariables": null,
+    "isBase64Encoded": false
+  },
+  "timestamp": "2021-03-08T22:01:21.093Z"
+}

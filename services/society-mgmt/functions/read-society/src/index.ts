@@ -7,7 +7,8 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
 } from 'aws-lambda'
-import logger from 'logger'
+
+import logger from './logger'
 
 const myHandler: APIGatewayProxyHandler = (event: APIGatewayProxyEvent) => {
   logger.info(event)

@@ -42,8 +42,8 @@ Resources:
   createSocietyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/index.handler
-      CodeUri: functions/create-society
+      Handler: index.handler
+      CodeUri: functions/create-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -82,8 +82,8 @@ Resources:
   readSocietyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/index.handler
-      CodeUri: functions/read-society
+      Handler: index.handler
+      CodeUri: functions/read-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -122,8 +122,8 @@ Resources:
   deleteSocietyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/index.handler
-      CodeUri: functions/delete-society
+      Handler: index.handler
+      CodeUri: functions/delete-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -162,8 +162,8 @@ Resources:
   updateSocietyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: dist/index.handler
-      CodeUri: functions/update-society
+      Handler: index.handler
+      CodeUri: functions/update-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100

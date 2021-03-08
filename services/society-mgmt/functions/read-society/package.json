@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
     "start:invoke": "../../scripts/run.sh invoke read-society -e 'test-events/readSocietyEvent.json'",
     "start:run": "../../scripts/run.sh run read-society"
   },
@@ -14,6 +14,7 @@
     "@middy/http-error-handler": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
     "jsonschema": "^1.4.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
   }
 }

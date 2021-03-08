@@ -6,7 +6,8 @@
   "license": "unlicensed",
   "private": true,
   "workspaces": [
-    "functions/*"
+    "functions/*",
+    "logger"
   ],
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
