@@ -12,6 +12,16 @@ import logger from './logger'
 
 const myHandler: APIGatewayProxyHandler = (event: APIGatewayProxyEvent) => {
   logger.info(event)
+  // all members
+  // all imp contacts
+  // directory
+  // address
+  // blacklist status
+  // bill
+  // admins
+  // name
+  // userdata to check authorization
+
   console.log(JSON.stringify(event))
 }
 

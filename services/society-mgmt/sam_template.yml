@@ -141,14 +141,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /society/{proxy+}
+            Path: /society/{society_id}
             Method: DELETE
             ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /society/{proxy+}/
+            Path: /society/{society_id}/
             Method: DELETE
             ApiId: !Ref crudHttpApiStaging
         ApiProd:
@@ -156,7 +156,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudHttpApiProduction
-            Path: /society/{proxy+}/
+            Path: /society/{society_id}/
             Method: DELETE
 
   updateSocietyFunction:
