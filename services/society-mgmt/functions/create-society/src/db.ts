@@ -6,6 +6,8 @@ export const addSocietyRecord = ({
   user_id,
   address,
   imp_contacts,
+  society_type,
+  show_directory,
 }: {
   [key: string]: any
 }) => {
@@ -19,6 +21,9 @@ export const addSocietyRecord = ({
     address,
     imp_contacts,
     directory: [],
+    society_type,
+    show_directory,
+    verified: false, // verify whether this society is valid and the person creating it is real admin or not
   })
   // TODO: put this in DB if not exists
 }

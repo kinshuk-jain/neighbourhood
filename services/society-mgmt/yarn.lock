@@ -502,13 +502,6 @@
   dependencies:
     once "^1.4.0"
 
-"@middy/http-error-handler@^1.5.2":
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/@middy/http-error-handler/-/http-error-handler-1.5.2.tgz#7893ca1b1e958b3da5057e4a1ebde63df44c325c"
-  integrity sha512-9np6E6P2+Wpx/1QyxZ9JuLpk5XB+lqgNdDKwcNTIxqtzUxbextqVc17ZpiNfyWdmiiRsSfiqzZkIdBdyXrbLDg==
-  dependencies:
-    http-errors "^1.6.3"
-
 "@middy/http-json-body-parser@^1.5.2":
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@middy/http-json-body-parser/-/http-json-body-parser-1.5.2.tgz#0b59f3f60f67ef74788668a371ddf3b050982b4b"

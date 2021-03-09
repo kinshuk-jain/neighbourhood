@@ -90,8 +90,12 @@ const myHandler: APIGatewayProxyHandler = async (event: {
     admins,
     imp_contacts = [],
     address,
+    society_type,
+    show_directory = true,
   } = event.body
 
+  // TODO: validate whether the society is valid with google address api for right society type
+  // sjpuld also store lat/long bounds of society
   await addSocietyRecord({
     tutorial_finished,
     is_blacklisted,
@@ -100,6 +104,8 @@ const myHandler: APIGatewayProxyHandler = async (event: {
     name,
     user_id,
     address,
+    society_type,
+    show_directory,
   })
 
   const response = {

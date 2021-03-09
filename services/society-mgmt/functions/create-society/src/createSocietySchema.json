@@ -2,6 +2,12 @@
   "id": "/society",
   "type": "object",
   "properties": {
+    "society_type": {
+      "type": "string"
+    },
+    "show_directory": {
+      "type": "boolean"
+    },
     "tutorial_finished": { "type": "boolean" },
     "is_blacklisted": { "type": "boolean" },
     "name": { "type": "string" },
@@ -22,5 +28,5 @@
       "type": "object"
     }
   },
-  "required": ["user_id", "name", "address"]
+  "required": ["user_id", "name", "address", "society_type"]
 }

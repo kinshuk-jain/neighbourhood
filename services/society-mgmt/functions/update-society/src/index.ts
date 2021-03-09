@@ -44,68 +44,85 @@ const errorHandler = () => ({
   },
 })
 
+const HttpError = (status: number, message: string): Error => {
+  const e: any = new Error(message)
+  e.statusCode = status
+  return e
+}
+
 const myHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  logger.info(event)
+  try {
+    logger.info(event)
 
-  const authToken = event.headers['Authorization']
+    const authToken = event.headers['Authorization']
 
-  if (!authToken) {
+    if (!authToken) {
+      throw HttpError(401, 'unauthorized')
+    }
+
+    if (!event.body) {
+      throw HttpError(401, 'missing body')
+    }
+
+    const { valid, errors } = validate(event.body, schema)
+
+    if (!valid) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({
+          error: 'body missing required parameters',
+          missing_params: errors.map((error) => ({
+            property: error.property,
+            message: error.message,
+            name: error.name,
+          })),
+        }),
+        isBase64Encoded: false,
+      }
+    }
+
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.proxy ||
+      !event.pathParameters.proxy.match(/^[\w-]+\/[\w-]+\/?([\?#].*)?$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+\/[\w-]+)\/?/)
+    // this line should not throw as we have already verified url
+    const route_path_tokens = (route_path || [])[1].split('/')
+
+    // tutorial_finished - /id/tutorial,
+    // is_blacklisted - /id/blacklist,
+    // name - /id/name,
+    // admins - /id/admin/(add|remove),
+    // address - /id/address,
+    // imp_contacts - /id/contact/(add|remove),
+    // directory: [] - /id/member/(add|remove),
+    // show_directory - /id/show-directory,
+    // verified: false - /id/verified,
+
+    await updateSocietyRecord()
+
     const response = {
       isBase64Encoded: false,
-      statusCode: 401,
-      body: JSON.stringify({ error: 'unauthorized' }),
+      statusCode: 400,
+      body: JSON.stringify({ status: 'success', message: 'record updated' }),
+    }
+    logger.info(response)
+    return response
+  } catch (e) {
+    const response = {
+      isBase64Encoded: false,
+      statusCode: e.statusCode || 500,
+      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
     }
     logger.info(response)
     return response
   }
-
-  if (!event.body) {
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 400,
-      body: JSON.stringify({ error: 'missing body' }),
-    }
-    logger.info(response)
-    return response
-  }
-
-  const { valid, errors } = validate(event.body, schema)
-
-  if (!valid) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: 'body missing required parameters',
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      }),
-      isBase64Encoded: false,
-    }
-  }
-  // isBlacklisted
-  // first login
-  // admin list
-  // address
-  // imp contacts
-  // directory
-  // members
-  // name
-  // userdata to check authorization
-
-  await updateSocietyRecord()
-
-  const response = {
-    isBase64Encoded: false,
-    statusCode: 400,
-    body: JSON.stringify({ status: 'success', message: 'record updated' }),
-  }
-  logger.info(response)
-  return response
 }
 
 export const handler = middy(myHandler)

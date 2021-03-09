@@ -66,6 +66,16 @@ const myHandler: APIGatewayProxyHandler = async (
     return response
   }
 
+  if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
+    const response = {
+      isBase64Encoded: false,
+      statusCode: 400,
+      body: JSON.stringify({ error: 'improper society id' }),
+    }
+    logger.info(response)
+    return response
+  }
+
   await deleteSociety(event.pathParameters.society_id)
 
   const response = {

@@ -2,8 +2,17 @@ import * as winston from 'winston'
 
 // helper to mask any sensitive data in logs
 export const maskLog = (logs: any) => {
-  //   if (typeof logs.message === 'object' && logs.message.event) {
-  //   }
+  const mask = '*****'
+  if (typeof logs.message === 'object') {
+    if (logs.message.headers) {
+      logs.message.headers['Authorization'] = mask
+      logs.message
+    }
+
+    if (logs.message.multiValueHeaders) {
+      logs.message['multiValueHeaders'] = mask
+    }
+  }
   return logs
 }
 
