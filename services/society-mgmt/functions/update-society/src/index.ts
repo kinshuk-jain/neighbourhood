@@ -1,13 +1,14 @@
 import middy from '@middy/core'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
-import {
-  APIGatewayProxyHandler,
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-} from 'aws-lambda'
+import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import logger from './logger'
-import schema from './updateSocietySchema.json'
+
+import updateStatusSchema from './updateStatusSchema.json'
+import updateNameSchema from './updateNameSchema.json'
+import updateMemberSchema from './updateMemberSchema.json'
+import updateAddressSchema from './updateAddressSchema.json'
+
 import {
   updateSocietyBlacklistStatus,
   updateSocietyAddress,
@@ -19,8 +20,6 @@ import {
   removeSocietyAdmin,
   addSocietyImpContact,
   removeSocietyImpContact,
-  addSocietyMember,
-  removeSocietyMember,
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -61,6 +60,20 @@ const errorHandler = () => ({
   },
 })
 
+const schemaValidation = (body: any, schema: any) => {
+  const { valid, errors } = validate(body, schema)
+
+  if (!valid) {
+    throw HttpError(400, 'body missing required parameters', {
+      missing_params: errors.map((error) => ({
+        property: error.property,
+        message: error.message,
+        name: error.name,
+      })),
+    })
+  }
+}
+
 const HttpError = (status: number, message: string, body?: object): Error => {
   const e: any = new Error(message)
   e.statusCode = status
@@ -69,7 +82,7 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 }
 
 const myHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
+  event: any
 ): Promise<APIGatewayProxyResult> => {
   const requestStartTime = Date.now()
   let response
@@ -84,18 +97,6 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (!event.body) {
       throw HttpError(401, 'missing body')
-    }
-
-    const { valid, errors } = validate(event.body, schema)
-
-    if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      })
     }
 
     if (
@@ -117,40 +118,67 @@ const myHandler: APIGatewayProxyHandler = async (
     let responseBody
     if (route_path_tokens[1] === 'tutorial') {
       // sys admin privilege
-      // update society tutorial status
-      responseBody = updateSocietyTutorialKey()
+      schemaValidation(event.body, updateStatusSchema)
+      const { status } = event.body
+      responseBody = updateSocietyTutorialKey(route_path_tokens[0], status)
     } else if (route_path_tokens[1] === 'blacklist') {
       // sys admin privilege
-      // update society blacklist status
-      responseBody = updateSocietyBlacklistStatus()
+      schemaValidation(event.body, updateStatusSchema)
+      const { status } = event.body
+      responseBody = updateSocietyBlacklistStatus(route_path_tokens[0], status)
     } else if (route_path_tokens[1] === 'verified') {
       // sys admin privilege
-      // return invoice of society
-      responseBody = updateSocietyVerifiedStatus()
+      schemaValidation(event.body, updateStatusSchema)
+      const { status } = event.body
+      responseBody = updateSocietyVerifiedStatus(route_path_tokens[0], status)
     } else if (route_path_tokens[1] === 'name') {
       // sys admin privilege
-      // update society name
-      responseBody = updateSocietyName()
+      schemaValidation(event.body, updateNameSchema)
+      const { name } = event.body
+      responseBody = updateSocietyName(route_path_tokens[0], name)
     } else if (route_path_tokens[1] === 'address') {
       // sys admin privilege
-      // update society address
-      responseBody = updateSocietyAddress()
+      schemaValidation(event.body, updateAddressSchema)
+      const { postal_code, street_address, country, state, city } = event.body
+      responseBody = updateSocietyAddress(route_path_tokens[0], {
+        postal_code,
+        street_address,
+        country,
+        state,
+        city,
+      })
     } else if (route_path_tokens[1] === 'show-directory') {
       // admin privilege
-      // return blacklist status of society
-      responseBody = updateSocietyShowDirectoryFlag()
+      schemaValidation(event.body, updateStatusSchema)
+      const { status } = event.body
+      responseBody = updateSocietyShowDirectoryFlag(
+        route_path_tokens[0],
+        status
+      )
     } else if (route_path_tokens[1] === 'admin') {
       // admin privilege
-      // update admins of society - add/remove
-      responseBody = addSocietyAdmin()
+      schemaValidation(event.body, updateMemberSchema)
+      const { user_id } = event.body
+
+      if (route_path_tokens[2] === 'add') {
+        responseBody = addSocietyAdmin(route_path_tokens[0], user_id)
+      } else if (route_path_tokens[2] === 'remove') {
+        responseBody = removeSocietyAdmin(route_path_tokens[0], user_id)
+      } else {
+        throw HttpError(404, 'not found')
+      }
     } else if (route_path_tokens[1] === 'contact') {
       // admin privilege
-      // update admins of society - add/remove
-      responseBody = addSocietyImpContact()
-    } else if (route_path_tokens[1] === 'member') {
-      // admin privilege
-      // update admins of society - add/remove
-      responseBody = addSocietyMember()
+      schemaValidation(event.body, updateMemberSchema)
+      const { user_id } = event.body
+
+      if (route_path_tokens[2] === 'add') {
+        responseBody = addSocietyImpContact(route_path_tokens[0], user_id)
+      } else if (route_path_tokens[2] === 'remove') {
+        responseBody = removeSocietyImpContact(route_path_tokens[0], user_id)
+      } else {
+        throw HttpError(404, 'not found')
+      }
     } else {
       throw HttpError(404, 'not found')
     }

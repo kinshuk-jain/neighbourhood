@@ -1,0 +1,8 @@
+{
+  "id": "/society/status",
+  "type": "object",
+  "properties": {
+    "status": { "type": "boolean" }
+  },
+  "required": ["status"]
+}

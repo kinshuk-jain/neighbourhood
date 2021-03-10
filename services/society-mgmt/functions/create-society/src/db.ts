@@ -1,3 +1,5 @@
+import logger from './logger'
+
 export const addSocietyRecord = ({
   tutorial_finished,
   is_blacklisted,
@@ -12,7 +14,7 @@ export const addSocietyRecord = ({
   [key: string]: any
 }) => {
   const tableName = 'society'
-  console.log({
+  logger.info({
     tutorial_finished,
     is_blacklisted,
     name,
