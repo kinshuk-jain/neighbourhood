@@ -6,58 +6,75 @@ import {
 import { sendLoginCredsEmail } from './loginEmail'
 import { validate } from 'jsonschema'
 import schema from './emailRequestSchema.json'
+import logger from './logger'
 
 const templateNameToFuncMapping: { [key: string]: Function } = {
   'login-email': sendLoginCredsEmail,
 }
 
+const HttpError = (status: number, message: string, body?: object): Error => {
+  const e: any = new Error(message)
+  e.statusCode = status
+  e.body = body
+  return e
+}
+
 export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  if (!event.body) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Body missing in request' }),
-      isBase64Encoded: false,
+  const requestStartTime = Date.now()
+  let response
+  try {
+    logger.info(event)
+
+    if (!event.body) {
+      throw HttpError(400, 'body missing in request')
     }
-  }
-  const body = JSON.parse(event.body)
-  const { template, params, recipients, subject } = body
+    const body = JSON.parse(event.body)
+    const { template, params, recipients, subject } = body
 
-  const { valid, errors } = validate(body, schema)
+    const { valid, errors } = validate(body, schema)
 
-  if (!valid) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: 'body missing required parameters',
+    if (!valid) {
+      throw HttpError(400, 'body missing required parameters', {
         missing_params: errors.map((error) => ({
           property: error.property,
           message: error.message,
           name: error.name,
         })),
-      }),
-      isBase64Encoded: false,
+      })
     }
-  }
 
-  if (!templateNameToFuncMapping[template]) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Invalid template name' }),
+    if (!templateNameToFuncMapping[template]) {
+      throw HttpError(400, 'invalid template name')
     }
-  }
-  try {
+
     await templateNameToFuncMapping[template](params.link, recipients)
-    return {
+
+    response = {
       statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({}),
       isBase64Encoded: false,
     }
+    return response
   } catch (e) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: e.message }),
+    response = {
+      isBase64Encoded: false,
+      statusCode: e.statusCode || 500,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
+      }),
     }
+
+    return response
+  } finally {
+    logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
 }

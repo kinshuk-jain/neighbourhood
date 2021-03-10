@@ -16,107 +16,123 @@ const setCorrelationId = () => ({
     next()
   },
 })
+
 // should be second middleware
 const errorHandler = () => ({
   onError: (handler: any, next: middy.NextFunction) => {
-    let response
+    let response = {}
     if (handler.error.statusCode && handler.error.message) {
       response = {
-        isBase64Encoded: false,
         statusCode: handler.error.statusCode,
         body: JSON.stringify({ error: handler.error.message }),
       }
     }
     response = {
       statusCode: 500,
-      isBase64Encoded: false,
       body: JSON.stringify({ error: 'Unkonwn error' }),
     }
-    handler.response = response
-    logger.info(response)
+    handler.response = {
+      ...response,
+      isBase64Encoded: false,
+      headers: {
+        'content-type': 'application/json',
+      },
+    }
+    logger.info(handler.response)
     return next()
   },
 })
 
+const HttpError = (status: number, message: string, body?: object): Error => {
+  const e: any = new Error(message)
+  e.statusCode = status
+  e.body = body
+  return e
+}
+
 const myHandler: APIGatewayProxyHandler = async (event: {
   [key: string]: any
 }): Promise<APIGatewayProxyResult> => {
-  logger.info(event)
+  const requestStartTime = Date.now()
+  let response
+  try {
+    logger.info(event)
 
-  const authToken = event.headers['Authorization']
+    const authToken = event.headers['Authorization']
 
-  if (!authToken) {
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 401,
-      body: JSON.stringify({ error: 'unauthorized' }),
+    if (!authToken) {
+      throw HttpError(401, 'unauthorized')
     }
-    logger.info(response)
-    return response
-  }
 
-  if (!event.body) {
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 400,
-      body: JSON.stringify({ error: 'missing body' }),
+    if (!event.body) {
+      throw HttpError(401, 'missing body')
     }
-    logger.info(response)
-    return response
-  }
 
-  const { valid, errors } = validate(event.body, schema)
+    const { valid, errors } = validate(event.body, schema)
 
-  if (!valid) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({
-        error: 'body missing required parameters',
+    if (!valid) {
+      throw HttpError(400, 'body missing required parameters', {
         missing_params: errors.map((error) => ({
           property: error.property,
           message: error.message,
           name: error.name,
         })),
-      }),
-      isBase64Encoded: false,
+      })
     }
+
+    const {
+      tutorial_finished = false,
+      is_blacklisted = false,
+      name,
+      user_id,
+      admins,
+      imp_contacts = [],
+      address,
+      society_type,
+      show_directory = true,
+    } = event.body
+
+    // TODO: validate whether the society is valid with google address api for right society type
+    // sjpuld also store lat/long bounds of society
+    await addSocietyRecord({
+      tutorial_finished,
+      is_blacklisted,
+      admins: admins || [user_id],
+      imp_contacts,
+      name,
+      user_id,
+      address,
+      society_type,
+      show_directory,
+    })
+
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'success', message: 'society created' }),
+    }
+
+    return response
+  } catch (e) {
+    response = {
+      isBase64Encoded: false,
+      statusCode: e.statusCode || 500,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
+      }),
+    }
+
+    return response
+  } finally {
+    logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
-
-  const {
-    tutorial_finished = false,
-    is_blacklisted = false,
-    name,
-    user_id,
-    admins,
-    imp_contacts = [],
-    address,
-    society_type,
-    show_directory = true,
-  } = event.body
-
-  // TODO: validate whether the society is valid with google address api for right society type
-  // sjpuld also store lat/long bounds of society
-  await addSocietyRecord({
-    tutorial_finished,
-    is_blacklisted,
-    admins: admins || [user_id],
-    imp_contacts,
-    name,
-    user_id,
-    address,
-    society_type,
-    show_directory,
-  })
-
-  const response = {
-    isBase64Encoded: false,
-    statusCode: 200,
-    body: JSON.stringify({ status: 'success', message: 'society created' }),
-  }
-
-  logger.info(response)
-
-  return response
 }
 
 export const handler = middy(myHandler)

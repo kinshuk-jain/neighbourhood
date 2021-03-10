@@ -21,70 +21,80 @@ const setCorrelationId = () => ({
 // should be second middleware
 const errorHandler = () => ({
   onError: (handler: any, next: middy.NextFunction) => {
-    let response
+    let response = {}
     if (handler.error.statusCode && handler.error.message) {
       response = {
-        isBase64Encoded: false,
         statusCode: handler.error.statusCode,
         body: JSON.stringify({ error: handler.error.message }),
       }
     }
     response = {
       statusCode: 500,
-      isBase64Encoded: false,
       body: JSON.stringify({ error: 'Unkonwn error' }),
     }
-    handler.response = response
-    logger.info(response)
+    handler.response = {
+      ...response,
+      isBase64Encoded: false,
+      headers: {
+        'content-type': 'application/json',
+      },
+    }
+    logger.info(handler.response)
     return next()
   },
 })
 
+const HttpError = (status: number, message: string): Error => {
+  const e: any = new Error(message)
+  e.statusCode = status
+  return e
+}
+
 const myHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
-  logger.info(event)
-  const authToken = event.headers['Authorization']
+  const requestStartTime = Date.now()
+  let response
+  try {
+    logger.info(event)
+    const authToken = event.headers['Authorization']
 
-  if (!authToken) {
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 401,
-      body: JSON.stringify({ error: 'unauthorized' }),
+    if (!authToken) {
+      throw HttpError(401, 'unauthorized')
     }
-    logger.info(response)
-    return response
-  }
 
-  if (!event.pathParameters || !event.pathParameters.society_id) {
-    const response = {
-      isBase64Encoded: false,
-      statusCode: 400,
-      body: JSON.stringify({ error: 'missing society id' }),
+    if (!event.pathParameters || !event.pathParameters.society_id) {
+      throw HttpError(400, 'missing society id')
     }
-    logger.info(response)
-    return response
-  }
 
-  if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
-    const response = {
+    if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
+      throw HttpError(400, 'improper society id')
+    }
+
+    await deleteSociety(event.pathParameters.society_id)
+
+    response = {
       isBase64Encoded: false,
       statusCode: 400,
-      body: JSON.stringify({ error: 'improper society id' }),
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'success', message: 'society deleted' }),
     }
-    logger.info(response)
     return response
+  } catch (e) {
+    response = {
+      isBase64Encoded: false,
+      statusCode: e.statusCode || 500,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
+    }
+    return response
+  } finally {
+    logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
-
-  await deleteSociety(event.pathParameters.society_id)
-
-  const response = {
-    isBase64Encoded: false,
-    statusCode: 400,
-    body: JSON.stringify({ status: 'success', message: 'society deleted' }),
-  }
-  logger.info(response)
-  return response
 }
 
 export const handler = middy(myHandler)

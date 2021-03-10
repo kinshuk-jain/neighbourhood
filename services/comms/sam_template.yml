@@ -43,7 +43,7 @@ Resources:
   sendEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: index.handler
+      Handler: functions/sendEmail/src/index.handler
       CodeUri: functions/sendEmail/dist
       Runtime: nodejs12.x
       MemorySize: 128

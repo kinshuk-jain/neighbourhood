@@ -16,9 +16,10 @@ export const addSocietyRecord = ({
     tutorial_finished,
     is_blacklisted,
     name,
+    billing_id: 123,
     admins,
     user_id,
-    address,
+    address, // define format of address
     imp_contacts,
     directory: [],
     society_type,

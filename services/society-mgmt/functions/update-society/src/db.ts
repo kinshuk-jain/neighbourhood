@@ -1,1 +1,12 @@
-export const updateSocietyRecord = () => {}
+export const updateSocietyBlacklistStatus = () => {}
+export const updateSocietyName = () => {}
+export const updateSocietyAddress = () => {}
+export const updateSocietyTutorialKey = () => {}
+export const updateSocietyVerifiedStatus = () => {}
+export const updateSocietyShowDirectoryFlag = () => {}
+export const addSocietyAdmin = () => {}
+export const removeSocietyAdmin = () => {}
+export const addSocietyImpContact = () => {}
+export const removeSocietyImpContact = () => {}
+export const addSocietyMember = () => {}
+export const removeSocietyMember = () => {}

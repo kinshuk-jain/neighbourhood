@@ -31,21 +31,25 @@ const setCorrelationId = () => ({
 // should be second middleware
 const errorHandler = () => ({
   onError: (handler: any, next: middy.NextFunction) => {
-    let response
+    let response = {}
     if (handler.error.statusCode && handler.error.message) {
       response = {
-        isBase64Encoded: false,
         statusCode: handler.error.statusCode,
         body: JSON.stringify({ error: handler.error.message }),
       }
     }
     response = {
       statusCode: 500,
-      isBase64Encoded: false,
       body: JSON.stringify({ error: 'Unkonwn error' }),
     }
-    handler.response = response
-    logger.info(response)
+    handler.response = {
+      ...response,
+      isBase64Encoded: false,
+      headers: {
+        'content-type': 'application/json',
+      },
+    }
+    logger.info(handler.response)
     return next()
   },
 })
@@ -59,6 +63,8 @@ const HttpError = (status: number, message: string): Error => {
 const myHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
+  const requestStartTime = Date.now()
+  let response
   try {
     logger.info(event)
     const authToken = event.headers['Authorization']
@@ -107,31 +113,37 @@ const myHandler: APIGatewayProxyHandler = async (
       responseBody = getAdmins()
     } else if (route_path_tokens[1] === 'verification') {
       // admin privilege
-      // return admins of society
+      // return verification status of society
       responseBody = getVerificationStatus()
     } else {
       throw HttpError(404, 'not found')
     }
 
-    const response = {
+    response = {
       isBase64Encoded: false,
       statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
       body: JSON.stringify(responseBody),
     }
-
-    logger.info(response)
-
     return response
   } catch (e) {
-    const response = {
+    response = {
       isBase64Encoded: false,
       statusCode: e.statusCode || 500,
+      headers: {
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({ error: e.message || 'Something went wrong' }),
     }
-    logger.info(response)
     return response
+  } finally {
+    logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
 }
+
+// missing - tutorial, members, pending membership requests
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())
