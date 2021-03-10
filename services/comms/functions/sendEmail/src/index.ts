@@ -8,6 +8,8 @@ import { validate } from 'jsonschema'
 import schema from './emailRequestSchema.json'
 import logger from './logger'
 
+import { v4 as uuidv4 } from 'uuid'
+
 const templateNameToFuncMapping: { [key: string]: Function } = {
   'login-email': sendLoginCredsEmail,
 }
@@ -23,13 +25,21 @@ export const handler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
   const requestStartTime = Date.now()
+  const correlationId = uuidv4()
   let response
+
   try {
+    logger.setCorrelationId(correlationId)
     logger.info(event)
 
     if (!event.body) {
       throw HttpError(400, 'body missing in request')
     }
+
+    if (!event.pathParameters || event.pathParameters.proxy !== 'send') {
+      throw HttpError(404, 'not found')
+    }
+
     const body = JSON.parse(event.body)
     const { template, params, recipients, subject } = body
 

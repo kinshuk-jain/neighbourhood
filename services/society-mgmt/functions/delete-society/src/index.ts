@@ -68,7 +68,7 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
-      throw HttpError(400, 'improper society id')
+      throw HttpError(404, 'not found')
     }
 
     await deleteSociety(event.pathParameters.society_id)

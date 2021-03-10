@@ -1,0 +1,3 @@
+APIs
+
+- POST /society/

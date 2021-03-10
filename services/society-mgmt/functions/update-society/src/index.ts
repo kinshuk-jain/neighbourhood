@@ -126,7 +126,7 @@ const myHandler: APIGatewayProxyHandler = async (
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
       responseBody = updateSocietyBlacklistStatus(route_path_tokens[0], status)
-    } else if (route_path_tokens[1] === 'verified') {
+    } else if (route_path_tokens[1] === 'verification') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
@@ -185,7 +185,7 @@ const myHandler: APIGatewayProxyHandler = async (
 
     response = {
       isBase64Encoded: false,
-      statusCode: 400,
+      statusCode: 200,
       headers: {
         'content-type': 'application/json',
       },
