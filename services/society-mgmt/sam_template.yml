@@ -21,7 +21,7 @@ Parameters:
       - production
       - staging
       - development
-    ConstraintDescription: must specify production, staging or development.
+    ConstraintDescription: must specify production or staging or development.
 
 Conditions:
   CreateProdResources: !Equals
@@ -209,14 +209,14 @@ Resources:
 
   crudHttpApiStaging:
     Type: AWS::Serverless::HttpApi
-    Condition: CreateDevResources
+    Condition: CreateStagingResources
     StageName: staging
     Description: crud api for society management
     DisableExecuteApiEndpoint: false
 
   crudHttpApiProduction:
     Type: AWS::Serverless::HttpApi
-    Condition: CreateDevResources
+    Condition: CreateProdResources
     StageName: production
     Description: crud api for society management
     DisableExecuteApiEndpoint: false

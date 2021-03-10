@@ -17,7 +17,6 @@ import {
   getStatus,
   getVerificationStatus,
 } from './db'
-import { Http } from 'winston/lib/winston/transports'
 
 // should be first middleware
 const setCorrelationId = () => ({
