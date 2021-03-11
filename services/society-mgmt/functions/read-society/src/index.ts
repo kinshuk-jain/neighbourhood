@@ -143,7 +143,7 @@ const myHandler: APIGatewayProxyHandler = async (
   }
 }
 
-// missing - tutorial, members, pending membership requests
+// TODO: missing - tutorial, members, pending membership requests
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())

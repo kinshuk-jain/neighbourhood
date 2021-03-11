@@ -1,80 +1,72 @@
 {
-  "body": null,
-  "headers": {
-    "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-    "Accept-Encoding": "gzip, deflate, br",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Connection": "keep-alive",
-    "Host": "localhost:3000",
-    "Referer": "http://localhost:3000/",
-    "Sec-Ch-Ua": "\"Google Chrome\";v=\"87\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"87\"",
-    "Sec-Ch-Ua-Mobile": "?0",
-    "Sec-Fetch-Dest": "image",
-    "Sec-Fetch-Mode": "no-cors",
-    "Sec-Fetch-Site": "same-origin",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-    "X-Forwarded-Port": "3000",
-    "X-Forwarded-Proto": "http"
-  },
-  "httpMethod": "GET",
-  "isBase64Encoded": false,
-  "multiValueHeaders": {
-    "Accept": ["image/avif,image/webp,image/apng,image/*,*/*;q=0.8"],
-    "Accept-Encoding": ["gzip, deflate, br"],
-    "Accept-Language": ["en-US,en;q=0.9"],
-    "Connection": ["keep-alive"],
-    "Host": ["localhost:3000"],
-    "Referer": ["http://localhost:3000/"],
-    "Sec-Ch-Ua": [
-      "\"Google Chrome\";v=\"87\", \" Not;A Brand\";v=\"99\", \"Chromium\";v=\"87\""
-    ],
-    "Sec-Ch-Ua-Mobile": ["?0"],
-    "Sec-Fetch-Dest": ["image"],
-    "Sec-Fetch-Mode": ["no-cors"],
-    "Sec-Fetch-Site": ["same-origin"],
-    "User-Agent": [
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_1_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
-    ],
-    "X-Forwarded-Port": ["3000"],
-    "X-Forwarded-Proto": ["http"]
-  },
-  "multiValueQueryStringParameters": null,
-  "path": "/favicon.ico",
-  "pathParameters": {
-    "proxy": "favicon.ico"
-  },
-  "queryStringParameters": null,
-  "requestContext": {
-    "accountId": "123456789012",
-    "apiId": "1234567890",
-    "domainName": "localhost:3000",
-    "extendedRequestId": null,
-    "httpMethod": "GET",
-    "identity": {
-      "accountId": null,
-      "apiKey": null,
-      "caller": null,
-      "cognitoAuthenticationProvider": null,
-      "cognitoAuthenticationType": null,
-      "cognitoIdentityPoolId": null,
-      "sourceIp": "127.0.0.1",
-      "user": null,
-      "userAgent": "Custom User Agent String",
-      "userArn": null,
-      "clientCert": {
-        "clientCertPem": "-----BEGIN CERTIFICATE-----\nMIIEvzCCA6egAwIBAgIUbXNfMDC1ro/nCnzxRDJzDgM2TgcwDQYJKoZIhvcNAQEL\nBQAwdDELMAkGA1UEBhMCR0IxDzANBgNVBAkMBkxvbmRvbjEbMBkGA1UEAwwSS29u\nc2VudHVzIFFUU1AgLSAxMRswGQYDVQQKDBJLb25zZW50dXMgUVRTUCAtIDExGjAY\nBgNVBAsMEUtvbnNlbnR1cyBUZXN0aW5nMCAXDTIwMDMwNDEzNTYzN1oYDzIxMjAw\nMjEwMTM1NjM3WjCBjjELMAkGA1UEBhMCR0IxDzANBgNVBAkMBkxvbmRvbjEaMBgG\nA1UEAwwRS29uc2VudHVzIFBTUCAtIDExGjAYBgNVBAoMEUtvbnNlbnR1cyBQU1Ag\nLSAxMRowGAYDVQQLDBFLb25zZW50dXMgVGVzdGluZzEaMBgGA1UEYQwRUFNEWFgt\nVEVTVC0wMDAwMDEwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCt1HJp\n5QfE+VIAuaZPj5UulknqrXMWxb5oqag0SszlP8t70l8Szmt+7UiLNpCjYjcA6qpe\nP6Mo06CpWJFqcIZpigZJUDQcsCQHpe+6JwJf6wjmse23/fM4/HFUYglYmdiwrmQQ\n9TuVCvJABaDeUsWPJY8ONeaLOJ1kMtEL9dml2EI0rb7+YBQT9Yc7j7Jt3WCWSJdz\nn5d+NzflKbt6iYutVt76zUqko9bRmyxNKyvjU/y+lrOtcTSdbm7nWoYTrrVkcHGI\np7jtnwe22Vwz512s2ISa/HPI4eJkJ8HlvrlL+K859drVooRqcSh9Z0CVvkUpIje8\nndwwpNWIMJwv4L31AgMBAAGjggEqMIIBJjAYBgNVBGEEEVBTRFhYLVRFU1QtMDAw\nMDAxMGoGCCsGAQUFBwEBBF4wXDBaBggrBgEFBQcwAoZOaHR0cDovL2stdGVzdC1j\nZXJ0aWZpY2F0ZXMuczMuZXUtd2VzdC0yLmFtYXpvbmF3cy5jb20vc2NlbmFyaW9f\nMV9xdHNwX2NlcnQucGVtMF4GA1UdHwRXMFUwU6BRoE+GTWh0dHA6Ly9rLXRlc3Qt\nY2VydGlmaWNhdGVzLnMzLmV1LXdlc3QtMi5hbWF6b25hd3MuY29tL3NjZW5hcmlv\nXzFfcXRzcF9jcmwuZGVyMB8GA1UdIwQYMBaAFNOKG2rwTAOeehzw1fp1GzxhFCr+\nMB0GA1UdDgQWBBQ/3LUfN+9vlxzIgEyY6N3n1AhGqDANBgkqhkiG9w0BAQsFAAOC\nAQEAd+YzVk4PKGNrjBbtYpprJLtkRhpSImua866YUgpdU7vJHhip4yqpLAcu0U2j\nHnSQyTAvsCK3hbdTHKVclnAn7R9lWIjyeLPWRUifKkjmyTdRnz/kz1RW94Y6DpNl\nsD9NDrsBc1yAUNcz77KKctObO9ZQ4qbklbQZNuGA4Du/t9/Vkzdi55SZCXDtwoOL\nkBj/Dqc42YQhdtSJFV8NSqZVyiFl14gWlafIm3KFzDRQhjY8OaA+gOwSbYM5e/a9\nxrq+qRngE4uQs87agTaz0XCwjTseE4RP3aBpY7UtlFMjy2hX2XFQ9ZSdmXyEXHxU\nqPI8hQmQLM05URHc09QQvHQaOQ==\n-----END CERTIFICATE-----"
-      }
+  "correlation_id": "undefined",
+  "level": "info",
+  "message": {
+    "body": "{\n\t\"template\": \"login-email\",\n\t\"params\": {},\n\t\"subject\": \"sdsd\",\n\t\"recipients\": [\"sddd\"]\n}",
+    "headers": {
+      "Accept": "*/*",
+      "Authorization": "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09",
+      "Content-Length": "90",
+      "Content-Type": "application/json",
+      "Cookie": "JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66",
+      "Host": "localhost:3000",
+      "Tpp": "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}",
+      "User-Agent": "insomnia/2020.5.2",
+      "X-Forwarded-Port": "3000",
+      "X-Forwarded-Proto": "http"
     },
-    "path": "/comms/email/{proxy+}",
-    "protocol": "HTTP/1.1",
-    "requestId": "21764830-1011-4101-b554-77e3c7bcf89a",
-    "requestTime": "05/Feb/2021:09:24:43 +0000",
-    "requestTimeEpoch": 1612517083,
-    "resourceId": "123456",
-    "resourcePath": "/{proxy+}",
-    "stage": "Prod"
+    "httpMethod": "POST",
+    "isBase64Encoded": false,
+    "multiValueHeaders": {
+      "Accept": ["*/*"],
+      "Authorization": [
+        "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09"
+      ],
+      "Content-Length": ["90"],
+      "Content-Type": ["application/json"],
+      "Cookie": ["JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66"],
+      "Host": ["localhost:3000"],
+      "Tpp": [
+        "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}"
+      ],
+      "User-Agent": ["insomnia/2020.5.2"],
+      "X-Forwarded-Port": ["3000"],
+      "X-Forwarded-Proto": ["http"]
+    },
+    "multiValueQueryStringParameters": null,
+    "path": "/comms/email/send",
+    "pathParameters": { "proxy": "send" },
+    "queryStringParameters": null,
+    "requestContext": {
+      "accountId": "123456789012",
+      "apiId": "1234567890",
+      "domainName": "localhost:3000",
+      "extendedRequestId": null,
+      "httpMethod": "POST",
+      "identity": {
+        "accountId": null,
+        "apiKey": null,
+        "caller": null,
+        "cognitoAuthenticationProvider": null,
+        "cognitoAuthenticationType": null,
+        "cognitoIdentityPoolId": null,
+        "sourceIp": "127.0.0.1",
+        "user": null,
+        "userAgent": "Custom User Agent String",
+        "userArn": null
+      },
+      "path": "/comms/email/{proxy+}",
+      "protocol": "HTTP/1.1",
+      "requestId": "1515268e-8133-4f46-9d65-13fdb4226dfd",
+      "requestTime": "10/Mar/2021:14:41:52 +0000",
+      "requestTimeEpoch": 1615387312,
+      "resourceId": "123456",
+      "resourcePath": "/comms/email/{proxy+}",
+      "stage": "production"
+    },
+    "resource": "/comms/email/{proxy+}",
+    "stageVariables": null,
+    "version": "1.0"
   },
-  "resource": "/comms/email/{proxy+}",
-  "stageVariables": null,
-  "version": "1.0"
+  "timestamp": "2021-03-10T14:45:43.513Z"
 }

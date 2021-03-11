@@ -1,0 +1,386 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  authentication and access control api
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: development
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+      - development
+    ConstraintDescription: must specify production or staging or development.
+
+Conditions:
+  CreateProdResources: !Equals
+    - !Ref EnvType
+    - production
+  CreateStagingResources: !Equals
+    - !Ref EnvType
+    - staging
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - development
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  verifyAccessLevelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/verify-access-level/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: check access level of users
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /auth/access/{proxy+}
+            Method: POST
+            ApiId: !Ref verifyAccessLevelApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /auth/access/{proxy+}
+            Method: POST
+            ApiId: !Ref verifyAccessLevelApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref verifyAccessLevelApiProd
+            Path: /auth/access/{proxy+}
+            Method: POST
+
+  verifyLoginTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/verify-login-token/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: generate login token
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /auth/oauth2/token
+            Method: POST
+            ApiId: !Ref verifyLoginTokenHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /auth/oauth2/token
+            Method: POST
+            ApiId: !Ref verifyLoginTokenHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref verifyLoginTokenHttpApiProduction
+            Path: /auth/oauth2/token
+            Method: POST
+
+  generateLoginTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/generate-login-token/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: generate login token
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /auth/oauth2/authorize
+            Method: ANY
+            ApiId: !Ref generateLoginTokenHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /auth/oauth2/authorize
+            Method: ANY
+            ApiId: !Ref generateLoginTokenHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref generateLoginTokenHttpApiProduction
+            Path: /auth/oauth2/authorize
+            Method: ANY
+
+  verifyLoginTokenHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: development
+    Description: verify authentication tokens or issue new ones
+    DisableExecuteApiEndpoint: false
+
+  verifyLoginTokenHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: verify authentication tokens or issue new ones
+    DisableExecuteApiEndpoint: false
+
+  verifyLoginTokenHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: verify authentication tokens or issue new ones
+    DisableExecuteApiEndpoint: false
+
+  generateLoginTokenHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: development
+    Description: generate authorization code for authentication
+    DisableExecuteApiEndpoint: false
+
+  generateLoginTokenHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: generate authorization code for authentication
+    DisableExecuteApiEndpoint: false
+
+  generateLoginTokenHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: generate authorization code for authentication
+    DisableExecuteApiEndpoint: false
+
+  verifyAccessLevelApiDevelopment:
+    Type: AWS::Serverless::Api
+    Condition: CreateDevResources
+    Properties:
+      Tags:
+        Name: verify-access-level-api-development
+      StageName: development
+      Models:
+        BodyValidate:
+          type: object
+          required:
+            - token
+            - role
+          properties:
+            token:
+              type: string
+            role:
+              type: string
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+      GatewayResponses:
+        ACCESS_DENIED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        AUTHORIZER_FAILURE:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        UNAUTHORIZED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+
+  verifyAccessLevelApiStaging:
+    Type: AWS::Serverless::Api
+    Condition: CreateStagingResources
+    Properties:
+      Tags:
+        Name: verify-access-level-api-staging
+      StageName: staging
+      Models:
+        BodyValidate:
+          type: object
+          required:
+            - token
+            - role
+          properties:
+            token:
+              type: string
+            role:
+              type: string
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+      GatewayResponses:
+        ACCESS_DENIED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        AUTHORIZER_FAILURE:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        UNAUTHORIZED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+
+  verifyAccessLevelApiProd:
+    Type: AWS::Serverless::Api
+    Condition: CreateProdResources
+    Properties:
+      Tags:
+        Name: verify-access-level-api-production
+      StageName: production
+      Models:
+        BodyValidate:
+          type: object
+          required:
+            - token
+            - role
+          properties:
+            token:
+              type: string
+            role:
+              type: string
+      Auth:
+        DefaultAuthorizer: AWS_IAM
+      GatewayResponses:
+        ACCESS_DENIED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        AUTHORIZER_FAILURE:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+        UNAUTHORIZED:
+          StatusCode: 404
+          ResponseTemplates:
+            'application/json': '{"error": not found }'
+          ResponseParameters:
+            Headers:
+              Access-Control-Allow-Origin: "'*'"
+
+  refreshTokenDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: token
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-refresh-token
+
+  accessTokenDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: token
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-access-token
+
+  authorizationCodeDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: code
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-authorization-code
+
+  userDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: user_id
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-user
+
+  userAliasDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: alias
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-user-alias

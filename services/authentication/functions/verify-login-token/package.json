@@ -1,0 +1,25 @@
+{
+  "name": "verify-login-token",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "@middy/http-json-body-parser": "^1.5.2",
+    "jsonschema": "^1.4.0",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.72",
+    "@types/jsonschema": "^1.1.1",
+    "@types/uuid": "^8.3.0",
+    "@types/winston": "^2.4.4"
+  },
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke verify-login-token -e 'test-events/verifyLoginTokenEvent.json'",
+    "start:run": "../../scripts/run.sh run verify-login-token"
+  }
+}

@@ -1,12 +1,28 @@
+// implements /token endpoint
+
+// when user clicks the link, he is redirected to hosted redirect page which requests /token endpoint
+// with auth code and code_verifier. We verify details and issue access, refresh and id tokens
+// refresh token is saved on BE while access and id tokens are returned
+// FE saves access token, uses id token to verify
+// When access_token is expired, a user sends access_token to get back a new access_token if
+// refresh_token is not expired. If refresh token is nearing expiration, we can issue new
+// refresh token as well and store it in BE
+// if a user logs in from another device he goes through exact same flow. Thus a user can
+// have multiple access/refresh tokens with 1:1 mapping
+
+// user table - access level, user_id, alias, redirect_uri, access_tokens, refresh tokens, time realted fields,
+// access-token-table - access-token, access_level, refresh_token, user_id, revoked, time related fields, device, ip
+// refresh token table - refresh-token, user-id, device, ip, time related into, access-token, revoked
+
 import middy from '@middy/core'
 import {
   APIGatewayProxyHandler,
   APIGatewayProxyEvent,
   APIGatewayProxyResult,
 } from 'aws-lambda'
+
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
-import { deleteSociety } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -50,6 +66,10 @@ const HttpError = (status: number, message: string): Error => {
   return e
 }
 
+/**
+ * POST /token endpoint which uses auth_code/access_token to get access_token/other tokens
+ */
+
 const myHandler: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> => {
@@ -62,39 +82,8 @@ const myHandler: APIGatewayProxyHandler = async (
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
-
-    if (!event.pathParameters || !event.pathParameters.society_id) {
-      throw HttpError(400, 'missing society id')
-    }
-
-    if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
-      throw HttpError(404, 'not found')
-    }
-
-    await deleteSociety(event.pathParameters.society_id)
-
-    response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'success', message: 'society deleted' }),
-    }
-    return response
-  } catch (e) {
-    response = {
-      isBase64Encoded: false,
-      statusCode: e.statusCode || 500,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
-    }
-    return response
-  } finally {
-    logger.info({ ...response, response_time: Date.now() - requestStartTime })
-  }
+    // set email verified in user table somehow
+  } catch (e) {}
 }
 
 export const handler = middy(myHandler)

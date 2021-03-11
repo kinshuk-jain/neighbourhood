@@ -9,7 +9,6 @@
     "start:run": "../../scripts/run.sh run sendEmail"
   },
   "dependencies": {
-    "dotenv": "^8.2.0",
     "jsonschema": "^1.4.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
