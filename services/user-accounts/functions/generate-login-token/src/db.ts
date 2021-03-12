@@ -28,7 +28,7 @@ export const saveAuthCode = async ({
     code_challenge_method,
     client_id,
     email,
-    expiry_time,
+    expiry_time, // exact time at which it will expire
     generated_at,
   })
 

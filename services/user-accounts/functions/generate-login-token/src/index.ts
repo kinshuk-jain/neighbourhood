@@ -2,7 +2,6 @@
 
 import middy from '@middy/core'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
-import jsonBodyParser from '@middy/http-json-body-parser'
 import schema from './authorizeSchema.json'
 import { validate } from 'jsonschema'
 import logger from './logger'
@@ -55,9 +54,10 @@ const errorHandler = () => ({
   },
 })
 
-const HttpError = (status: number, message: string): Error => {
+const HttpError = (status: number, message: string, body?: object): Error => {
   const e: any = new Error(message)
   e.statusCode = status
+  e.body = body
   return e
 }
 
@@ -71,8 +71,17 @@ const myHandler: APIGatewayProxyHandler = async (
   try {
     logger.info(event)
     if (event.requestContext.httpMethod.toUpperCase() === 'POST') {
-      validate(event.body, schema)
-      let email = event.body.email
+      const { valid, errors } = validate(event.queryStringParameters, schema)
+      if (!valid) {
+        throw HttpError(400, 'missing required parameters', {
+          missing_params: errors.map((error) => ({
+            property: error.property,
+            message: error.message,
+            name: error.name,
+          })),
+        })
+      }
+
       const {
         response_type,
         state,
@@ -80,7 +89,8 @@ const myHandler: APIGatewayProxyHandler = async (
         code_challenge,
         code_challenge_method,
         alias,
-      } = event.body
+      } = event.queryStringParameters
+      let email = event.queryStringParameters.email
 
       if (
         response_type.toLowerCase() !== 'code' ||
@@ -88,7 +98,7 @@ const myHandler: APIGatewayProxyHandler = async (
         !code_challenge ||
         code_challenge_method !== 'S256'
       ) {
-        throw HttpError(400, 'request body has invalid params')
+        throw HttpError(400, 'request has invalid params')
       }
 
       if (!email && !alias) {
@@ -159,7 +169,10 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
+      body: JSON.stringify({
+        error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
+      }),
     }
     return response
   } finally {
@@ -173,4 +186,3 @@ const myHandler: APIGatewayProxyHandler = async (
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

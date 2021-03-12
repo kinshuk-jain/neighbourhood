@@ -61,14 +61,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /auth/access/{proxy+}
+            Path: /user-accounts/access/{proxy+}
             Method: POST
             ApiId: !Ref verifyAccessLevelApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /auth/access/{proxy+}
+            Path: /user-accounts/access/{proxy+}
             Method: POST
             ApiId: !Ref verifyAccessLevelApiStaging
         ApiProd:
@@ -76,7 +76,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref verifyAccessLevelApiProd
-            Path: /auth/access/{proxy+}
+            Path: /user-accounts/access/{proxy+}
             Method: POST
 
   verifyLoginTokenFunction:
@@ -101,14 +101,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /auth/oauth2/token
+            Path: /user-accounts/oauth2/token
             Method: POST
             ApiId: !Ref verifyLoginTokenHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /auth/oauth2/token
+            Path: /user-accounts/oauth2/token
             Method: POST
             ApiId: !Ref verifyLoginTokenHttpApiStaging
         ApiProd:
@@ -116,7 +116,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref verifyLoginTokenHttpApiProduction
-            Path: /auth/oauth2/token
+            Path: /user-accounts/oauth2/token
             Method: POST
 
   generateLoginTokenFunction:
@@ -141,14 +141,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /auth/oauth2/authorize
+            Path: /user-accounts/oauth2/authorize
             Method: ANY
             ApiId: !Ref generateLoginTokenHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /auth/oauth2/authorize
+            Path: /user-accounts/oauth2/authorize
             Method: ANY
             ApiId: !Ref generateLoginTokenHttpApiStaging
         ApiProd:
@@ -156,7 +156,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref generateLoginTokenHttpApiProduction
-            Path: /auth/oauth2/authorize
+            Path: /user-accounts/oauth2/authorize
             Method: ANY
 
   verifyLoginTokenHttpApiDevelopment:
@@ -374,6 +374,7 @@ Resources:
         SSEType: KMS
       TableName: authentication-user
 
+  # TODO: need to update this table. Want to add global secondary indexes
   userAliasDynamoDBTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
