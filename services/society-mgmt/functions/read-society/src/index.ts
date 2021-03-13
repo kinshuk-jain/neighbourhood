@@ -21,9 +21,11 @@ import {
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
-    const correlationId = uuidv4()
-    logger.setCorrelationId(correlationId)
-    handler.event.correlationId = correlationId
+    if (!handler.event.headers['Correlation-Id']) {
+      const correlationId = uuidv4()
+      logger.setCorrelationId(correlationId)
+      handler.event.headers['Correlation-Id'] = correlationId
+    }
     next()
   },
 })

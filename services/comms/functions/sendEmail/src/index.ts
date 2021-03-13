@@ -28,11 +28,14 @@ export const handler: APIGatewayProxyHandler = async (
   context.callbackWaitsForEmptyEventLoop = false
 
   const requestStartTime = Date.now()
-  const correlationId = uuidv4()
   let response
 
   try {
-    logger.setCorrelationId(correlationId)
+    if (!event.headers['Correlation-Id']) {
+      const correlationId = uuidv4()
+      logger.setCorrelationId(correlationId)
+      event.headers['Correlation-Id'] = correlationId
+    }
     logger.info(event)
 
     if (!event.body) {

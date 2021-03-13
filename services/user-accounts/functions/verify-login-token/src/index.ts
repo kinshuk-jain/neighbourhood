@@ -1,28 +1,6 @@
-// implements /token endpoint
-
-// when user clicks the link, he is redirected to hosted redirect page which requests /token endpoint
-// with auth code and code_verifier. We verify details and issue access, refresh and id tokens
-// refresh token is saved on BE while access and id tokens are returned
-// FE saves access token, uses id token to verify
-// When access_token is expired, a user sends access_token to get back a new access_token if
-// refresh_token is not expired. If refresh token is nearing expiration, we can issue new
-// refresh token as well and store it in BE
-// if a user logs in from another device he goes through exact same flow. Thus a user can
-// have multiple access/refresh tokens with 1:1 mapping
-
-// user table - access level, user_id, alias, redirect_uri, access_tokens, refresh tokens, time realted fields,
-// access-token-table - access-token, access_level, refresh_token, user_id, revoked, time related fields, device, ip
-// refresh token table - refresh-token, user-id, device, ip, time related into, access-token, revoked
-
-// TODO: signout function
-
 import middy from '@middy/core'
 import jsonBodyParser from '@middy/http-json-body-parser'
-import {
-  APIGatewayProxyHandler,
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult,
-} from 'aws-lambda'
+import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { validate } from 'jsonschema'
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
@@ -32,6 +10,10 @@ import {
   getAuthCodeData,
   removeAuthCode,
   saveDataInRefreshTokenTable,
+  getRefreshTokenData,
+  deleteRefreshToken,
+  updateRefreshTokenDataOnAccessToken,
+  updateUserInfoOnLogin,
 } from './db'
 import { createHash } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
@@ -39,9 +21,11 @@ import { createAccessToken, createRefreshToken } from './token'
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
-    const correlationId = uuidv4()
-    logger.setCorrelationId(correlationId)
-    handler.event.correlationId = correlationId
+    if (!handler.event.headers['Correlation-Id']) {
+      const correlationId = uuidv4()
+      logger.setCorrelationId(correlationId)
+      handler.event.headers['Correlation-Id'] = correlationId
+    }
     next()
   },
 })
@@ -79,12 +63,8 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-/**
- * POST /token endpoint which uses auth_code/access_token to get access_token/other tokens
- */
-
 const myHandler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent,
+  event: any,
   context
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -109,19 +89,51 @@ const myHandler: APIGatewayProxyHandler = async (
           })),
         })
       }
-      /**
-       * Grant_type (refresh_token)
-       * Can be called with access_token: If token expired and refresh token valid, return a new access token
-       * if token expired and refresh also expired, return error.
-       * if token not expired, return token
-       */
+
+      const {
+        token,
+        email,
+        expiry_time,
+        times_used,
+        revoked,
+        last_used_on,
+      } = await getRefreshTokenData(queryParams.refresh_token)
+
+      if (
+        !token ||
+        revoked ||
+        Date.now() >= expiry_time ||
+        email !== queryParams.email
+      ) {
+        throw HttpError(401, 'invalid refresh token')
+      }
+
+      if (
+        times_used > 38000 || // with 15m expiry of access token refresh token should ideally not be used more than 35040 times
+        (last_used_on && Date.now() - last_used_on < 60) // a refresh token can only be used once per min
+      ) {
+        await deleteRefreshToken(token)
+        throw HttpError(401, 'refresh token used too many times')
+      }
+
+      await updateRefreshTokenDataOnAccessToken({
+        token,
+        times_used: times_used + 1,
+        last_used_on: Date.now(),
+        ip_address: event.requestContext.http.sourceIp,
+        user_agent: event.headers['User-Agent'],
+      })
+
       response = {
         isBase64Encoded: false,
         statusCode: 200,
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({
+          access_token: await createAccessToken(email),
+          expires_in: 900, // 15min
+        }),
       }
     } else if (queryParams.grant_type.toLowerCase() === 'authorization_code') {
       const { valid, errors } = validate(queryParams, authCodeSchema)
@@ -135,7 +147,7 @@ const myHandler: APIGatewayProxyHandler = async (
         })
       }
 
-      const { email, code = '', code_verifier = '', scope } = queryParams
+      const { email, code = '', code_verifier = '' } = queryParams
 
       if (!code_verifier) {
         throw HttpError(401, 'invalide code_verifier')
@@ -146,7 +158,6 @@ const myHandler: APIGatewayProxyHandler = async (
         code_challenge,
         code_challenge_method,
         email: storedEmail,
-        scope: storedScope,
         expiry_time,
       } = await getAuthCodeData(code)
 
@@ -176,13 +187,22 @@ const myHandler: APIGatewayProxyHandler = async (
       const accessToken = await createAccessToken(email)
       const refreshToken = await createRefreshToken()
 
-      // set refresh token in refresh token table
       await saveDataInRefreshTokenTable({
         token: refreshToken,
         email,
+        ip_address: event.requestContext.http
+          ? event.requestContext.http.sourceIp
+          : '',
+        user_agent: event.headers['User-Agent'],
       })
 
-      // TODO: set email verified in user table if not set
+      await updateUserInfoOnLogin({
+        email,
+        ip_address: event.requestContext.http
+          ? event.requestContext.http.sourceIp
+          : '',
+        user_agent: event.headers['User-Agent'],
+      })
 
       response = {
         isBase64Encoded: false,
@@ -193,8 +213,8 @@ const myHandler: APIGatewayProxyHandler = async (
         body: JSON.stringify({
           access_token: accessToken,
           refresh_token: refreshToken,
-          expires_in: '',
-          refresth_token_expires_in: '',
+          expires_in: 900, // 15min
+          refresth_token_expires_in: 31536000, // 365 days
         }),
       }
     } else {

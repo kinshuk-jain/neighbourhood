@@ -1,13 +1,13 @@
 {
-  "name": "sign-up",
+  "name": "sign-out",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "scripts": {
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
-    "start:invoke": "../../scripts/run.sh invoke sign-up -e 'test-events/signUpEvent.json'",
-    "start:run": "../../scripts/run.sh run sign-up"
+    "start:invoke": "../../scripts/run.sh invoke sign-out -e 'test-events/signOutEvent.json'",
+    "start:run": "../../scripts/run.sh run sign-out"
   },
   "dependencies": {
     "@middy/core": "^1.5.2",

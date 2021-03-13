@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <deploy> <sign-up|generate-login-token|verify-login-token>"
+  echo "Usage: $0 <deploy> <sign-up|sign-out|generate-login-token|verify-login-token>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(sign-up|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(deploy)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(sign-up|sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(deploy)$ ]]; then
   display_usage
 fi
 
@@ -29,6 +29,8 @@ if [[ "$FUNCTION" =~ ^(sign-up)$ ]]; then
   function_name="signUpFunction"
 elif [[ "$FUNCTION" =~ ^(generate-login-token)$ ]]; then
   function_name="generateLoginTokenFunction"
+elif [[ "$FUNCTION" =~ ^(sign-out)$ ]]; then
+  function_name="signOutFunction"
 elif [[ "$FUNCTION" =~ ^(verify-login-token)$ ]]; then
   function_name="verifyLoginTokenFunction"
 else

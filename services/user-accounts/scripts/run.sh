@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <sign-up|generate-login-token|verify-login-token>"
+  echo "Usage: $0 <invoke|run> <sign-up|sign-out|generate-login-token|verify-login-token>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(sign-up|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(sign-up|sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -31,6 +31,8 @@ elif [[ "$FUNCTION" =~ ^(generate-login-token)$ ]]; then
   function_name="generateLoginTokenFunction"
 elif [[ "$FUNCTION" =~ ^(verify-login-token)$ ]]; then
   function_name="verifyLoginTokenFunction"
+elif [[ "$FUNCTION" =~ ^(sign-out)$ ]]; then
+  function_name="signOutFunction"
 else
   display_usage
 fi

@@ -3,11 +3,9 @@ import jwt from 'jsonwebtoken'
 import logger from './logger'
 import { randomBytes } from 'crypto'
 
-// create refresh token
 export async function createRefreshToken(): Promise<string> {
   // randomBytes uses libuv thread pool
-  const token = randomBytes(32).toString('base64')
-  return token
+  return randomBytes(32).toString('base64')
 }
 
 export function createAccessToken(email: string): Promise<string> {
@@ -30,6 +28,6 @@ export function createAccessToken(email: string): Promise<string> {
   //       stack: err.stack,
   //     })
   //   })
-  console.log(process.env)
+  console.log('creating access token: ', email)
   return Promise.resolve('123123')
 }

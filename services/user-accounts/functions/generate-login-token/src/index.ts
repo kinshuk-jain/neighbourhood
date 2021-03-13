@@ -18,15 +18,30 @@ import {
 import querystring from 'querystring'
 import { randomBytes } from 'crypto'
 
+const config: { [key: string]: any } = {
+  staging: {
+    redirect_link: '',
+  },
+  development: {
+    redirect_link: 'http://localhost:3000/auth/oauth/redirect',
+  },
+  production: {
+    redirect_link: '',
+  },
+}
+
 // TODO: need to have a hosted page with this redirect link
-const redirect_link = 'https://neightbourhood.com/auth/oauth/redirect'
+const redirect_link =
+  config[process.env.ENVIRONMENT || 'development'].redirect_link
 
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
-    const correlationId = uuidv4()
-    logger.setCorrelationId(correlationId)
-    handler.event.correlationId = correlationId
+    if (!handler.event.headers['Correlation-Id']) {
+      const correlationId = uuidv4()
+      logger.setCorrelationId(correlationId)
+      handler.event.headers['Correlation-Id'] = correlationId
+    }
     next()
   },
 })
