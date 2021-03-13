@@ -39,11 +39,11 @@ Conditions:
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  verifyAccessLevelFunction:
+  signUpFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      CodeUri: functions/verify-access-level/dist
+      CodeUri: functions/sign-up/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
@@ -61,22 +61,22 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /user-accounts/access/{proxy+}
+            Path: /user-accounts/signup
             Method: POST
-            ApiId: !Ref verifyAccessLevelApiDevelopment
+            ApiId: !Ref signUpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /user-accounts/access/{proxy+}
+            Path: /user-accounts/signup
             Method: POST
-            ApiId: !Ref verifyAccessLevelApiStaging
+            ApiId: !Ref signUpApiStaging
         ApiProd:
           Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            ApiId: !Ref verifyAccessLevelApiProd
-            Path: /user-accounts/access/{proxy+}
+            ApiId: !Ref signUpApiProd
+            Path: /user-accounts/signup
             Method: POST
 
   verifyLoginTokenFunction:
@@ -201,7 +201,7 @@ Resources:
     Description: generate authorization code for authentication
     DisableExecuteApiEndpoint: false
 
-  verifyAccessLevelApiDevelopment:
+  signUpApiDevelopment:
     Type: AWS::Serverless::Api
     Condition: CreateDevResources
     Properties:
@@ -244,7 +244,7 @@ Resources:
             Headers:
               Access-Control-Allow-Origin: "'*'"
 
-  verifyAccessLevelApiStaging:
+  signUpApiStaging:
     Type: AWS::Serverless::Api
     Condition: CreateStagingResources
     Properties:
@@ -287,7 +287,7 @@ Resources:
             Headers:
               Access-Control-Allow-Origin: "'*'"
 
-  verifyAccessLevelApiProd:
+  signUpApiProd:
     Type: AWS::Serverless::Api
     Condition: CreateProdResources
     Properties:
@@ -340,17 +340,6 @@ Resources:
         SSEEnabled: true
         SSEType: KMS
       TableName: authentication-refresh-token
-
-  accessTokenDynamoDBTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: token
-        Type: String
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-      TableName: authentication-access-token
 
   authorizationCodeDynamoDBTable:
     Type: AWS::Serverless::SimpleTable

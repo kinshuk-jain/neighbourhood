@@ -22,8 +22,11 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 }
 
 export const handler: APIGatewayProxyHandler = async (
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
+  context
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false
+
   const requestStartTime = Date.now()
   const correlationId = uuidv4()
   let response

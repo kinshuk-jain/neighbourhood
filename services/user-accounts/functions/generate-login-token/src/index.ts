@@ -1,4 +1,6 @@
-// FE generates a code_verifier and code_challenge
+// FE generates a r code_verifier and code_challenge
+// code_verifier is a 32 char random utf8 string which is sha256-ed in hex encoding to
+// create code_challenge
 
 import middy from '@middy/core'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
@@ -14,6 +16,7 @@ import {
   getAliasData,
 } from './db'
 import querystring from 'querystring'
+import { randomBytes } from 'crypto'
 
 // TODO: need to have a hosted page with this redirect link
 const redirect_link = 'https://neightbourhood.com/auth/oauth/redirect'
@@ -64,8 +67,11 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 const validScopes = ['alles', 'sysalles', 'profile']
 
 const myHandler: APIGatewayProxyHandler = async (
-  event: any
+  event: any,
+  context: any
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false
+
   const requestStartTime = Date.now()
   let response
   try {
@@ -125,7 +131,8 @@ const myHandler: APIGatewayProxyHandler = async (
 
       const scopeString = allowedScopes.join(' ')
 
-      const authCode = uuidv4()
+      // randomBytes uses libuv thread pool
+      const authCode = randomBytes(32).toString('base64')
       if (userData.auth_code) {
         await removeAuthCode(email, userData.auth_code)
       }
@@ -133,7 +140,7 @@ const myHandler: APIGatewayProxyHandler = async (
       await saveAuthCode({
         code: authCode,
         code_challenge,
-        code_challenge_method,
+        code_challenge_method: 'sha256',
         email,
         scope: scopeString,
       })
@@ -159,7 +166,7 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ status: 'success', message: 'blah blah' }),
+      body: JSON.stringify({ status: 'success', message: 'email sent' }),
     }
     return response
   } catch (e) {
@@ -179,9 +186,6 @@ const myHandler: APIGatewayProxyHandler = async (
     logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
 }
-
-// TODO: allow user to update alias
-// TODO: set access level
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())

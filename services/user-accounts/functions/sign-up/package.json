@@ -1,0 +1,12 @@
+{
+  "name": "sign-up",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke sign-up -e 'test-events/signUpEvent.json'",
+    "start:run": "../../scripts/run.sh run sign-up"
+  }
+}

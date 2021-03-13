@@ -82,8 +82,11 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 }
 
 const myHandler: APIGatewayProxyHandler = async (
-  event: any
+  event: any,
+  context
 ): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false
+
   const requestStartTime = Date.now()
   let response
   try {

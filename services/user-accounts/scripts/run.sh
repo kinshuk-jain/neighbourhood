@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <verify-access-level|generate-login-token|verify-login-token>"
+  echo "Usage: $0 <invoke|run> <sign-up|generate-login-token|verify-login-token>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(verify-access-level|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(sign-up|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -25,8 +25,8 @@ cd "$script_path"
 cd "../functions/$FUNCTION" && yarn build
 cd ../../
 
-if [[ "$FUNCTION" =~ ^(verify-access-level)$ ]]; then
-  function_name="verifyAccessLevelFunction"
+if [[ "$FUNCTION" =~ ^(sign-up)$ ]]; then
+  function_name="signUpFunction"
 elif [[ "$FUNCTION" =~ ^(generate-login-token)$ ]]; then
   function_name="generateLoginTokenFunction"
 elif [[ "$FUNCTION" =~ ^(verify-login-token)$ ]]; then

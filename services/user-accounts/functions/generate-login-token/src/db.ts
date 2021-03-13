@@ -15,18 +15,17 @@ export const saveAuthCode = async ({
   code,
   code_challenge,
   code_challenge_method,
-  client_id,
   email,
 }: {
   [key: string]: string
 }): Promise<boolean> => {
+  // create a secondary index mapping auth code to email
   const generated_at = Date.now()
   const expiry_time = Date.now() + 10 * 60 * 1000 // 10min
   console.log('save auth to db: ', {
     code,
     code_challenge,
     code_challenge_method,
-    client_id,
     email,
     expiry_time, // exact time at which it will expire
     generated_at,

@@ -50,9 +50,14 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-const myHandler: APIGatewayProxyHandler = async (event: {
-  [key: string]: any
-}): Promise<APIGatewayProxyResult> => {
+const myHandler: APIGatewayProxyHandler = async (
+  event: {
+    [key: string]: any
+  },
+  context
+): Promise<APIGatewayProxyResult> => {
+  context.callbackWaitsForEmptyEventLoop = false
+
   const requestStartTime = Date.now()
   let response
   try {
