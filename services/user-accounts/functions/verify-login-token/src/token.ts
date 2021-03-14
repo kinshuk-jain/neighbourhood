@@ -8,7 +8,10 @@ export async function createRefreshToken(): Promise<string> {
   return randomBytes(32).toString('base64')
 }
 
-export function createAccessToken(email: string): Promise<string> {
+export function createAccessToken(
+  email: string,
+  scope: string
+): Promise<string> {
   // const sign = promisify(jwt.sign)
   // return sign(
   //   {},
@@ -28,6 +31,6 @@ export function createAccessToken(email: string): Promise<string> {
   //       stack: err.stack,
   //     })
   //   })
-  console.log('creating access token: ', email)
+  console.log('creating access token: ', email, scope)
   return Promise.resolve('123123')
 }

@@ -1,14 +1,25 @@
 export const getUserData = async (
   email: string
 ): Promise<{
-  user_id: string
-  auth_code?: string
+  email: string
+  auth_code?: string[]
+  scope: string
+  is_blacklisted: boolean
+  first_login: boolean
 }> => {
   console.log('client data: ' + email)
   return {
-    user_id: email,
-    auth_code: '123',
+    email,
+    is_blacklisted: false,
+    scope: 'admin',
+    auth_code: await getAuthCodeForUser(email),
+    first_login: true,
   }
+}
+
+const getAuthCodeForUser = async (email: string): Promise<string[]> => {
+  console.log('return auth code for user: ', email)
+  return ['auth-code']
 }
 
 export const saveAuthCode = async ({
@@ -34,23 +45,9 @@ export const saveAuthCode = async ({
   return true
 }
 
-export const removeAuthCode = async (email: string, code: string) => {
+export const removeAuthCode = async (email: string, code: string[]) => {
+  // remove all codes in the code array
   console.log('remove this code: ' + email, code)
-  return true
-}
-
-export const updateUserData = async (
-  email: string,
-  key: string,
-  value: string
-) => {
-  console.log('updating user data: ', email, key, value)
-  return true
-}
-
-export const addAlias = async (alias: string, email: string) => {
-  console.log('adding alias: ', alias, email)
-
   return true
 }
 

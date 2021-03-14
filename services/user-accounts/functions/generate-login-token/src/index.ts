@@ -8,13 +8,7 @@ import schema from './authorizeSchema.json'
 import { validate } from 'jsonschema'
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  getUserData,
-  saveAuthCode,
-  updateUserData,
-  removeAuthCode,
-  getAliasData,
-} from './db'
+import { getUserData, saveAuthCode, removeAuthCode, getAliasData } from './db'
 import querystring from 'querystring'
 import { randomBytes } from 'crypto'
 
@@ -79,7 +73,7 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-const validScopes = ['alles', 'sysalles', 'profile']
+const validScopes = ['admin', 'sysadmin', 'user']
 
 const myHandler: APIGatewayProxyHandler = async (
   event: any,
@@ -129,16 +123,23 @@ const myHandler: APIGatewayProxyHandler = async (
       if (!email && alias) {
         email = (await getAliasData(alias)).email
       }
-
+      // note: if called after signup this needs strong consistency
       const userData = await getUserData(email)
 
       if (!userData || !/(.+)@([\w-]+){2,}\.([a-z]+){2,}/.test(email)) {
         throw HttpError(400, 'invalid user data')
       }
 
+      if (userData.is_blacklisted) {
+        throw HttpError(401, 'user blacklisted')
+      }
+
       const allowedScopes = scope
         .split(' ')
-        .filter((scope: string) => validScopes.includes(scope))
+        .filter(
+          (scope: string) =>
+            validScopes.includes(scope) && userData.scope.includes(scope)
+        )
 
       if (!allowedScopes.length) {
         throw HttpError(400, 'invalid scopes')
@@ -160,19 +161,16 @@ const myHandler: APIGatewayProxyHandler = async (
         scope: scopeString,
       })
 
-      await updateUserData(email, 'auth_code', authCode)
-
       const link = `https://${redirect_link}/?${querystring.stringify({
         code: authCode,
         scope: scopeString,
         state,
         email,
+        first_login: userData.first_login,
       })}`
 
       // TODO: send an email with this link
     } else {
-      // GET /authorize does not exist as we do not need a
-      // separte consent page for the user for now
       throw HttpError(404, 'not found')
     }
     response = {

@@ -2,6 +2,9 @@ import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { signoutUser } from './db'
+import jsonBodyParser from '@middy/http-json-body-parser'
+import { validate } from 'jsonschema'
+import schema from './signoutSchema.json'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -41,9 +44,10 @@ const errorHandler = () => ({
   },
 })
 
-const HttpError = (status: number, message: string): Error => {
+const HttpError = (status: number, message: string, body?: object): Error => {
   const e: any = new Error(message)
   e.statusCode = status
+  e.body = body
   return e
 }
 
@@ -54,20 +58,24 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
-    const queryParams = event.queryStringParameters
     const authToken = event.headers['Authorization']
 
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
 
-    if (!queryParams || !queryParams.email) {
-      throw HttpError(400, 'missing params')
+    const { valid, errors } = validate(event.body, schema)
+    if (!valid) {
+      throw HttpError(400, 'body missing required parameters', {
+        missing_params: errors.map((error) => ({
+          property: error.property,
+          message: error.message,
+          name: error.name,
+        })),
+      })
     }
 
-    // verify auth token
-
-    await signoutUser(queryParams.email)
+    await signoutUser(event.body.email, event.body.refresh_token)
 
     response = {
       isBase64Encoded: false,
@@ -90,6 +98,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
       }),
     }
     return response
@@ -101,3 +110,4 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
+  .use(jsonBodyParser())

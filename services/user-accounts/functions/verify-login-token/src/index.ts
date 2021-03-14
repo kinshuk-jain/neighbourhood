@@ -97,6 +97,7 @@ const myHandler: APIGatewayProxyHandler = async (
         times_used,
         revoked,
         last_used_on,
+        scope,
       } = await getRefreshTokenData(queryParams.refresh_token)
 
       if (
@@ -131,10 +132,14 @@ const myHandler: APIGatewayProxyHandler = async (
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          access_token: await createAccessToken(email),
+          access_token: await createAccessToken(email, scope),
           expires_in: 900, // 15min
         }),
       }
+      logger.info({
+        status_code: 200,
+        response_time: Date.now() - requestStartTime,
+      })
     } else if (queryParams.grant_type.toLowerCase() === 'authorization_code') {
       const { valid, errors } = validate(queryParams, authCodeSchema)
       if (!valid) {
@@ -159,6 +164,7 @@ const myHandler: APIGatewayProxyHandler = async (
         code_challenge_method,
         email: storedEmail,
         expiry_time,
+        scope,
       } = await getAuthCodeData(code)
 
       if (!storedCode) {
@@ -184,12 +190,13 @@ const myHandler: APIGatewayProxyHandler = async (
 
       await removeAuthCode(code)
 
-      const accessToken = await createAccessToken(email)
+      const accessToken = await createAccessToken(email, scope)
       const refreshToken = await createRefreshToken()
 
       await saveDataInRefreshTokenTable({
         token: refreshToken,
         email,
+        scope,
         ip_address: event.requestContext.http
           ? event.requestContext.http.sourceIp
           : '',
@@ -217,6 +224,10 @@ const myHandler: APIGatewayProxyHandler = async (
           refresth_token_expires_in: 31536000, // 365 days
         }),
       }
+      logger.info({
+        status_code: 200,
+        response_time: Date.now() - requestStartTime,
+      })
     } else {
       throw HttpError(400, 'invalid grant type')
     }
@@ -233,9 +244,8 @@ const myHandler: APIGatewayProxyHandler = async (
         ...(e.body ? { body: e.body } : {}),
       }),
     }
-    return response
-  } finally {
     logger.info({ ...response, response_time: Date.now() - requestStartTime })
+    return response
   }
 }
 

@@ -36,6 +36,7 @@ export const getRefreshTokenData = async (
   last_used_on: number
   ip_address: string
   user_agent: string
+  scope: string
 }> => {
   console.log('getting refresh token data: ' + token)
   return {
@@ -47,6 +48,7 @@ export const getRefreshTokenData = async (
     last_used_on: 0,
     ip_address: '121231',
     user_agent: '12312312',
+    scope: '1111',
   }
 }
 
@@ -86,11 +88,13 @@ export const saveDataInRefreshTokenTable = async ({
   email,
   ip_address,
   user_agent,
+  scope,
 }: {
   token: string
   email: string
   ip_address?: string
   user_agent?: string
+  scope: string
 }): Promise<boolean> => {
   // create a secondary index mapping email to token
   const generated_at = Date.now()
@@ -101,6 +105,7 @@ export const saveDataInRefreshTokenTable = async ({
     expiry_time, // exact time at which token will expire
     generated_at,
     revoked: false,
+    scope,
     times_used: 1,
     last_used_on: 0,
     ip_address,
@@ -123,6 +128,7 @@ export const updateUserInfoOnLogin = async ({
     user_agent,
     ip_address,
     email_verified: true,
+    first_login: false,
   })
   return true
 }

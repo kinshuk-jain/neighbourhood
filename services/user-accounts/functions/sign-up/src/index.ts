@@ -1,8 +1,10 @@
-// should receive the token and access level required
-// will respond with whether allowed or not
 import logger from './logger'
 import middy from '@middy/core'
+import jsonBodyParser from '@middy/http-json-body-parser'
 import { v4 as uuidv4 } from 'uuid'
+import { validate } from 'jsonschema'
+import schema from './signupSchema.json'
+import { createNewUser, findUser } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -56,22 +58,83 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
-    const queryParams = event.queryStringParameters
-    if (!queryParams || !queryParams.grant_type) {
-      throw HttpError(400, 'missing params')
+
+    if (!event.body) {
+      throw HttpError(401, 'missing body')
     }
+
+    const { valid, errors } = validate(event.body, schema)
+
+    if (!valid) {
+      throw HttpError(400, 'body missing required parameters', {
+        missing_params: errors.map((error) => ({
+          property: error.property,
+          message: error.message,
+          name: error.name,
+        })),
+      })
+    }
+
+    if (
+      !event.body.email ||
+      !event.body.first_name ||
+      !event.body.last_name ||
+      !event.body.phone ||
+      !event.body.address ||
+      !event.body.address.city ||
+      !event.body.address.state ||
+      !event.body.address.street_address ||
+      !event.body.address.postal_code
+    ) {
+      throw HttpError(400, 'request missing required params')
+    }
+
+    if (!/(.+)@([\w-]+){2,}\.([a-z]+){2,}/.test(event.body.email)) {
+      throw HttpError(400, 'invalid user email')
+    }
+
+    const userAlreadyExists = await findUser(event.body.email)
+
+    if (userAlreadyExists) {
+      throw HttpError(400, 'user already exists')
+    }
+
+    await createNewUser({
+      ...event.body,
+    })
+
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'success',
+        message: 'user created',
+      }),
+    }
+
+    return response
   } catch (e) {
+    response = {
+      isBase64Encoded: false,
+      statusCode: e.statusCode || 500,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
+      }),
+    }
+    return response
   } finally {
     logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
-
-  console.log('verifyaccess')
-  console.log(event)
-  return event
 }
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-
-// TODO: allow user to update alias
+  .use(jsonBodyParser())
