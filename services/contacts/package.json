@@ -1,7 +1,7 @@
 {
-  "name": "contacts",
+  "name": "user-data",
   "version": "1.0.0",
-  "description": "contacts management service",
+  "description": "user data service",
   "main": "index.js",
   "license": "unlicensed",
   "private": true,
@@ -11,7 +11,11 @@
     "ts-jest": "^26.5.3",
     "typescript": "^4.2.3"
   },
-  "dependencies": {
-    "dotenv": "^8.2.0"
+  "workspaces": [
+    "functions/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "start:run": "./scripts/run_all.sh run"
   }
 }

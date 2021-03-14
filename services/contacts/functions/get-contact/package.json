@@ -1,0 +1,21 @@
+{
+  "name": "get-contact",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke get-contact -e 'test-events/getContactEvent.json'",
+    "start:run": "../../scripts/run.sh run get-contact"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/uuid": "^8.3.0",
+    "@types/winston": "^2.4.4"
+  }
+}

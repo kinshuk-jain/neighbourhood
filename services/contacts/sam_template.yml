@@ -5,7 +5,7 @@
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  user data api
+  contacts api
 
 # Transform section specifies one or more macros that AWS CloudFormation uses to process your template
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
@@ -39,15 +39,15 @@ Conditions:
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  deleteUserFunction:
+  deleteContactFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      CodeUri: functions/delete-user/dist
+      CodeUri: functions/delete-contact/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
-      Description: delete users
+      Description: delete contacts
       Environment:
         Variables:
           ENVIRONMENT:
@@ -61,14 +61,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /user
+            Path: /contacts/{contact_id}
             Method: DELETE
             ApiId: !Ref crudUserDataHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /user
+            Path: /contacts/{contact_id}
             Method: DELETE
             ApiId: !Ref crudUserDataHttpApiStaging
         ApiProd:
@@ -76,18 +76,18 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudUserDataHttpApiProduction
-            Path: /user
+            Path: /contacts/{contact_id}
             Method: DELETE
 
-  getUserDataFunction:
+  getContactFunction:
     Type: AWS::Serverless::Function
       Properties:
         Handler: index.handler
-        CodeUri: functions/get-user-data/dist
+        CodeUri: functions/get-contact/dist
         Runtime: nodejs12.x
         MemorySize: 128
         Timeout: 100
-        Description: get user data
+        Description: get contacts data
         Environment:
           Variables:
             ENVIRONMENT:
@@ -101,14 +101,14 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /user/{proxy+}
+              Path: /contacts/{proxy+}
               Method: GET
               ApiId: !Ref crudUserDataHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /user/{proxy+}
+              Path: /contacts/{proxy+}
               Method: GET
               ApiId: !Ref crudUserDataHttpApiStaging
           ApiProd:
@@ -116,18 +116,18 @@ Resources:
             Condition: CreateProdResources
             Properties:
               ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /user/{proxy+}
+              Path: /contacts/{proxy+}
               Method: GET
 
-  updateUserDataFunction:
+  updateContactFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      CodeUri: functions/update-user-data/dist
+      CodeUri: functions/update-contact/dist
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
-      Description: update user data
+      Description: update contact data
       Environment:
         Variables:
           ENVIRONMENT:
@@ -141,14 +141,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /user/{proxy+}
+            Path: /contacts/{proxy+}
             Method: POST
             ApiId: !Ref crudUserDataHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /user/{proxy+}
+            Path: /contacts/{proxy+}
             Method: POST
             ApiId: !Ref crudUserDataHttpApiStaging
         ApiProd:
@@ -156,7 +156,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudUserDataHttpApiProduction
-            Path: /user/{proxy+}
+            Path: /contacts/{proxy+}
             Method: POST
 
   crudUserDataHttpApiDevelopment:
