@@ -1,0 +1,17 @@
+{
+  "name": "delete-user",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke delete-user -e 'test-events/deleteUserEvent.json'",
+    "start:run": "../../scripts/run.sh run delete-user"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  }
+}

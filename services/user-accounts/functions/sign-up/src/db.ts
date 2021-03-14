@@ -4,12 +4,14 @@ export const createNewUser = async ({
   address,
   phone,
   email,
+  society_id,
 }: {
   first_name: string
   last_name: string
   address: { [key: string]: any }
   phone: string
   email: string
+  society_id: string
 }): Promise<boolean> => {
   console.log('signing up new user', {
     first_name,
@@ -27,8 +29,8 @@ export const createNewUser = async ({
     ip_address: '', // ip with which user logs in
     scope: 'user',
     billing_id: '12312',
-    location: '',
     first_login: true,
+    society_list: [society_id],
   })
   return true
 }

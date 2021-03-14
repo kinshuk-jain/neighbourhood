@@ -1,10 +1,6 @@
-import logger from './logger'
 import middy from '@middy/core'
-import jsonBodyParser from '@middy/http-json-body-parser'
 import { v4 as uuidv4 } from 'uuid'
-import { validate } from 'jsonschema'
-import schema from './signupSchema.json'
-import { createNewUser, findUser } from './db'
+import logger from './logger'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -58,51 +54,11 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+    const authToken = event.headers['Authorization']
 
-    if (!event.body) {
-      throw HttpError(401, 'missing body')
+    if (!authToken) {
+      throw HttpError(401, 'unauthorized')
     }
-
-    const { valid, errors } = validate(event.body, schema)
-
-    if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      })
-    }
-
-    if (
-      !event.body.society_id ||
-      !event.body.email ||
-      !event.body.first_name ||
-      !event.body.last_name ||
-      !event.body.phone ||
-      !event.body.address ||
-      !event.body.address.city ||
-      !event.body.address.state ||
-      !event.body.address.street_address ||
-      !event.body.address.postal_code
-    ) {
-      throw HttpError(400, 'request missing required params')
-    }
-
-    if (!/(.+)@([\w-]+){2,}\.([a-z]+){2,}/.test(event.body.email)) {
-      throw HttpError(400, 'invalid user email')
-    }
-
-    const userAlreadyExists = await findUser(event.body.email)
-
-    if (userAlreadyExists) {
-      throw HttpError(400, 'user already exists')
-    }
-
-    await createNewUser({
-      ...event.body,
-    })
 
     response = {
       isBase64Encoded: false,
@@ -112,10 +68,9 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'user created',
+        message: 'successfully deleted user',
       }),
     }
-
     return response
   } catch (e) {
     response = {
@@ -126,7 +81,6 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         error: e.message || 'Something went wrong',
-        ...(e.body ? { body: e.body } : {}),
       }),
     }
     return response
@@ -138,4 +92,3 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

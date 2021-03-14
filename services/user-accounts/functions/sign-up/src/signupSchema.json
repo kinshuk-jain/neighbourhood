@@ -7,6 +7,7 @@
     "phone": { "type": "string" },
     "email": { "type": "string" },
     "scope": { "type": "string" },
+    "society_id": { "type": "string" },
     "address": {
       "type": "object",
       "properties": {
@@ -19,5 +20,13 @@
       "required": ["postal_code", "city", "state", "street_address"]
     }
   },
-  "required": ["first_name", "last_name", "phone", "email", "address", "scope"]
+  "required": [
+    "first_name",
+    "last_name",
+    "phone",
+    "email",
+    "address",
+    "scope",
+    "society_id"
+  ]
 }

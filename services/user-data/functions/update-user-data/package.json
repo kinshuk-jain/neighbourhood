@@ -1,0 +1,25 @@
+{
+  "name": "update-user-data",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke update-user-data -e 'test-events/updateUserDataEvent.json'",
+    "start:run": "../../scripts/run.sh run update-user-data"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "@middy/http-json-body-parser": "^1.5.2",
+    "jsonschema": "^1.4.0",
+    "uuid": "^8.3.2",
+    "winston": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.72",
+    "@types/jsonschema": "^1.1.1",
+    "@types/uuid": "^8.3.0",
+    "@types/winston": "^2.4.4"
+  }
+}

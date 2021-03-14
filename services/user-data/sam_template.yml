@@ -1,0 +1,181 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  user data api
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: development
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+      - development
+    ConstraintDescription: must specify production or staging or development.
+
+Conditions:
+  CreateProdResources: !Equals
+    - !Ref EnvType
+    - production
+  CreateStagingResources: !Equals
+    - !Ref EnvType
+    - staging
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - development
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  deleteUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/delete-user/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: delete users
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /user-data
+            Method: DELETE
+            ApiId: !Ref crudUserDataHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /user-data
+            Method: DELETE
+            ApiId: !Ref crudUserDataHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudUserDataHttpApiProduction
+            Path: /user-data
+            Method: DELETE
+
+  getUserDataFunction:
+    Type: AWS::Serverless::Function
+      Properties:
+        Handler: index.handler
+        CodeUri: functions/get-user-data/dist
+        Runtime: nodejs12.x
+        MemorySize: 128
+        Timeout: 100
+        Description: get user data
+        Environment:
+          Variables:
+            ENVIRONMENT:
+              !If [
+                CreateProdResources,
+                production,
+                !If [CreateStagingResources, staging, development],
+              ]
+        Events:
+          ApiDevelopment:
+            Type: HttpApi
+            Condition: CreateDevResources
+            Properties:
+              Path: /user-data/{proxy+}
+              Method: GET
+              ApiId: !Ref crudUserDataHttpApiDevelopment
+          ApiStaging:
+            Type: HttpApi
+            Condition: CreateStagingResources
+            Properties:
+              Path: /user-data/{proxy+}
+              Method: GET
+              ApiId: !Ref crudUserDataHttpApiStaging
+          ApiProd:
+            Type: HttpApi
+            Condition: CreateProdResources
+            Properties:
+              ApiId: !Ref crudUserDataHttpApiProduction
+              Path: /user-data/{proxy+}
+              Method: GET
+
+  updateUserDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/update-user-data/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: update user data
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /user-data/{proxy+}
+            Method: POST
+            ApiId: !Ref crudUserDataHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /user-data/{proxy+}
+            Method: POST
+            ApiId: !Ref crudUserDataHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudUserDataHttpApiProduction
+            Path: /user-data/{proxy+}
+            Method: POST
+
+  crudUserDataHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: development
+    Description: delete user from system
+    DisableExecuteApiEndpoint: false
+
+  crudUserDataHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: delete user from system
+    DisableExecuteApiEndpoint: false
+
+  crudUserDataHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: delete user from system
+    DisableExecuteApiEndpoint: false
