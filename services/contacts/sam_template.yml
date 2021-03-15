@@ -63,19 +63,19 @@ Resources:
           Properties:
             Path: /contacts/{contact_id}
             Method: DELETE
-            ApiId: !Ref crudUserDataHttpApiDevelopment
+            ApiId: !Ref crudContactHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /contacts/{contact_id}
             Method: DELETE
-            ApiId: !Ref crudUserDataHttpApiStaging
+            ApiId: !Ref crudContactHttpApiStaging
         ApiProd:
           Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            ApiId: !Ref crudUserDataHttpApiProduction
+            ApiId: !Ref crudContactHttpApiProduction
             Path: /contacts/{contact_id}
             Method: DELETE
 
@@ -87,7 +87,7 @@ Resources:
         Runtime: nodejs12.x
         MemorySize: 128
         Timeout: 100
-        Description: get contacts data
+        Description: get data for a contact
         Environment:
           Variables:
             ENVIRONMENT:
@@ -101,22 +101,62 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /contacts/{proxy+}
+              Path: /contacts/{contact_id}/{proxy+}
               Method: GET
-              ApiId: !Ref crudUserDataHttpApiDevelopment
+              ApiId: !Ref crudContactHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /contacts/{proxy+}
+              Path: /contacts/{contact_id}/{proxy+}
               Method: GET
-              ApiId: !Ref crudUserDataHttpApiStaging
+              ApiId: !Ref crudContactHttpApiStaging
           ApiProd:
             Type: HttpApi
             Condition: CreateProdResources
             Properties:
-              ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /contacts/{proxy+}
+              ApiId: !Ref crudContactHttpApiProduction
+              Path: /contacts/{contact_id}/{proxy+}
+              Method: GET
+
+  listContactFunction:
+    Type: AWS::Serverless::Function
+      Properties:
+        Handler: index.handler
+        CodeUri: functions/list-contact/dist
+        Runtime: nodejs12.x
+        MemorySize: 128
+        Timeout: 100
+        Description: list contacts who belong to a set of data
+        Environment:
+          Variables:
+            ENVIRONMENT:
+              !If [
+                CreateProdResources,
+                production,
+                !If [CreateStagingResources, staging, development],
+              ]
+        Events:
+          ApiDevelopment:
+            Type: HttpApi
+            Condition: CreateDevResources
+            Properties:
+              Path: /contacts/list
+              Method: GET
+              ApiId: !Ref crudContactHttpApiDevelopment
+          ApiStaging:
+            Type: HttpApi
+            Condition: CreateStagingResources
+            Properties:
+              Path: /contacts/list
+              Method: GET
+              ApiId: !Ref crudContactHttpApiStaging
+          ApiProd:
+            Type: HttpApi
+            Condition: CreateProdResources
+            Properties:
+              ApiId: !Ref crudContactHttpApiProduction
+              Path: /contacts/list
               Method: GET
 
   updateContactFunction:
@@ -141,39 +181,79 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /contacts/{proxy+}
+            Path: /contacts/{contact_id}/{proxy+}
             Method: POST
-            ApiId: !Ref crudUserDataHttpApiDevelopment
+            ApiId: !Ref crudContactHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /contacts/{proxy+}
+            Path: /contacts/{contact_id}/{proxy+}
             Method: POST
-            ApiId: !Ref crudUserDataHttpApiStaging
+            ApiId: !Ref crudContactHttpApiStaging
         ApiProd:
           Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            ApiId: !Ref crudUserDataHttpApiProduction
-            Path: /contacts/{proxy+}
+            ApiId: !Ref crudContactHttpApiProduction
+            Path: /contacts/{contact_id}/{proxy+}
             Method: POST
 
-  crudUserDataHttpApiDevelopment:
+  createContactFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/create-contact/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: create contact
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /contacts
+            Method: POST
+            ApiId: !Ref crudContactHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /contacts
+            Method: POST
+            ApiId: !Ref crudContactHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudContactHttpApiProduction
+            Path: /contacts
+            Method: POST
+
+  crudContactHttpApiDevelopment:
     Type: AWS::Serverless::HttpApi
     Condition: CreateDevResources
     StageName: development
     Description: delete user from system
     DisableExecuteApiEndpoint: false
 
-  crudUserDataHttpApiStaging:
+  crudContactHttpApiStaging:
     Type: AWS::Serverless::HttpApi
     Condition: CreateStagingResources
     StageName: staging
     Description: delete user from system
     DisableExecuteApiEndpoint: false
 
-  crudUserDataHttpApiProduction:
+  crudContactHttpApiProduction:
     Type: AWS::Serverless::HttpApi
     Condition: CreateProdResources
     StageName: production

@@ -1,0 +1,203 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  authentication and access control api
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: development
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+      - development
+    ConstraintDescription: must specify production or staging or development.
+
+Conditions:
+  CreateProdResources: !Equals
+    - !Ref EnvType
+    - production
+  CreateStagingResources: !Equals
+    - !Ref EnvType
+    - staging
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - development
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  signOutFunction:
+    Type: AWS::Serverless::Function
+      Properties:
+        Handler: index.handler
+        CodeUri: functions/sign-out/dist
+        Runtime: nodejs12.x
+        MemorySize: 128
+        Timeout: 100
+        Description: sign out users
+        Environment:
+          Variables:
+            ENVIRONMENT:
+              !If [
+                CreateProdResources,
+                production,
+                !If [CreateStagingResources, staging, development],
+              ]
+        Events:
+          ApiDevelopment:
+            Type: HttpApi
+            Condition: CreateDevResources
+            Properties:
+              Path: /authentication/signout
+              Method: POST
+              ApiId: !Ref oauth2HttpApiDevelopment
+          ApiStaging:
+            Type: HttpApi
+            Condition: CreateStagingResources
+            Properties:
+              Path: /authentication/signout
+              Method: POST
+              ApiId: !Ref oauth2HttpApiStaging
+          ApiProd:
+            Type: HttpApi
+            Condition: CreateProdResources
+            Properties:
+              Path: /authentication/signout
+              Method: POST
+              ApiId: !Ref oauth2HttpApiProduction
+
+  verifyLoginTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/verify-login-token/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: generate access and refresh tokens
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /authentication/oauth2/token
+            Method: POST
+            ApiId: !Ref oauth2HttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /authentication/oauth2/token
+            Method: POST
+            ApiId: !Ref oauth2HttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            Path: /authentication/oauth2/token
+            Method: POST
+            ApiId: !Ref oauth2HttpApiProduction
+
+  generateLoginTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/generate-login-token/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: generate login token
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /authentication/oauth2/authorize
+            Method: ANY
+            ApiId: !Ref oauth2HttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /authentication/oauth2/authorize
+            Method: ANY
+            ApiId: !Ref oauth2HttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref oauth2HttpApiProduction
+            Path: /authentication/oauth2/authorize
+            Method: ANY
+
+  oauth2HttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: development
+    Description: issue access and refresh tokens
+    DisableExecuteApiEndpoint: false
+
+  oauth2HttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: issue access and refresh tokens
+    DisableExecuteApiEndpoint: false
+
+  oauth2HttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: issue access and refresh tokens
+    DisableExecuteApiEndpoint: false
+
+  refreshTokenDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: token
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-refresh-token
+
+  authorizationCodeDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: code
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-authorization-code

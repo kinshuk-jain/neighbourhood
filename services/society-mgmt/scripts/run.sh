@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <create-society|delete-society|read-society|update-society>"
+  echo "Usage: $0 <invoke|run> <list-society|create-society|delete-society|read-society|update-society>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(create-society|delete-society|read-society|update-society)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(list-society|create-society|delete-society|read-society|update-society)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -33,6 +33,8 @@ elif [[ "$FUNCTION" =~ ^(update-society)$ ]]; then
   function_name="updateSocietyFunction"
 elif [[ "$FUNCTION" =~ ^(delete-society)$ ]]; then
   function_name="deleteSocietyFunction"
+elif [[ "$FUNCTION" =~ ^(list-society)$ ]]; then
+  function_name="listSocietyFunction"
 else
   display_usage
 fi

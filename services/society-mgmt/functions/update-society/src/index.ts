@@ -106,81 +106,78 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (
       !event.pathParameters ||
+      !event.pathParameters.society_id ||
       !event.pathParameters.proxy ||
-      !event.pathParameters.proxy.match(
-        /^\/?[\w-]+\/[\w-]+(\/[\w-]+)?\/?([\?#].*)?$/
-      )
+      !event.pathParameters.proxy.match(/^\/?[\w-]+(\/[\w-]+)?\/?([\?#].*)?$/)
     ) {
       throw HttpError(404, 'not found')
     }
 
     let route_path = event.pathParameters.proxy.match(
-      /^\/?([\w-]+\/[\w-]+(\/[\w-]+)?)\/?/
+      /^\/?([\w-]+(\/[\w-]+)?)\/?/
     )
+    const society_id = event.pathParameters.society_id
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
 
     let responseBody
-    if (route_path_tokens[1] === 'tutorial') {
+    if (route_path_tokens[0] === 'tutorial') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyTutorialKey(route_path_tokens[0], status)
-    } else if (route_path_tokens[1] === 'blacklist') {
+      responseBody = updateSocietyTutorialKey(society_id, status)
+    } else if (route_path_tokens[0] === 'blacklist') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyBlacklistStatus(route_path_tokens[0], status)
-    } else if (route_path_tokens[1] === 'verification') {
+      responseBody = updateSocietyBlacklistStatus(society_id, status)
+    } else if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyVerifiedStatus(route_path_tokens[0], status)
-    } else if (route_path_tokens[1] === 'name') {
+      responseBody = updateSocietyVerifiedStatus(society_id, status)
+    } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
       schemaValidation(event.body, updateNameSchema)
       const { name } = event.body
-      responseBody = updateSocietyName(route_path_tokens[0], name)
-    } else if (route_path_tokens[1] === 'address') {
+      responseBody = updateSocietyName(society_id, name)
+    } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
-      responseBody = updateSocietyAddress(route_path_tokens[0], {
+      responseBody = updateSocietyAddress(society_id, {
         postal_code,
         street_address,
         country,
         state,
         city,
       })
-    } else if (route_path_tokens[1] === 'show-directory') {
+    } else if (route_path_tokens[0] === 'show-directory') {
       // admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyShowDirectoryFlag(
-        route_path_tokens[0],
-        status
-      )
-    } else if (route_path_tokens[1] === 'admin') {
+      responseBody = updateSocietyShowDirectoryFlag(society_id, status)
+    } else if (route_path_tokens[0] === 'admin') {
       // admin privilege
       schemaValidation(event.body, updateMemberSchema)
-      const { user_id } = event.body
+      const { id } = event.body
 
-      if (route_path_tokens[2] === 'add') {
-        responseBody = addSocietyAdmin(route_path_tokens[0], user_id)
-      } else if (route_path_tokens[2] === 'remove') {
-        responseBody = removeSocietyAdmin(route_path_tokens[0], user_id)
+      if (route_path_tokens[1] === 'add') {
+        responseBody = addSocietyAdmin(society_id, id)
+      } else if (route_path_tokens[1] === 'remove') {
+        responseBody = removeSocietyAdmin(society_id, id)
       } else {
         throw HttpError(404, 'not found')
       }
-    } else if (route_path_tokens[1] === 'contact') {
+    } else if (route_path_tokens[0] === 'contact') {
       // admin privilege
       schemaValidation(event.body, updateMemberSchema)
-      const { user_id } = event.body
+      const { id } = event.body
 
-      if (route_path_tokens[2] === 'add') {
-        responseBody = addSocietyImpContact(route_path_tokens[0], user_id)
-      } else if (route_path_tokens[2] === 'remove') {
-        responseBody = removeSocietyImpContact(route_path_tokens[0], user_id)
+      if (route_path_tokens[1] === 'add') {
+        responseBody = addSocietyImpContact(society_id, id)
+      } else if (route_path_tokens[1] === 'remove') {
+        responseBody = removeSocietyImpContact(society_id, id)
       } else {
         throw HttpError(404, 'not found')
       }
@@ -205,6 +202,7 @@ const myHandler: APIGatewayProxyHandler = async (
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        status: 'failure',
         error: e.message || 'Something went wrong',
         ...(e.body ? { body: e.body } : {}),
       }),

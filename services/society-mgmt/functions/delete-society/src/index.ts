@@ -67,6 +67,8 @@ const myHandler: APIGatewayProxyHandler = async (
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
+    // get user id from authToken
+    const user_id = '1231231'
 
     if (!event.pathParameters || !event.pathParameters.society_id) {
       throw HttpError(400, 'missing society id')
@@ -76,7 +78,7 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    await deleteSociety(event.pathParameters.society_id)
+    await deleteSociety(event.pathParameters.society_id, user_id)
 
     response = {
       isBase64Encoded: false,
@@ -94,7 +96,10 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
+      body: JSON.stringify({
+        status: 'failure',
+        error: e.message || 'Something went wrong',
+      }),
     }
     return response
   } finally {

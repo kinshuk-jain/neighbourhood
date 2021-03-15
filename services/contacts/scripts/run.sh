@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <delete-contact|get-contact|update-contact>"
+  echo "Usage: $0 <invoke|run> <create-contact|list-contact|delete-contact|get-contact|update-contact>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(delete-contact|get-contact|update-contact)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(create-contact|list-contact|delete-contact|get-contact|update-contact)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -29,8 +29,12 @@ if [[ "$FUNCTION" =~ ^(update-contact)$ ]]; then
   function_name="updateContactFunction"
 elif [[ "$FUNCTION" =~ ^(get-contact)$ ]]; then
   function_name="getContactFunction"
+elif [[ "$FUNCTION" =~ ^(create-contact)$ ]]; then
+  function_name="createContactFunction"
 elif [[ "$FUNCTION" =~ ^(delete-contact)$ ]]; then
   function_name="deleteContactFunction"
+elif [[ "$FUNCTION" =~ ^(list-contact)$ ]]; then
+  function_name="listContactFunction"
 else
   display_usage
 fi

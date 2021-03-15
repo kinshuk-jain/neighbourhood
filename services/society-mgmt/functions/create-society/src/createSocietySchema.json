@@ -8,10 +8,8 @@
     "show_directory": {
       "type": "boolean"
     },
-    "tutorial_finished": { "type": "boolean" },
     "is_blacklisted": { "type": "boolean" },
     "name": { "type": "string" },
-    "user_id": { "type": "string" },
     "imp_contacts": {
       "type": "array",
       "items": {
@@ -36,5 +34,5 @@
       "required": ["postal_code", "city", "state", "street_address"]
     }
   },
-  "required": ["user_id", "name", "address", "society_type"]
+  "required": ["name", "address", "society_type"]
 }

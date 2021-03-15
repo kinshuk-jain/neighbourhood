@@ -1,0 +1,11 @@
+{
+  "id": "/auth/login/token/code",
+  "type": "object",
+  "properties": {
+    "grant_type": { "type": "string" },
+    "scope": { "type": "string" },
+    "code": { "type": "string" },
+    "code_verifier": { "type": "string" }
+  },
+  "required": ["grant_type", "code", "code_verifier"]
+}

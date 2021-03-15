@@ -87,7 +87,7 @@ Resources:
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
-      Description: read society
+      Description: get data for a society
       Environment:
         Variables:
           ENVIRONMENT:
@@ -101,14 +101,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /society/{proxy+}
+            Path: /society/{society_id}/{proxy+}
             Method: GET
             ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /society/{proxy+}
+            Path: /society/{society_id}/{proxy+}
             Method: GET
             ApiId: !Ref crudHttpApiStaging
         ApiProd:
@@ -116,7 +116,47 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudHttpApiProduction
-            Path: /society/{proxy+}
+            Path: /society/{society_id}/{proxy+}
+            Method: GET
+
+  listSocietyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/list-society/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: get data for societies that belong to a subset
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /society/list/
+            Method: GET
+            ApiId: !Ref crudHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /society/list/
+            Method: GET
+            ApiId: !Ref crudHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudHttpApiProduction
+            Path: /society/list/
             Method: GET
 
   deleteSocietyFunction:
@@ -148,7 +188,7 @@ Resources:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /society/{society_id}/
+            Path: /society/{society_id}
             Method: DELETE
             ApiId: !Ref crudHttpApiStaging
         ApiProd:
@@ -156,7 +196,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudHttpApiProduction
-            Path: /society/{society_id}/
+            Path: /society/{society_id}
             Method: DELETE
 
   updateSocietyFunction:
@@ -181,14 +221,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /society/{proxy+}/
+            Path: /society/{society_id}/{proxy+}/
             Method: POST
             ApiId: !Ref crudHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /society/{proxy+}/
+            Path: /society/{society_id}/{proxy+}/
             Method: POST
             ApiId: !Ref crudHttpApiStaging
         ApiProd:
@@ -196,7 +236,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudHttpApiProduction
-            Path: /society/{proxy+}/
+            Path: /society/{society_id}/{proxy+}/
             Method: POST
 
   # Add a lambda authorizer to authenticate api access

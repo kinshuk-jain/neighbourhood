@@ -1,6 +1,7 @@
 import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
+import { deleteUser } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -60,6 +61,18 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    if (!event.pathParameters || !event.pathParameters.user_id) {
+      throw HttpError(400, 'missing body')
+    }
+
+    const user_id = event.pathParameters.user_id
+
+    if (!user_id.match(/^[\w-]+$/)) {
+      throw HttpError(404, 'not found')
+    }
+
+    await deleteUser(user_id)
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,
@@ -80,6 +93,7 @@ const myHandler = async (event: any, context: any) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        status: 'failure',
         error: e.message || 'Something went wrong',
       }),
     }

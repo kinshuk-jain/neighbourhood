@@ -2,7 +2,7 @@
   "id": "/society/admin",
   "type": "object",
   "properties": {
-    "user_id": { "type": "string" }
+    "id": { "type": "string" }
   },
-  "required": ["user_id"]
+  "required": ["id"]
 }

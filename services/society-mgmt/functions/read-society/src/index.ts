@@ -16,6 +16,7 @@ import {
   getContacts,
   getStatus,
   getVerificationStatus,
+  getAllMembers,
 } from './db'
 
 // should be first middleware
@@ -80,46 +81,51 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (
       !event.pathParameters ||
+      !event.pathParameters.society_id ||
       !event.pathParameters.proxy ||
-      !event.pathParameters.proxy.match(/^[\w-]+\/[\w-]+\/?([\?#].*)?$/)
+      !event.pathParameters.proxy.match(/^\/?[\w-]+\/?([\?#].*)?$/)
     ) {
       throw HttpError(404, 'not found')
     }
 
-    let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+\/[\w-]+)\/?/)
+    const society_id = event.pathParameters.society_id
+
+    let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
     let responseBody
-    if (route_path_tokens[0] === 'list') {
-      // list societies by type, by pin code etc
-    } else if (route_path_tokens[1] === 'contacts') {
+    if (route_path_tokens[0] === 'contacts') {
       // return imp contacts of society
-      responseBody = getContacts()
-    } else if (route_path_tokens[1] === 'directory') {
+      responseBody = getContacts(society_id)
+    } else if (route_path_tokens[0] === 'directory') {
       // return directory of society if show_directory is true
-      responseBody = getDirectory()
-    } else if (route_path_tokens[1] === 'address') {
+      responseBody = getDirectory(society_id)
+    } else if (route_path_tokens[0] === 'address') {
       // return address of society
-      responseBody = getAddress()
-    } else if (route_path_tokens[1] === 'name') {
+      responseBody = getAddress(society_id)
+    } else if (route_path_tokens[0] === 'name') {
       // return name of society
-      responseBody = getName()
-    } else if (route_path_tokens[1] === 'blacklist') {
+      responseBody = getName(society_id)
+    } else if (route_path_tokens[0] === 'blacklist') {
       // admin privilege
       // return blacklist status of society
-      responseBody = getStatus()
-    } else if (route_path_tokens[1] === 'invoice') {
+      responseBody = getStatus(society_id)
+    } else if (route_path_tokens[0] === 'invoice') {
       // admin privilege
       // return invoice of society
-      responseBody = getInvoice()
-    } else if (route_path_tokens[1] === 'admins') {
+      responseBody = getInvoice(society_id)
+    } else if (route_path_tokens[0] === 'admins') {
       // admin privilege
       // return admins of society
-      responseBody = getAdmins()
-    } else if (route_path_tokens[1] === 'verification') {
+      responseBody = getAdmins(society_id)
+    } else if (route_path_tokens[0] === 'verification') {
       // admin privilege
       // return verification status of society
-      responseBody = getVerificationStatus()
+      responseBody = getVerificationStatus(society_id)
+    } else if (route_path_tokens[0] === 'members') {
+      // admin privilege
+      // return all users of our app in this society
+      responseBody = getAllMembers(society_id)
     } else {
       throw HttpError(404, 'not found')
     }
@@ -140,7 +146,10 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ error: e.message || 'Something went wrong' }),
+      body: JSON.stringify({
+        status: 'failure',
+        error: e.message || 'Something went wrong',
+      }),
     }
     return response
   } finally {
@@ -148,7 +157,7 @@ const myHandler: APIGatewayProxyHandler = async (
   }
 }
 
-// TODO: missing - tutorial, members, pending membership requests
+// TODO: missing - pending membership requests
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())

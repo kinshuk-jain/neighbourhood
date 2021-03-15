@@ -1,7 +1,6 @@
 import logger from './logger'
 
 export const addSocietyRecord = ({
-  tutorial_finished,
   is_blacklisted,
   name,
   admins,
@@ -15,7 +14,6 @@ export const addSocietyRecord = ({
 }) => {
   const tableName = 'society'
   logger.info({
-    tutorial_finished,
     is_blacklisted,
     name,
     billing_id: 123,
@@ -29,4 +27,5 @@ export const addSocietyRecord = ({
     verified: false, // verify whether this society is valid and the person creating it is real admin or not
   })
   // TODO: put this in DB if not exists
+  // if a deleted society exists by this name, then allow
 }

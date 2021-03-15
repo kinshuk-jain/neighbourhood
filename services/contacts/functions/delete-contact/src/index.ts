@@ -60,6 +60,14 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    if (!event.pathParameters || !event.pathParameters.contact_id) {
+      throw HttpError(400, 'missing contact id')
+    }
+
+    if (!event.pathParameters.contact_id.match(/^[\w-]+$/)) {
+      throw HttpError(404, 'not found')
+    }
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,
@@ -80,6 +88,7 @@ const myHandler = async (event: any, context: any) => {
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        status: 'failure',
         error: e.message || 'Something went wrong',
       }),
     }

@@ -84,6 +84,7 @@ export const handler: APIGatewayProxyHandler = async (
         'content-type': 'application/json',
       },
       body: JSON.stringify({
+        status: 'failure',
         error: e.message || 'Something went wrong',
         ...(e.body ? { body: e.body } : {}),
       }),

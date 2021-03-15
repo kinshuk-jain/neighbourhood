@@ -39,6 +39,46 @@ Conditions:
 Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  signUpFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/sign-up/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: sign up users
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /user/signup
+            Method: POST
+            ApiId: !Ref signUpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /user/signup
+            Method: POST
+            ApiId: !Ref signUpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref signUpApiProd
+            Path: /user/signup
+            Method: POST
+  
   deleteUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -61,14 +101,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /user
+            Path: /user/{user_id}/
             Method: DELETE
             ApiId: !Ref crudUserDataHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /user
+            Path: /user/{user_id}/
             Method: DELETE
             ApiId: !Ref crudUserDataHttpApiStaging
         ApiProd:
@@ -76,7 +116,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudUserDataHttpApiProduction
-            Path: /user
+            Path: /user/{user_id}/
             Method: DELETE
 
   getUserDataFunction:
@@ -87,7 +127,7 @@ Resources:
         Runtime: nodejs12.x
         MemorySize: 128
         Timeout: 100
-        Description: get user data
+        Description: get data for a user
         Environment:
           Variables:
             ENVIRONMENT:
@@ -101,14 +141,14 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /user/{proxy+}
+              Path: /user/{user_id}/{proxy+}
               Method: GET
               ApiId: !Ref crudUserDataHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /user/{proxy+}
+              Path: /user/{user_id}/{proxy+}
               Method: GET
               ApiId: !Ref crudUserDataHttpApiStaging
           ApiProd:
@@ -116,7 +156,7 @@ Resources:
             Condition: CreateProdResources
             Properties:
               ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /user/{proxy+}
+              Path: /user/{user_id}/{proxy+}
               Method: GET
 
   updateUserDataFunction:
@@ -141,14 +181,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /user/{proxy+}
+            Path: /user/{user_id}/{proxy+}
             Method: POST
             ApiId: !Ref crudUserDataHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /user/{proxy+}
+            Path: /user/{user_id}/{proxy+}
             Method: POST
             ApiId: !Ref crudUserDataHttpApiStaging
         ApiProd:
@@ -156,8 +196,48 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudUserDataHttpApiProduction
-            Path: /user/{proxy+}
+            Path: /user/{user_id}/{proxy+}
             Method: POST
+
+  listUserFunction:
+    Type: AWS::Serverless::Function
+      Properties:
+        Handler: index.handler
+        CodeUri: functions/list-user/dist
+        Runtime: nodejs12.x
+        MemorySize: 128
+        Timeout: 100
+        Description: list users who belong to a set of data
+        Environment:
+          Variables:
+            ENVIRONMENT:
+              !If [
+                CreateProdResources,
+                production,
+                !If [CreateStagingResources, staging, development],
+              ]
+        Events:
+          ApiDevelopment:
+            Type: HttpApi
+            Condition: CreateDevResources
+            Properties:
+              Path: /user/list
+              Method: GET
+              ApiId: !Ref crudUserDataHttpApiDevelopment
+          ApiStaging:
+            Type: HttpApi
+            Condition: CreateStagingResources
+            Properties:
+              Path: /user/list
+              Method: GET
+              ApiId: !Ref crudUserDataHttpApiStaging
+          ApiProd:
+            Type: HttpApi
+            Condition: CreateProdResources
+            Properties:
+              ApiId: !Ref crudUserDataHttpApiProduction
+              Path: /user/list
+              Method: GET
 
   crudUserDataHttpApiDevelopment:
     Type: AWS::Serverless::HttpApi
@@ -179,3 +259,26 @@ Resources:
     StageName: production
     Description: delete user from system
     DisableExecuteApiEndpoint: false
+
+  userDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: user_id
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-user
+
+  # TODO: need to update this table. Want to add global secondary indexes
+  userAliasDynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: alias
+        Type: String
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+      TableName: authentication-user-alias
