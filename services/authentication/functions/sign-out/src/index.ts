@@ -75,7 +75,10 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
-    await signoutUser(event.body.user_id, event.body.refresh_token)
+    // get user_id from auth token
+    const user_id = '1231231'
+
+    await signoutUser(user_id, event.body.refresh_token)
 
     response = {
       isBase64Encoded: false,

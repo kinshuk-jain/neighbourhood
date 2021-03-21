@@ -21,6 +21,7 @@ export const getUserData = async (
 }
 
 const getAuthCodeForUser = async (user_id: string): Promise<string[]> => {
+  // need to have a table mapping email to user id
   // get all auth codes for this user_id from auth codes table
   console.log('return auth code for user: ', user_id)
   return ['auth-code']
@@ -58,6 +59,7 @@ export const removeAuthCode = async (code: string[]) => {
 export const getAliasData = async (
   alias: string
 ): Promise<{ alias: string; user_id: string }> => {
+  // need to have a table mapping alias to user id
   console.log('getting alias data: ', alias)
   return {
     alias: '123',

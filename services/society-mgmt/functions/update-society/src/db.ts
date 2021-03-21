@@ -1,6 +1,6 @@
 import logger from './logger'
 
-export const updateSocietyBlacklistStatus = (
+export const updateSocietyBlacklistStatus = async (
   society_id: string,
   status: boolean
 ) => {
@@ -9,43 +9,52 @@ export const updateSocietyBlacklistStatus = (
     status,
   })
 }
-export const updateSocietyName = (society_id: string, name: string) => {
+export const updateSocietyName = async (society_id: string, name: string) => {
   logger.info({
     society_id,
     name,
   })
 }
-export const updateSocietyAddress = (society_id: string, address: object) => {
+export const updateSocietyAddress = async (
+  society_id: string,
+  address: object
+) => {
   logger.info({ society_id, address })
 }
-export const updateSocietyTutorialKey = (
+export const updateSocietyTutorialKey = async (
   society_id: string,
   status: boolean
 ) => {
   logger.info({ society_id, status })
 }
-export const updateSocietyVerifiedStatus = (
+export const updateSocietyVerifiedStatus = async (
   society_id: string,
   status: boolean
 ) => {
   logger.info({ society_id, status })
 }
-export const updateSocietyShowDirectoryFlag = (
+export const updateSocietyShowDirectoryFlag = async (
   society_id: string,
   status: boolean
 ) => {
   logger.info({ society_id, status })
 }
-export const addSocietyAdmin = (society_id: string, user_id: string) => {
+export const addSocietyAdmin = async (society_id: string, user_id: string) => {
   logger.info({ society_id, user_id })
 }
-export const removeSocietyAdmin = (society_id: string, user_id: string) => {
+export const removeSocietyAdmin = async (
+  society_id: string,
+  user_id: string
+) => {
   logger.info({ society_id, user_id })
 }
-export const addSocietyImpContact = (society_id: string, user_id: string) => {
+export const addSocietyImpContact = async (
+  society_id: string,
+  user_id: string
+) => {
   logger.info({ society_id, user_id })
 }
-export const removeSocietyImpContact = (
+export const removeSocietyImpContact = async (
   society_id: string,
   user_id: string
 ) => {

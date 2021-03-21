@@ -1,6 +1,6 @@
 import logger from './logger'
 
-export const addSocietyRecord = ({
+export const addSocietyRecord = async ({
   is_blacklisted,
   name,
   admins,
@@ -19,13 +19,14 @@ export const addSocietyRecord = ({
     billing_id: 123,
     admins,
     user_id,
-    address, // define format of address
+    address,
     imp_contacts,
     directory: [],
     society_type,
     show_directory,
-    verified: false, // verify whether this society is valid and the person creating it is real admin or not
+    pending_deletion: false, // sets the society for deletion, only sysadmin can delete
+    verified: false, // verify whether this society is valid and the person creating it is really its admin or not
   })
-  // TODO: put this in DB if not exists
+  // put this in DB if not exists
   // if a deleted society exists by this name, then allow
 }

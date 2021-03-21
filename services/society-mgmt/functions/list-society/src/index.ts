@@ -1,9 +1,18 @@
-import logger from './logger'
 import middy from '@middy/core'
+import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
+
+import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
-import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
-import schema from './updateSchema.json'
+import schema from './listSocietySchema.json'
+import {
+  listSocietyBlacklisted,
+  listSocietyByLocation,
+  listSocietyByType,
+  listSocietyNotApproved,
+  listSocietyInRegion,
+  listSocietyPendingDeletion,
+} from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -50,7 +59,10 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-const myHandler = async (event: any, context: any) => {
+const myHandler: APIGatewayProxyHandler = async (
+  event: any,
+  context
+): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
 
   const requestStartTime = Date.now()
@@ -63,7 +75,8 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
-    const { valid, errors } = validate(event.body, schema)
+    const { valid, errors } = validate(event.queryStringParameters, schema)
+
     if (!valid) {
       throw HttpError(400, 'body missing required parameters', {
         missing_params: errors.map((error) => ({
@@ -74,16 +87,63 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
-    // update user email verified status
-    // update user approval status
-    // update user phone
-    // update user address
-    // update user black list status
-    // update user scope
-    // first login
-    // society list
-    // profile thumbnail
-    // update email
+    const {
+      filter,
+      value = '',
+      page_size = 20,
+      page_number = 1,
+    } = event.queryStringParameters
+
+    if (!/[\w-]+/i.test(filter) || (value && !/[\w-=.;]+/i.test(value))) {
+      throw HttpError(400, 'invalid filter value in query param')
+    }
+
+    let pageSize, pageNumber
+    try {
+      pageSize = parseInt(page_size)
+      pageNumber = parseInt(page_number)
+    } catch (e) {
+      throw new Error('page_size or page_number not an integer')
+    }
+
+    if (pageSize < 20) {
+      throw new Error('page size less than 20 now allowed')
+    } else if (pageSize > 200) {
+      throw new Error('page size more than 200 not allowed')
+    } else if (pageNumber < 1) {
+      throw new Error('page number less than 1 not allowed')
+    }
+
+    let responseBody
+
+    switch (filter) {
+      case 'pending_approval':
+        // sysadmin
+        responseBody = await listSocietyNotApproved(pageNumber, pageSize)
+        break
+      case 'blacklisted':
+        // sysadmin
+        responseBody = await listSocietyBlacklisted(pageNumber, pageSize)
+        break
+      case 'pending_deletion':
+        // sysadmin
+        responseBody = await listSocietyPendingDeletion(pageNumber, pageSize)
+        break
+      case 'type':
+        // sysadmin
+        responseBody = await listSocietyByType(value, pageNumber, pageSize)
+        break
+      case 'postal_code':
+        // user privilege
+        responseBody = await listSocietyInRegion(value, pageNumber, pageSize)
+        break
+      case 'location':
+        // user privilege
+        // val = "lat=123123;lon=123123"
+        responseBody = await listSocietyByLocation(value, pageNumber, pageSize)
+      default:
+        throw HttpError(400, 'invalid filter')
+    }
 
     response = {
       isBase64Encoded: false,
@@ -93,7 +153,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully logged out',
+        data: responseBody,
       }),
     }
     return response
@@ -119,4 +179,3 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

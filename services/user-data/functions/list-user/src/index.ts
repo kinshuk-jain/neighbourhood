@@ -1,6 +1,15 @@
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
+import { validate } from 'jsonschema'
+import schema from './listUserSchema.json'
+import {
+  listUsersNotApproved,
+  listUsersEmailNotVerified,
+  listUsersBySociety,
+  listUsersInRegion,
+  listUsersBlacklisted,
+} from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -60,6 +69,72 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    const { valid, errors } = validate(event.queryStringParameters, schema)
+
+    if (!valid) {
+      throw HttpError(400, 'body missing required parameters', {
+        missing_params: errors.map((error) => ({
+          property: error.property,
+          message: error.message,
+          name: error.name,
+        })),
+      })
+    }
+
+    const {
+      filter,
+      value,
+      page_size = 20,
+      page_number = 1,
+    } = event.queryStringParameters
+
+    if (!/[\w-]+/i.test(filter)) {
+      throw HttpError(400, 'invalid filter value in query param')
+    }
+
+    let pageSize, pageNumber
+    try {
+      pageSize = parseInt(page_size)
+      pageNumber = parseInt(page_number)
+    } catch (e) {
+      throw new Error('page_size or page_number not an integer')
+    }
+
+    if (pageSize < 20) {
+      throw new Error('page size less than 20 now allowed')
+    } else if (pageSize > 200) {
+      throw new Error('page size more than 200 not allowed')
+    } else if (pageNumber < 1) {
+      throw new Error('page number less than 1 not allowed')
+    }
+
+    let responseBody
+
+    switch (filter) {
+      case 'society':
+        // check user privilege
+        responseBody = await listUsersBySociety(value, pageNumber, pageSize)
+        break
+      case 'pending_approval':
+        // check admin privilege
+        responseBody = await listUsersNotApproved(pageNumber, pageSize)
+        break
+      case 'blacklisted':
+        // check admin privilege
+        responseBody = await listUsersBlacklisted(pageNumber, pageSize)
+        break
+      case 'pending_email_verification':
+        // check admin privilege
+        responseBody = await listUsersEmailNotVerified(pageNumber, pageSize)
+        break
+      case 'postal_code':
+        // check admin privilege
+        responseBody = await listUsersInRegion(value, pageNumber, pageSize)
+        break
+      default:
+        throw HttpError(400, 'invalid filter')
+    }
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,
@@ -68,7 +143,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully deleted user',
+        data: responseBody,
       }),
     }
     return response
@@ -82,6 +157,7 @@ const myHandler = async (event: any, context: any) => {
       body: JSON.stringify({
         status: 'failure',
         error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
       }),
     }
     return response

@@ -100,6 +100,10 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(401, 'unauthorized')
     }
 
+    if ('not admin or sysadmin privilege') {
+      throw HttpError(404, 'not found')
+    }
+
     if (!event.body) {
       throw HttpError(401, 'missing body')
     }
@@ -119,33 +123,33 @@ const myHandler: APIGatewayProxyHandler = async (
     const society_id = event.pathParameters.society_id
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
+    let isRouteNotFound = false
 
-    let responseBody
     if (route_path_tokens[0] === 'tutorial') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyTutorialKey(society_id, status)
+      await updateSocietyTutorialKey(society_id, status)
     } else if (route_path_tokens[0] === 'blacklist') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyBlacklistStatus(society_id, status)
+      await updateSocietyBlacklistStatus(society_id, status)
     } else if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyVerifiedStatus(society_id, status)
+      await updateSocietyVerifiedStatus(society_id, status)
     } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
       schemaValidation(event.body, updateNameSchema)
       const { name } = event.body
-      responseBody = updateSocietyName(society_id, name)
+      await updateSocietyName(society_id, name)
     } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
-      responseBody = updateSocietyAddress(society_id, {
+      await updateSocietyAddress(society_id, {
         postal_code,
         street_address,
         country,
@@ -156,18 +160,18 @@ const myHandler: APIGatewayProxyHandler = async (
       // admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
-      responseBody = updateSocietyShowDirectoryFlag(society_id, status)
+      await updateSocietyShowDirectoryFlag(society_id, status)
     } else if (route_path_tokens[0] === 'admin') {
       // admin privilege
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 
       if (route_path_tokens[1] === 'add') {
-        responseBody = addSocietyAdmin(society_id, id)
+        await addSocietyAdmin(society_id, id)
       } else if (route_path_tokens[1] === 'remove') {
-        responseBody = removeSocietyAdmin(society_id, id)
+        await removeSocietyAdmin(society_id, id)
       } else {
-        throw HttpError(404, 'not found')
+        isRouteNotFound = true
       }
     } else if (route_path_tokens[0] === 'contact') {
       // admin privilege
@@ -175,13 +179,17 @@ const myHandler: APIGatewayProxyHandler = async (
       const { id } = event.body
 
       if (route_path_tokens[1] === 'add') {
-        responseBody = addSocietyImpContact(society_id, id)
+        await addSocietyImpContact(society_id, id)
       } else if (route_path_tokens[1] === 'remove') {
-        responseBody = removeSocietyImpContact(society_id, id)
+        await removeSocietyImpContact(society_id, id)
       } else {
-        throw HttpError(404, 'not found')
+        isRouteNotFound = true
       }
     } else {
+      isRouteNotFound = true
+    }
+
+    if (isRouteNotFound) {
       throw HttpError(404, 'not found')
     }
 

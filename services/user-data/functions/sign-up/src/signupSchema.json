@@ -8,6 +8,7 @@
     "email": { "type": "string" },
     "scope": { "type": "string" },
     "society_id": { "type": "string" },
+    "profile_thumbnail": { "type": "string" },
     "address": {
       "type": "object",
       "properties": {

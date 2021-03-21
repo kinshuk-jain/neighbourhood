@@ -1,13 +1,13 @@
 {
-  "name": "list-user",
+  "name": "list-society",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "scripts": {
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
-    "start:invoke": "../../scripts/run.sh invoke list-user -e 'test-events/listUserEvent.json'",
-    "start:run": "../../scripts/run.sh run list-user"
+    "start:invoke": "../../scripts/run.sh invoke list-society -e 'test-events/listSocietyEvent.json'",
+    "start:run": "../../scripts/run.sh run list-society"
   },
   "dependencies": {
     "@middy/core": "^1.5.2",

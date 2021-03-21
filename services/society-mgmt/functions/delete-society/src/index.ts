@@ -6,7 +6,7 @@ import {
 } from 'aws-lambda'
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
-import { deleteSociety } from './db'
+import { deleteSociety, updateSocietyPendingDeletionStatus } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -78,6 +78,8 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
+    // todo: based on scope either delete society or mark it for deletion using updateSocietyPendingDeletionStatus
+    // if sysadmin delete, if admin mark it for deletion
     await deleteSociety(event.pathParameters.society_id, user_id)
 
     response = {

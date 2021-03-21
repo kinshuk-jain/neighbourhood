@@ -136,7 +136,10 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify(responseBody),
+      body: JSON.stringify({
+        status: 'success',
+        data: responseBody,
+      }),
     }
     return response
   } catch (e) {
@@ -156,8 +159,6 @@ const myHandler: APIGatewayProxyHandler = async (
     logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
 }
-
-// TODO: missing - pending membership requests
 
 export const handler = middy(myHandler)
   .use(setCorrelationId())

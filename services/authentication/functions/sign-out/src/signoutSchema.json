@@ -2,8 +2,7 @@
   "id": "/user-accounts/signout",
   "type": "object",
   "properties": {
-    "refresh_token": { "type": "string" },
-    "user_id": { "type": "string" }
+    "refresh_token": { "type": "string" }
   },
-  "required": ["refresh_token", "user_id"]
+  "required": ["refresh_token"]
 }

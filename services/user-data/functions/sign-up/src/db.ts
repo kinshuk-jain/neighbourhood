@@ -19,10 +19,13 @@ export const createNewUser = async ({
   const user_id = uuidv4()
   console.log('signing up new user', {
     user_id,
-    first_name,
-    last_name,
+    first_name: first_name.toLowerCase(),
+    last_name: last_name.toLowerCase(),
     address: {
-      ...address,
+      city: address.city.toLowerCase(),
+      state: address.state.toLowerCase(),
+      street_address: address.street_address.toLowerCase(),
+      postal_code: address.postal_code,
       country: 'IN',
     },
     phone,
@@ -30,12 +33,14 @@ export const createNewUser = async ({
     created_at: '213123',
     is_blacklisted: false,
     email_verified: false,
+    approved: false,
     user_agent: '', // user agent with which user logs in
     ip_address: '', // ip with which user logs in
     scope: 'user',
     billing_id: '12312',
     first_login: true,
     society_list: [society_id],
+    profile_thumbnail: '',
   })
   return user_id
 }
