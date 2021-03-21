@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { validate } from 'jsonschema'
 import schema from './listSocietySchema.json'
 import {
-  listSocietyBlacklisted,
   listSocietyByLocation,
   listSocietyByType,
   listSocietyNotApproved,
@@ -75,6 +74,8 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(401, 'unauthorized')
     }
 
+    // TODO: if user is blacklisted, he/she cannot list a society
+
     const { valid, errors } = validate(event.queryStringParameters, schema)
 
     if (!valid) {
@@ -94,7 +95,7 @@ const myHandler: APIGatewayProxyHandler = async (
       page_number = 1,
     } = event.queryStringParameters
 
-    if (!/[\w-]+/i.test(filter) || (value && !/[\w-=.;]+/i.test(value))) {
+    if (!/^[\w-]+$/i.test(filter) || (value && !/^[\w-=.;]+$/i.test(value))) {
       throw HttpError(400, 'invalid filter value in query param')
     }
 
@@ -120,10 +121,6 @@ const myHandler: APIGatewayProxyHandler = async (
       case 'pending_approval':
         // sysadmin
         responseBody = await listSocietyNotApproved(pageNumber, pageSize)
-        break
-      case 'blacklisted':
-        // sysadmin
-        responseBody = await listSocietyBlacklisted(pageNumber, pageSize)
         break
       case 'pending_deletion':
         // sysadmin

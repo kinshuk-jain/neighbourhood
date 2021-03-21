@@ -1,3 +1,4 @@
+// do not show users with is_blacklisted = true
 export const listUsersBySociety = async (
   society_id: string,
   page_number: number,
@@ -12,7 +13,7 @@ export const listUsersBySociety = async (
   )
   return []
 }
-
+// do not show users with is_blacklisted = true
 export const listUsersNotApproved = async (
   page_number: number,
   page_size: number
@@ -25,7 +26,7 @@ export const listUsersNotApproved = async (
   )
   return []
 }
-
+// do not show users with is_blacklisted = true
 export const listUsersEmailNotVerified = async (
   page_number: number,
   page_size: number
@@ -51,7 +52,7 @@ export const listUsersBlacklisted = async (
   )
   return []
 }
-
+// do not show users with is_blacklisted = true
 export const listUsersInRegion = async (
   postal_code: string,
   page_number: number,

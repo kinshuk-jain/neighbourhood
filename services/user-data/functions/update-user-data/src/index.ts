@@ -63,6 +63,8 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    // do not allow blacklisted users to update anything
+
     const { valid, errors } = validate(event.body, schema)
     if (!valid) {
       throw HttpError(400, 'body missing required parameters', {
@@ -74,15 +76,17 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
-    // update user email verified status
-    // update user approval status
     // update user phone
-    // update user address
-    // update user black list status
-    // update user scope
-    // first login
     // society list
     // profile thumbnail
+    // update user address
+    // update user black list status - send email and signout if refresh_token is set in DB
+    // update user email verified status
+    // update user approval status
+    // update user scope -
+    // can only be promoted to admin or demoted to user
+    // send email on scope update and signout if refresh_token is set in DB
+    // first login
     // update email
 
     response = {

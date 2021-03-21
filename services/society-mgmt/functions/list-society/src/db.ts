@@ -1,5 +1,3 @@
-// show only non blacklisted societies is_blacklisted===false
-
 export const listSocietyNotApproved = async (
   page_number: number,
   page_size: number
@@ -19,20 +17,6 @@ export const listSocietyPendingDeletion = async (
   page_size: number
 ): Promise<Array<string>> => {
   console.info('list societies pending_deletion: ')
-  console.log(
-    'retrieve results from: ',
-    (page_number - 1) * page_size,
-    ' to ',
-    page_number * page_size - 1
-  )
-  return []
-}
-
-export const listSocietyBlacklisted = async (
-  page_number: number,
-  page_size: number
-): Promise<Array<string>> => {
-  console.info('list societies is_blacklisted===true ')
   console.log(
     'retrieve results from: ',
     (page_number - 1) * page_size,

@@ -69,6 +69,7 @@ const myHandler: APIGatewayProxyHandler = async (
     }
     // get user id from authToken
     const user_id = '1231231'
+    // TODO: if user is blacklisted, he/she cannot delete a society
 
     if (!event.pathParameters || !event.pathParameters.society_id) {
       throw HttpError(400, 'missing society id')

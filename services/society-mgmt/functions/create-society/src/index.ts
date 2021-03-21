@@ -72,6 +72,7 @@ const myHandler: APIGatewayProxyHandler = async (
     }
     // get user id from authToken
     const user_id = '1231231'
+    // TODO: if user is blacklisted, he/she cannot create a society
 
     if (!event.body) {
       throw HttpError(401, 'missing body')
@@ -90,7 +91,6 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     const {
-      is_blacklisted = false,
       name,
       admins,
       imp_contacts = [],
@@ -102,7 +102,6 @@ const myHandler: APIGatewayProxyHandler = async (
     // TODO: validate whether the society is valid with google address api for right society type
     // sjpuld also store lat/long bounds of society
     await addSocietyRecord({
-      is_blacklisted,
       admins: admins || [user_id],
       imp_contacts,
       name,

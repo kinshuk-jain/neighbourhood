@@ -8,7 +8,6 @@
     "show_directory": {
       "type": "boolean"
     },
-    "is_blacklisted": { "type": "boolean" },
     "name": { "type": "string" },
     "imp_contacts": {
       "type": "array",

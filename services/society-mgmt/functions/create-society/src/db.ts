@@ -1,7 +1,6 @@
 import logger from './logger'
 
 export const addSocietyRecord = async ({
-  is_blacklisted,
   name,
   admins,
   user_id,
@@ -14,7 +13,6 @@ export const addSocietyRecord = async ({
 }) => {
   const tableName = 'society'
   logger.info({
-    is_blacklisted,
     name,
     billing_id: 123,
     admins,

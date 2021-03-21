@@ -141,9 +141,9 @@ const myHandler: APIGatewayProxyHandler = async (
         user_id = userData.user_id
       }
 
-      if (userData.is_blacklisted) {
-        throw HttpError(401, 'user blacklisted')
-      }
+      // if (userData.is_blacklisted) {
+      //   throw HttpError(401, 'user blacklisted')
+      // }
 
       const allowedScopes = scope
         .split(' ')
@@ -170,6 +170,7 @@ const myHandler: APIGatewayProxyHandler = async (
         code_challenge_method: 'sha256',
         user_id,
         scope: scopeString,
+        for_blacklisted_user: userData.is_blacklisted,
       })
 
       const link = `https://${redirect_link}/?${querystring.stringify({

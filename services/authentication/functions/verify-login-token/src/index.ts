@@ -100,6 +100,7 @@ const myHandler: APIGatewayProxyHandler = async (
         revoked,
         last_used_on,
         scope,
+        for_blacklisted_user,
       } = await getRefreshTokenData(queryParams.refresh_token)
 
       if (
@@ -134,7 +135,11 @@ const myHandler: APIGatewayProxyHandler = async (
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          access_token: await createAccessToken(user_id, scope),
+          access_token: await createAccessToken(
+            user_id,
+            scope,
+            for_blacklisted_user
+          ),
           expires_in: 900, // 15min
         }),
       }
@@ -167,6 +172,7 @@ const myHandler: APIGatewayProxyHandler = async (
         user_id: stored_user_id,
         expiry_time,
         scope,
+        for_blacklisted_user,
       } = await getAuthCodeData(code)
 
       if (!storedCode) {
@@ -192,13 +198,18 @@ const myHandler: APIGatewayProxyHandler = async (
 
       await removeAuthCode(code)
 
-      const accessToken = await createAccessToken(user_id, scope)
+      const accessToken = await createAccessToken(
+        user_id,
+        scope,
+        for_blacklisted_user
+      )
       const refreshToken = await createRefreshToken()
 
       await saveDataInRefreshTokenTable({
         token: refreshToken,
         user_id,
-        scope,
+        scope: for_blacklisted_user ? 'user' : scope,
+        for_blacklisted_user,
         ip_address: event.requestContext.http
           ? event.requestContext.http.sourceIp
           : '',
@@ -211,6 +222,8 @@ const myHandler: APIGatewayProxyHandler = async (
           ? event.requestContext.http.sourceIp
           : '',
         user_agent: event.headers['User-Agent'],
+        refresh_token: refreshToken,
+        for_blacklisted_user,
       })
 
       response = {

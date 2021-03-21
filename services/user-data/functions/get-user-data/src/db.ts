@@ -21,6 +21,7 @@ export const getDetails = async (
     email_verified: false,
     profile_thumbnail: '',
   })
+
   return {
     user_id,
     first_name: 'first name',

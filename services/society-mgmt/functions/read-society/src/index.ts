@@ -78,6 +78,7 @@ const myHandler: APIGatewayProxyHandler = async (
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
+    // TODO: if user is blacklisted, he/she cannot read a society
 
     if (
       !event.pathParameters ||

@@ -88,7 +88,7 @@ const myHandler = async (event: any, context: any) => {
       page_number = 1,
     } = event.queryStringParameters
 
-    if (!/[\w-]+/i.test(filter)) {
+    if (!/^[\w-]$+/i.test(filter) || (value && !/^[\w-.=;]+$/i.test(value))) {
       throw HttpError(400, 'invalid filter value in query param')
     }
 

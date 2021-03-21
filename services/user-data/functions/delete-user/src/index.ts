@@ -61,6 +61,8 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    // TODO: if user is blacklisted, he/she cannot deelete an account except their own
+
     if (!event.pathParameters || !event.pathParameters.user_id) {
       throw HttpError(400, 'missing body')
     }

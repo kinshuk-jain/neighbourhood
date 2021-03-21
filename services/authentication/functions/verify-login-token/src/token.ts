@@ -10,7 +10,8 @@ export async function createRefreshToken(): Promise<string> {
 
 export function createAccessToken(
   user_id: string,
-  scope: string
+  scope: string,
+  for_blacklisted_user: boolean
 ): Promise<string> {
   // const sign = promisify(jwt.sign)
   // return sign(
@@ -31,6 +32,10 @@ export function createAccessToken(
   //       stack: err.stack,
   //     })
   //   })
-  console.log('creating access token: ', user_id, scope)
+  // bring scope down to user lvl
+  if (for_blacklisted_user) {
+    scope = 'user'
+  }
+  console.log('creating access token: ', user_id, scope, for_blacklisted_user)
   return Promise.resolve('123123')
 }

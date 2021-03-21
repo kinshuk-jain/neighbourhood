@@ -32,19 +32,23 @@ export const saveAuthCode = async ({
   code_challenge,
   code_challenge_method,
   user_id,
+  for_blacklisted_user,
+  scope,
 }: {
-  [key: string]: string
+  [key: string]: string | boolean
 }): Promise<boolean> => {
   // create a secondary index mapping auth code to user_id
   const generated_at = Date.now()
   const expiry_time = Date.now() + 10 * 60 * 1000 // 10min
   console.log('save auth to db: ', {
     code,
+    scope,
     code_challenge,
     code_challenge_method,
     user_id,
     expiry_time, // exact time at which it will expire
     generated_at,
+    for_blacklisted_user,
   })
 
   return true

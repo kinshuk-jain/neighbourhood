@@ -99,6 +99,7 @@ const myHandler: APIGatewayProxyHandler = async (
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
+    // TODO: if user is blacklisted, he/she cannot update a society
 
     if ('not admin or sysadmin privilege') {
       throw HttpError(404, 'not found')
