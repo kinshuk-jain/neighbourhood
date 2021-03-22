@@ -1,0 +1,11 @@
+{
+  "id": "/society/list",
+  "type": "object",
+  "properties": {
+    "page_number": { "type": "string" },
+    "page_size": { "type": "string" },
+    "filter": { "type": "string" },
+    "value": { "type": "string" }
+  },
+  "required": ["page_number", "filter"]
+}

@@ -12,6 +12,22 @@ export const listSocietyNotApproved = async (
   return []
 }
 
+// do not list societies pending approval
+export const listSocietiesByName = async (
+  prefix: string,
+  page_number: number,
+  page_size: number
+): Promise<Array<string>> => {
+  console.info('list societies by having prefix string in their name: ', prefix)
+  console.log(
+    'retrieve results from: ',
+    (page_number - 1) * page_size,
+    ' to ',
+    page_number * page_size - 1
+  )
+  return []
+}
+
 export const listSocietyPendingDeletion = async (
   page_number: number,
   page_size: number
@@ -41,11 +57,13 @@ export const listSocietyByType = async (
   return []
 }
 
+// do not list societies pending approval
 export const listSocietyInRegion = async (
   postal_code: string,
   page_number: number,
   page_size: number
 ): Promise<Array<string>> => {
+  // check whether postal code is valid or not
   console.info('list societies in the postal code: ', postal_code)
   console.log(
     'retrieve results from: ',
@@ -56,6 +74,7 @@ export const listSocietyInRegion = async (
   return []
 }
 
+// do not list societies pending approval
 export const listSocietyByLocation = async (
   locationString: string,
   page_number: number,
@@ -73,6 +92,8 @@ export const listSocietyByLocation = async (
   if (!location['lat'] || !location['lon']) {
     // throw error that location is invalid
   }
+
+  // check whether latitue and lon are valid or not
 
   console.info('list societies in the gps region: ', location)
   console.log(

@@ -11,6 +11,7 @@ import {
   listSocietyNotApproved,
   listSocietyInRegion,
   listSocietyPendingDeletion,
+  listSocietiesByName,
 } from './db'
 
 // should be first middleware
@@ -129,6 +130,10 @@ const myHandler: APIGatewayProxyHandler = async (
       case 'type':
         // sysadmin
         responseBody = await listSocietyByType(value, pageNumber, pageSize)
+        break
+      case 'name':
+        // user privilege
+        responseBody = await listSocietiesByName(value, pageNumber, pageSize)
         break
       case 'postal_code':
         // user privilege

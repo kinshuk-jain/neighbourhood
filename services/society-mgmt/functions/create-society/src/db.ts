@@ -12,13 +12,14 @@ export const addSocietyRecord = async ({
   [key: string]: any
 }) => {
   const tableName = 'society'
+  // also save lon and lat for society i.e. its location
   logger.info({
     name,
     billing_id: 123,
     admins,
     user_id,
     address,
-    imp_contacts,
+    imp_contacts, // array of contact ids
     directory: [],
     society_type,
     show_directory,
