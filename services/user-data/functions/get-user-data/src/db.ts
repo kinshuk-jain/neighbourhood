@@ -18,6 +18,7 @@ export const getDetails = async (
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
     approved: false,
     is_blacklisted: false,
+    reported_count: [], // list of userid who reported this user
     email_verified: false,
     profile_thumbnail: '',
   })

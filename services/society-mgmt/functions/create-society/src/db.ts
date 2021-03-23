@@ -1,25 +1,33 @@
 import logger from './logger'
+import { v4 as uuidv4 } from 'uuid'
 
 export const addSocietyRecord = async ({
   name,
   admins,
   user_id,
   address,
-  imp_contacts,
   society_type,
   show_directory,
+  latitude,
+  longitude,
 }: {
   [key: string]: any
 }) => {
+  // use google geocoding api to get latitude and longitude for the address
+  // check if distance from this lat,long combination is more than threshold from frontend given
+  // lat,long. If not use FE lat,long or else use this lat,long
+  // if address is not found, we reject the request
   const tableName = 'society'
-  // also save lon and lat for society i.e. its location
   logger.info({
+    society_id: uuidv4(),
     name,
     billing_id: 123,
     admins,
     user_id,
+    latitude,
+    longitude,
     address,
-    imp_contacts, // array of contact ids
+    imp_contacts: [], // array of contact ids
     directory: [],
     society_type,
     show_directory,

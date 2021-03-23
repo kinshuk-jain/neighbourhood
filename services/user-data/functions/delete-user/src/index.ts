@@ -69,7 +69,7 @@ const myHandler = async (event: any, context: any) => {
 
     const user_id = event.pathParameters.user_id
 
-    if (!user_id.match(/^[\w-]+$/)) {
+    if (!user_id.match(/^[\w-]{5,40}$/)) {
       throw HttpError(404, 'not found')
     }
 

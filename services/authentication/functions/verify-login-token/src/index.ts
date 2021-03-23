@@ -92,6 +92,13 @@ const myHandler: APIGatewayProxyHandler = async (
         })
       }
 
+      if (
+        !queryParams.refresh_token ||
+        !/^[\w-]{2,40}$/i.test(queryParams.refresh_token)
+      ) {
+        throw HttpError(400, 'invalid refresh token')
+      }
+
       const {
         token,
         user_id: stored_user_id,
@@ -159,10 +166,14 @@ const myHandler: APIGatewayProxyHandler = async (
         })
       }
 
-      const { code = '', code_verifier = '' } = queryParams
+      const { code, code_verifier } = queryParams
+
+      if (!code || !/^[\w-]{2,40}$/i.test(code)) {
+        throw HttpError(400, 'invalid code')
+      }
 
       if (!code_verifier) {
-        throw HttpError(401, 'invalide code_verifier')
+        throw HttpError(401, 'missing code_verifier')
       }
 
       const {

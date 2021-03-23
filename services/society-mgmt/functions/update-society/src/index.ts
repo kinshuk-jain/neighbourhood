@@ -122,6 +122,11 @@ const myHandler: APIGatewayProxyHandler = async (
       /^\/?([\w-]+(\/[\w-]+)?)\/?/
     )
     const society_id = event.pathParameters.society_id
+
+    if (!society_id.match(/^[\w-]{5,40}$/)) {
+      throw HttpError(404, 'not found')
+    }
+
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
     let isRouteNotFound = false
@@ -145,11 +150,26 @@ const myHandler: APIGatewayProxyHandler = async (
       // sys admin privilege
       schemaValidation(event.body, updateNameSchema)
       const { name } = event.body
+      if (!/^[a-zA-Z0-9-']{2,40}$/i.test(name)) {
+        throw HttpError(400, 'invalid name')
+      }
       await updateSocietyName(society_id, name)
     } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
+      if (!/^[\w-]{2,40}$/i.test(country)) {
+        throw HttpError(400, 'invalid country')
+      } else if (!/^[0-9]{4,8}$/.test(postal_code)) {
+        throw HttpError(400, 'invalid postal code')
+      } else if (!/^[a-zA-Z0-9-,\/]{2,60}$/i.test(street_address)) {
+        throw HttpError(400, 'invalid street address')
+      } else if (!/^[\w-]{2,40}$/i.test(state)) {
+        throw HttpError(400, 'invalid state')
+      } else if (!/^[\w-]{2,40}$/i.test(city)) {
+        throw HttpError(400, 'invalid city')
+      }
+
       await updateSocietyAddress(society_id, {
         postal_code,
         street_address,
@@ -167,6 +187,10 @@ const myHandler: APIGatewayProxyHandler = async (
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 
+      if (!id.match(/^[\w-]{5,40}$/)) {
+        throw HttpError(404, 'not found')
+      }
+
       if (route_path_tokens[1] === 'add') {
         await addSocietyAdmin(society_id, id)
       } else if (route_path_tokens[1] === 'remove') {
@@ -178,6 +202,10 @@ const myHandler: APIGatewayProxyHandler = async (
       // admin privilege
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
+
+      if (!id.match(/^[\w-]{5,40}$/)) {
+        throw HttpError(404, 'not found')
+      }
 
       if (route_path_tokens[1] === 'add') {
         await addSocietyImpContact(society_id, id)

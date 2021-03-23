@@ -71,6 +71,11 @@ const myHandler = async (event: any, context: any) => {
     }
 
     const user_id = event.pathParameters.user_id
+
+    if (!/^[\w-]{5,40}$/.test(user_id)) {
+      throw HttpError(404, 'not found')
+    }
+
     let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')

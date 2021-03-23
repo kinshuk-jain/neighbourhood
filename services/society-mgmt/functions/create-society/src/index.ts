@@ -90,20 +90,25 @@ const myHandler: APIGatewayProxyHandler = async (
       })
     }
 
-    const {
-      name,
-      admins,
-      imp_contacts = [],
-      address,
-      society_type,
-      show_directory = true,
-    } = event.body
+    const { name, address, society_type, show_directory = true } = event.body
 
-    // TODO: validate whether the society is valid with google address api for right society type
-    // sjpuld also store lat/long bounds of society
+    if (!/^[\w-]{5,60}$/i.test(name)) {
+      throw HttpError(400, 'society name invalid or too big')
+    } else if (!/^[a-zA-Z0-9-,\/]{2,60}$/i.test(address.street_address)) {
+      throw HttpError(400, 'invalid street address')
+    } else if (!/^[\w-]{2,40}$/i.test(address.state)) {
+      throw HttpError(400, 'invalid state')
+    } else if (!/^[\w-]{2,40}$/i.test(address.city)) {
+      throw HttpError(400, 'invalid city')
+    } else if (!/^[\w-]{2,40}$/i.test(address.country)) {
+      throw HttpError(400, 'invalid country')
+    } else if (!/^[0-9]{4,8}$/.test(address.postal_code)) {
+      throw HttpError(400, 'invalid postal code')
+    }
+
+    // on create, we must verify society name, address and admin manually.
     await addSocietyRecord({
-      admins: admins || [user_id],
-      imp_contacts,
+      admins: [user_id],
       name,
       user_id,
       address,

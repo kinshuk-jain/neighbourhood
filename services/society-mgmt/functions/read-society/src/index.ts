@@ -91,6 +91,10 @@ const myHandler: APIGatewayProxyHandler = async (
 
     const society_id = event.pathParameters.society_id
 
+    if (!society_id.match(/^[\w-]{5,40}$/)) {
+      throw HttpError(404, 'not found')
+    }
+
     let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')

@@ -13,18 +13,6 @@
       "type": "boolean"
     },
     "name": { "type": "string" },
-    "imp_contacts": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "admins": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
     "address": {
       "type": "object",
       "properties": {

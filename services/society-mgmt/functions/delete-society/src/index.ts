@@ -75,7 +75,7 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(400, 'missing society id')
     }
 
-    if (!event.pathParameters.society_id.match(/^[\w-]+$/)) {
+    if (!event.pathParameters.society_id.match(/^[\w-]{5,40}$/)) {
       throw HttpError(404, 'not found')
     }
 

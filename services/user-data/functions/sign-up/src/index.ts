@@ -88,10 +88,29 @@ const myHandler = async (event: any, context: any) => {
       !event.body.address.postal_code
     ) {
       throw HttpError(400, 'request missing required params')
-    }
-
-    if (!/(.+)@([\w-]+){2,}\.([a-z]+){2,}/.test(event.body.email)) {
-      throw HttpError(400, 'invalid user email')
+    } else if (
+      !/^([\w-]+){2,40}@([\w-]+){2,}\.([a-z]+){2,}$/.test(event.body.email)
+    ) {
+      throw HttpError(400, 'email invalid or too big')
+    } else if (
+      !/^[a-zA-Z0-9-]{2,40}$/i.test(event.body.first_name) ||
+      !/^[a-zA-Z0-9-]{2,40}$/i.test(event.body.first_name)
+    ) {
+      throw HttpError(400, 'invalid name or too big')
+    } else if (!/^[0-9]{4,8}$/.test(event.body.address.postal_code)) {
+      throw HttpError(400, 'invalid postal code')
+    } else if (!/^\+?[0-9]{6,15}$/.test(event.body.phone)) {
+      throw HttpError(400, 'invalid phone')
+    } else if (
+      !/^[a-zA-Z0-9-,\/]{2,60}$/i.test(event.body.address.street_address)
+    ) {
+      throw HttpError(400, 'invalid street address')
+    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.state)) {
+      throw HttpError(400, 'invalid state')
+    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.city)) {
+      throw HttpError(400, 'invalid city')
+    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.country)) {
+      throw HttpError(400, 'invalid country')
     }
 
     const userAlreadyExists = await findUser(event.body.email)

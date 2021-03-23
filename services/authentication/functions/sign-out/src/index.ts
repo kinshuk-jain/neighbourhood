@@ -78,6 +78,10 @@ const myHandler = async (event: any, context: any) => {
     // get user_id from auth token
     const user_id = '1231231'
 
+    if (!/[\w-]+/.test(event.body.refresh_token)) {
+      throw HttpError(400, 'invalid refresh token')
+    }
+
     await signoutUser(user_id, event.body.refresh_token)
 
     response = {

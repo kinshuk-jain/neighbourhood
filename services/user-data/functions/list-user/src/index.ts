@@ -9,6 +9,7 @@ import {
   listUsersBySociety,
   listUsersInRegion,
   listUsersBlacklisted,
+  listUsersReported,
 } from './db'
 
 // should be first middleware
@@ -122,6 +123,10 @@ const myHandler = async (event: any, context: any) => {
       case 'blacklisted':
         // check admin privilege
         responseBody = await listUsersBlacklisted(pageNumber, pageSize)
+        break
+      case 'reported':
+        // check admin privilege
+        responseBody = await listUsersReported(pageNumber, pageSize)
         break
       case 'pending_email_verification':
         // check admin privilege
