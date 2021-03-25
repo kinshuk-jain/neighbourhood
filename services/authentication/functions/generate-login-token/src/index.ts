@@ -11,6 +11,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { getUserData, saveAuthCode, removeAuthCode, getAliasData } from './db'
 import querystring from 'querystring'
 import { randomBytes } from 'crypto'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 const config: { [key: string]: any } = {
   staging: {
@@ -81,6 +82,9 @@ const myHandler: APIGatewayProxyHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
 
+  // wait for resolution
+  await decryptedEnv
+
   const requestStartTime = Date.now()
   let response
   try {
@@ -98,6 +102,10 @@ const myHandler: APIGatewayProxyHandler = async (
 
       if (email && !/(.+)@([\w-]+){2,}\.([a-z]+){2,}/i.test(email)) {
         throw HttpError(400, 'invalid email')
+      }
+
+      if (!/[\w-]{2,30}/i.test(alias)) {
+        throw HttpError(400, 'invalid alias')
       }
 
       const { valid, errors } = validate(event.queryStringParameters, schema)

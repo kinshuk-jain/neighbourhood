@@ -33,6 +33,7 @@ export const createNewUser = async ({
     created_at: '213123',
     is_blacklisted: false,
     email_verified: false,
+    show_phone: true,
     approved: false,
     user_agent: '', // user agent with which user logs in
     ip_address: '', // ip with which user logs in
@@ -49,5 +50,6 @@ export const createNewUser = async ({
 
 export const findUser = async (email: string): Promise<boolean> => {
   console.log('check if user already exists: ', email)
+  // return true if user exists in DB otherwise false
   return false
 }

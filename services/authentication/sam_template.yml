@@ -37,6 +37,43 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  AuthCommsApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/comms-api/staging/pass-key'
+  AuthCommsApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/comms-api/production/pass-key'
+  AuthUserDataApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/user-data-api/staging/pass-key'
+  AuthUserDataApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/user-data-api/production/pass-key'
+  AuthDbKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/db/staging/pass-key'
+  AuthDbKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/db/production/pass-key'
+  PvtKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/verify-login-token/staging/pvt-key'
+  PvtKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/verify-login-token/production/pvt-key'
+  PubKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/send-public-key/staging/pub-key'
+  PubKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/send-public-key/production/pub-key'
+  KeyPassStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/verify-login-token/staging/key-pass'
+  KeyPassProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/verify-login-token/production/key-pass'
+
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   signOutFunction:
@@ -50,6 +87,12 @@ Resources:
         Description: sign out users
         Environment:
           Variables:
+            DB_KEY:
+              !If [
+                CreateProdResources,
+                !Ref AuthDbKeyProduction,
+                !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
+              ]
             ENVIRONMENT:
               !If [
                 CreateProdResources,
@@ -79,6 +122,52 @@ Resources:
               Method: POST
               ApiId: !Ref oauth2HttpApiProduction
 
+  sendPublicKeyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/send-public-key/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: send public key for token validation
+      Environment:
+        Variables:
+          PUB_KEY:
+            !If [
+              CreateProdResources,
+              !Ref PubKeyProduction,
+              !If [CreateStagingResources, !Ref PubKeyStaging, ''],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /.well-known/jwks.json
+            Method: GET
+            ApiId: !Ref wellKnownHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /.well-known/jwks.json
+            Method: GET
+            ApiId: !Ref wellKnownHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            Path: /.well-known/jwks.json
+            Method: GET
+            ApiId: !Ref wellKnownHttpApiProduction
+
   verifyLoginTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -90,6 +179,30 @@ Resources:
       Description: generate access and refresh tokens
       Environment:
         Variables:
+          USER_DATA_API_KEY: 
+            !If [
+              CreateProdResources,
+              !Ref AuthUserDataApiKeyProduction,
+              !If [CreateStagingResources, !Ref AuthUserDataApiKeyStaging, ''],
+            ]
+          PVT_KEY:
+            !If [
+              CreateProdResources,
+              !Ref PvtKeyProduction,
+              !If [CreateStagingResources, !Ref PvtKeyStaging, ''],
+            ]
+          KEY_PASS:
+            !If [
+              CreateProdResources,
+              !Ref KeyPassProduction,
+              !If [CreateStagingResources, !Ref KeyPassStaging, ''],
+            ]
+          DB_KEY:
+            !If [
+              CreateProdResources,
+              !Ref AuthDbKeyProduction,
+              !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -130,6 +243,24 @@ Resources:
       Description: generate login token
       Environment:
         Variables:
+          USER_DATA_API_KEY: 
+            !If [
+              CreateProdResources,
+              !Ref AuthUserDataApiKeyProduction,
+              !If [CreateStagingResources, !Ref AuthUserDataApiKeyStaging, ''],
+            ]
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref AuthCommsApiKeyProduction,
+              !If [CreateStagingResources, !Ref AuthCommsApiKeyStaging, ''],
+            ]
+          DB_KEY:
+            !If [
+              CreateProdResources,
+              !Ref AuthDbKeyProduction,
+              !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -178,6 +309,27 @@ Resources:
     Condition: CreateProdResources
     StageName: production
     Description: issue access and refresh tokens
+    DisableExecuteApiEndpoint: false
+
+  wellKnownHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: development
+    Description: send public keys
+    DisableExecuteApiEndpoint: false
+
+  wellKnownHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: send public keys
+    DisableExecuteApiEndpoint: false
+
+  wellKnownHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: send public keys
     DisableExecuteApiEndpoint: false
 
   refreshTokenDynamoDBTable:

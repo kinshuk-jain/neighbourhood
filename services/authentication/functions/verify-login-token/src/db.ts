@@ -122,6 +122,7 @@ export const saveDataInRefreshTokenTable = async ({
 }
 
 const getUserBlacklistStatus = async (user_id: string): Promise<boolean> => {
+  // makre request to user_data service to get this data
   console.log('getting user data', user_id)
   return false // return user.is_blacklisted
 }
@@ -139,6 +140,7 @@ export const updateUserInfoOnLogin = async ({
   refresh_token: string
   for_blacklisted_user: boolean
 }): Promise<boolean> => {
+  // makre request to user_data service to update this data
   // if user blacklist status changes at this point and refresh token is issued with
   // different blacklist privileges, update refresh token table to reflect this change
   const is_blacklisted = await getUserBlacklistStatus(user_id)
@@ -152,7 +154,7 @@ export const updateUserInfoOnLogin = async ({
     ip_address,
     email_verified: true,
     first_login: false,
-    refresh_token,
+    refresh_token, // is a list of refresh tokens
   })
   return true
 }

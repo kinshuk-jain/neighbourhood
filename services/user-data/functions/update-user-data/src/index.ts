@@ -78,6 +78,8 @@ const myHandler = async (event: any, context: any) => {
 
     // update user phone - just update it
     // profile thumbnail - just update it
+    // update show phone
+    // update alias
     // update user black list status - send email and signout if refresh_token is set in DB
     // update user email verified status - just update it
     // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is set in DB

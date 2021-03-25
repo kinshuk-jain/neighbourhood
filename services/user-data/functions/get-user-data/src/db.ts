@@ -13,6 +13,7 @@ export const getDetails = async (
       country: 'IN',
     },
     phone: '1231231231',
+    show_phone: true,
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend

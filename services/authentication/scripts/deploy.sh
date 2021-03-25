@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <deploy> <sign-out|generate-login-token|verify-login-token>"
+  echo "Usage: $0 <deploy> <send-public-key|sign-out|generate-login-token|verify-login-token>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(deploy)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(send-public-key|sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(deploy)$ ]]; then
   display_usage
 fi
 
@@ -31,6 +31,9 @@ elif [[ "$FUNCTION" =~ ^(sign-out)$ ]]; then
   function_name="signOutFunction"
 elif [[ "$FUNCTION" =~ ^(verify-login-token)$ ]]; then
   function_name="verifyLoginTokenFunction"
+else
+elif [[ "$FUNCTION" =~ ^(send-public-key)$ ]]; then
+  function_name="sendPublicKeyFunction"
 else
   display_usage
 fi

@@ -9,6 +9,7 @@ export const getUserData = async (
 }> => {
   // first get user id from email
   // then fetch data by user id
+  // makre request to user_data service to get this data
   const user_id = '1231231'
   console.log('client data: ' + email)
   return {
@@ -21,7 +22,6 @@ export const getUserData = async (
 }
 
 const getAuthCodeForUser = async (user_id: string): Promise<string[]> => {
-  // need to have a table mapping email to user id
   // get all auth codes for this user_id from auth codes table
   console.log('return auth code for user: ', user_id)
   return ['auth-code']
@@ -64,6 +64,7 @@ export const getAliasData = async (
   alias: string
 ): Promise<{ alias: string; user_id: string }> => {
   // need to have a table mapping alias to user id
+  // make request to user-data service to get this data
   console.log('getting alias data: ', alias)
   return {
     alias: '123',

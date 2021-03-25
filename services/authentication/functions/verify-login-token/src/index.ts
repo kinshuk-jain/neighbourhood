@@ -17,6 +17,7 @@ import {
 } from './db'
 import { createHash } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -68,6 +69,8 @@ const myHandler: APIGatewayProxyHandler = async (
   context
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
+
+  await decryptedEnv
 
   const requestStartTime = Date.now()
   let response
