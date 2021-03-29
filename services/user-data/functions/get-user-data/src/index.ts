@@ -1,7 +1,7 @@
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
-import { getDetails } from './db'
+import { getDetails, getDetailsByEmail, getDetailsByAlias } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -61,30 +61,36 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
-    if (
-      !event.pathParameters ||
-      !event.pathParameters.user_id ||
-      !event.pathParameters.proxy ||
-      !event.pathParameters.proxy.match(/^\/?[\w-]+\/?([\?#].*)?$/)
-    ) {
-      throw HttpError(404, 'not found')
-    }
-
-    const user_id = event.pathParameters.user_id
-
-    if (!/^[\w-]{5,40}$/.test(user_id)) {
-      throw HttpError(404, 'not found')
-    }
-
-    let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
-    // this line should not throw as we have already verified url
-    const route_path_tokens = (route_path || [])[1].split('/')
-    let responseBody
-    if (route_path_tokens[0] === 'details') {
-      // return details of user
-      responseBody = await getDetails(user_id)
+    if (authToken.startsWith('Basic')) {
+      // verify basic auth and get scope from token
     } else {
-      throw HttpError(404, 'not found')
+      // decode token
+    }
+
+    if (!event.body) {
+      throw HttpError(400, 'missing body')
+    }
+
+    const { id_type = '', id_value = '' } = JSON.parse(event.body)
+
+    let responseBody
+    if (id_type.toLowerCase() === 'user_id') {
+      if (!/^[\w-]{5,40}$/.test(id_value)) {
+        throw HttpError(400, 'invalid user id')
+      }
+      responseBody = await getDetails(id_value)
+    } else if (id_type.toLowerCase() === 'email') {
+      if (!/^([\w-]+){2,40}@([\w-]+){2,}\.([a-z]+){2,}$/.test(id_value)) {
+        throw HttpError(400, 'invalid email value')
+      }
+      responseBody = await getDetailsByEmail(id_value)
+    } else if (id_type.toLowerCase() === 'alias') {
+      if (!/^[\w-]{5,40}$/.test(id_value)) {
+        throw HttpError(400, 'invalid alias value')
+      }
+      responseBody = await getDetailsByAlias(id_value)
+    } else {
+      throw HttpError(400, 'invalid id_type')
     }
 
     response = {

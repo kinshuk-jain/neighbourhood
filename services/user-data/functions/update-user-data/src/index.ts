@@ -80,9 +80,9 @@ const myHandler = async (event: any, context: any) => {
     // profile thumbnail - just update it
     // update show phone
     // update alias
-    // update user black list status - send email and signout if refresh_token is set in DB
+    // update user black list status - send email and signout if refresh_token is present after making call to auth
     // update user email verified status - just update it
-    // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is set in DB
+    // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is present after making call to auth
     // first login - just update it
     // society list - remove society id from the list jsut update it. Adding is more complex not clear how to do it
     // update user address

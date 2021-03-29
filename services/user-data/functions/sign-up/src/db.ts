@@ -43,7 +43,6 @@ export const createNewUser = async ({
     first_login: true,
     society_list: [society_id],
     profile_thumbnail: '',
-    refresh_token: '',
   })
   return user_id
 }

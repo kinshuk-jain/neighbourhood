@@ -8,26 +8,48 @@ import schema from './authorizeSchema.json'
 import { validate } from 'jsonschema'
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
-import { getUserData, saveAuthCode, removeAuthCode, getAliasData } from './db'
+import {
+  getUserDataFromEmail,
+  saveAuthCode,
+  removeAuthCode,
+  getUserDataFromAlias,
+} from './db'
 import querystring from 'querystring'
 import { randomBytes } from 'crypto'
 import { decryptedEnv } from './getDecryptedEnvs'
+import axios from 'axios'
 
-const config: { [key: string]: any } = {
+export interface IAuthUserData {
+  user_id: string
+  auth_code?: string[]
+  scope: string
+  is_blacklisted: boolean
+  first_login: boolean
+  email: string
+}
+
+export const config: { [key: string]: any } = {
   staging: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
     redirect_link: '',
   },
   development: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
     redirect_link: 'http://localhost:3000/auth/oauth/redirect',
   },
   production: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
     redirect_link: '',
   },
 }
 
-// TODO: need to have a hosted page with this redirect link
-const redirect_link =
-  config[process.env.ENVIRONMENT || 'development'].redirect_link
+export const ENV = process.env.ENVIRONMENT || 'development'
+
+// TODO: do we need to have a hosted page with this redirect link??
+const redirect_link = config[ENV].redirect_link
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -83,117 +105,141 @@ const myHandler: APIGatewayProxyHandler = async (
   context.callbackWaitsForEmptyEventLoop = false
 
   // wait for resolution
-  await decryptedEnv
+  if (!process.env.DB_KEY) {
+    await decryptedEnv
+  }
 
   const requestStartTime = Date.now()
   let response
   try {
     logger.info(event)
-    if (event.requestContext.httpMethod.toUpperCase() === 'POST') {
-      if (!event.body) {
-        throw HttpError(400, 'missing required parameters')
-      }
 
-      const { alias, email } = JSON.parse(event.body)
-
-      if (!email && !alias) {
-        throw HttpError(400, 'email or alias missing')
-      }
-
-      if (email && !/(.+)@([\w-]+){2,}\.([a-z]+){2,}/i.test(email)) {
-        throw HttpError(400, 'invalid email')
-      }
-
-      if (!/[\w-]{2,30}/i.test(alias)) {
-        throw HttpError(400, 'invalid alias')
-      }
-
-      const { valid, errors } = validate(event.queryStringParameters, schema)
-      if (!valid) {
-        throw HttpError(400, 'missing required parameters', {
-          missing_params: errors.map((error) => ({
-            property: error.property,
-            message: error.message,
-            name: error.name,
-          })),
-        })
-      }
-
-      const {
-        response_type,
-        state,
-        scope,
-        code_challenge,
-        code_challenge_method,
-      } = event.queryStringParameters
-
-      if (
-        response_type.toLowerCase() !== 'code' ||
-        !scope ||
-        !code_challenge ||
-        !/[\w-]+/.test(code_challenge) ||
-        code_challenge_method !== 'S256'
-      ) {
-        throw HttpError(400, 'request has invalid params')
-      }
-      let user_id
-
-      if (!email && alias) {
-        user_id = (await getAliasData(alias.toLowerCase())).user_id
-      }
-      // note: if called after signup this needs strong consistency
-      const userData = await getUserData(email.toLowerCase())
-
-      if (!userData) {
-        throw HttpError(400, 'invalid user data')
-      } else {
-        user_id = userData.user_id
-      }
-
-      // if (userData.is_blacklisted) {
-      //   throw HttpError(401, 'user blacklisted')
-      // }
-
-      const allowedScopes = scope
-        .split(' ')
-        .filter(
-          (scope: string) =>
-            validScopes.includes(scope) && userData.scope.includes(scope)
-        )
-
-      if (!allowedScopes.length) {
-        throw HttpError(400, 'invalid scopes')
-      }
-
-      const scopeString = allowedScopes.join(' ')
-
-      // randomBytes uses libuv thread pool
-      const authCode = randomBytes(32).toString('base64')
-      if (userData.auth_code) {
-        await removeAuthCode(userData.auth_code)
-      }
-
-      await saveAuthCode({
-        code: authCode,
-        code_challenge,
-        code_challenge_method: 'sha256',
-        user_id,
-        scope: scopeString,
-        for_blacklisted_user: userData.is_blacklisted,
-      })
-
-      const link = `https://${redirect_link}/?${querystring.stringify({
-        code: authCode,
-        scope: scopeString,
-        state,
-        user_id,
-        first_login: userData.first_login,
-      })}`
-
-      // TODO: send an email with this link
-    } else {
-      throw HttpError(404, 'not found')
+    if (!event.body) {
+      throw HttpError(400, 'missing required parameters')
     }
+
+    const { alias, email } = JSON.parse(event.body)
+
+    if (!email && !alias) {
+      throw HttpError(400, 'email or alias missing')
+    }
+
+    if (email && !/(.+)@([\w-]+){2,}\.([a-z]+){2,}/i.test(email)) {
+      throw HttpError(400, 'invalid email')
+    }
+
+    if (!/[\w-]{2,30}/i.test(alias)) {
+      throw HttpError(400, 'invalid alias')
+    }
+
+    const { valid, errors } = validate(event.queryStringParameters, schema)
+    if (!valid) {
+      throw HttpError(400, 'missing required parameters', {
+        missing_params: errors.map((error) => ({
+          property: error.property,
+          message: error.message,
+          name: error.name,
+        })),
+      })
+    }
+
+    const {
+      response_type,
+      state,
+      scope,
+      code_challenge,
+      code_challenge_method,
+    } = event.queryStringParameters
+
+    if (
+      response_type.toLowerCase() !== 'code' ||
+      !scope ||
+      !code_challenge ||
+      !/[\w-]+/.test(code_challenge) ||
+      code_challenge_method !== 'S256'
+    ) {
+      throw HttpError(400, 'request has invalid params')
+    }
+    let userData: IAuthUserData
+
+    if (!email && alias) {
+      userData = await getUserDataFromAlias(alias.toLowerCase())
+    } else if (email) {
+      // note: if called after signup this needs strong consistency
+      userData = await getUserDataFromEmail(email)
+    } else {
+      throw HttpError(400, 'bad request')
+    }
+
+    let user_id
+    if (!userData) {
+      throw HttpError(404, 'user not found')
+    } else {
+      user_id = userData.user_id
+    }
+
+    // if (userData.is_blacklisted) {
+    //   throw HttpError(401, 'user blacklisted')
+    // }
+
+    const allowedScopes = scope
+      .split(' ')
+      .filter(
+        (scope: string) =>
+          validScopes.includes(scope) && userData.scope.includes(scope)
+      )
+
+    if (!allowedScopes.length) {
+      throw HttpError(400, 'invalid scopes')
+    }
+
+    const scopeString = allowedScopes.join(' ')
+
+    // randomBytes uses libuv thread pool
+    const authCode = randomBytes(32).toString('base64')
+    if (userData.auth_code) {
+      await removeAuthCode(userData.auth_code)
+    }
+
+    await saveAuthCode({
+      code: authCode,
+      code_challenge,
+      code_challenge_method: 'sha256',
+      user_id,
+      scope: scopeString,
+      for_blacklisted_user: userData.is_blacklisted,
+    })
+
+    const link = `https://${redirect_link}/?${querystring.stringify({
+      code: authCode,
+      scope: scopeString,
+      state,
+      user_id,
+      first_login: userData.first_login,
+    })}`
+
+    const { status, data } = await axios.post(
+      `${config[ENV].comms_domain}/comms/email/send`,
+      {
+        template: 'login-email',
+        recipients: [userData.email],
+        subject: 'Log in to Neighbourhood',
+        params: {
+          link,
+        },
+      },
+      {
+        auth: {
+          username: 'authentication',
+          password: process.env.COMMS_API_KEY || '',
+        },
+      }
+    )
+
+    if (status < 200 || status >= 300) {
+      throw HttpError(500, 'Could not send email', data.data)
+    }
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,

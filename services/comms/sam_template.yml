@@ -63,14 +63,14 @@ Resources:
           Condition: CreateDevResources
           Properties:
             Path: /comms/email/{proxy+}
-            Method: ANY
+            Method: POST
             RestApiId: !Ref sendEmailApiDevelopment
         ApiStaging:
           Type: Api
           Condition: CreateStagingResources
           Properties:
             Path: /comms/email/{proxy+}
-            Method: ANY
+            Method: POST
             RestApiId: !Ref sendEmailApiStaging
         ApiProd:
           Type: Api
@@ -78,7 +78,7 @@ Resources:
           Properties:
             RestApiId: !Ref sendEmailApiProd
             Path: /comms/email/{proxy+}
-            Method: ANY
+            Method: POST
 
   sendEmailApiDevelopment:
     Type: AWS::Serverless::Api

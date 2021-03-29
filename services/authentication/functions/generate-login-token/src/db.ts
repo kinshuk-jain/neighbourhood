@@ -1,23 +1,34 @@
-export const getUserData = async (
+import axios from 'axios'
+import { IAuthUserData, ENV, config } from './index'
+
+export const getUserDataFromEmail = async (
   email: string
-): Promise<{
-  user_id: string
-  auth_code?: string[]
-  scope: string
-  is_blacklisted: boolean
-  first_login: boolean
-}> => {
-  // first get user id from email
-  // then fetch data by user id
-  // makre request to user_data service to get this data
-  const user_id = '1231231'
-  console.log('client data: ' + email)
+): Promise<IAuthUserData> => {
+  const { status, data } = await axios.post(
+    `${config[ENV].user_domain}/user/details`,
+    {
+      id_type: 'email',
+      id_value: email,
+    },
+    {
+      auth: {
+        username: 'authentication',
+        password: process.env.USER_DATA_API_KEY || '',
+      },
+    }
+  )
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Internal service error. Could not fetch user data')
+  }
+
   return {
-    user_id,
-    is_blacklisted: false,
-    scope: 'admin',
-    auth_code: await getAuthCodeForUser(user_id),
-    first_login: true,
+    user_id: data.data.user_id,
+    is_blacklisted: data.data.is_blacklisted,
+    scope: data.data.scope,
+    auth_code: await getAuthCodeForUser(data.data.user_id),
+    first_login: data.data.first_login,
+    email: data.data.email,
   }
 }
 
@@ -60,14 +71,34 @@ export const removeAuthCode = async (code: string[]) => {
   return true
 }
 
-export const getAliasData = async (
+export const getUserDataFromAlias = async (
   alias: string
-): Promise<{ alias: string; user_id: string }> => {
-  // need to have a table mapping alias to user id
-  // make request to user-data service to get this data
+): Promise<IAuthUserData> => {
   console.log('getting alias data: ', alias)
+  const { status, data } = await axios.post(
+    `${config[ENV].user_domain}/user/details`,
+    {
+      id_type: 'alias',
+      id_value: alias,
+    },
+    {
+      auth: {
+        username: 'authentication',
+        password: process.env.USER_DATA_API_KEY || '',
+      },
+    }
+  )
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Internal service error. Could not fetch user data')
+  }
+
   return {
-    alias: '123',
-    user_id: '123',
+    user_id: data.data.user_id,
+    is_blacklisted: data.data.is_blacklisted,
+    scope: data.data.scope,
+    auth_code: await getAuthCodeForUser(data.data.user_id),
+    first_login: data.data.first_login,
+    email: data.data.email,
   }
 }

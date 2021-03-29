@@ -7,6 +7,7 @@
   "dependencies": {
     "@middy/core": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
+    "axios": "^0.21.1",
     "jsonschema": "^1.4.0",
     "jsonwebtoken": "^8.5.1",
     "uuid": "^8.3.2",

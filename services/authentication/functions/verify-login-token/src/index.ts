@@ -19,6 +19,23 @@ import { createHash } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
 import { decryptedEnv } from './getDecryptedEnvs'
 
+export const config: { [key: string]: any } = {
+  staging: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
+  },
+  development: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    user_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
+
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
@@ -70,7 +87,10 @@ const myHandler: APIGatewayProxyHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
 
-  await decryptedEnv
+  // wait for resolution
+  if (!process.env.DB_KEY) {
+    await decryptedEnv
+  }
 
   const requestStartTime = Date.now()
   let response
@@ -236,8 +256,6 @@ const myHandler: APIGatewayProxyHandler = async (
           ? event.requestContext.http.sourceIp
           : '',
         user_agent: event.headers['User-Agent'],
-        refresh_token: refreshToken,
-        for_blacklisted_user,
       })
 
       response = {
@@ -250,7 +268,7 @@ const myHandler: APIGatewayProxyHandler = async (
           access_token: accessToken,
           refresh_token: refreshToken,
           expires_in: 900, // 15min
-          refresth_token_expires_in: 31536000, // 365 days
+          refresh_token_expires_in: 31536000, // 365 days
         }),
       }
       logger.info({

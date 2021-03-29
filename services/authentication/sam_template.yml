@@ -73,6 +73,12 @@ Resources:
   KeyPassProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/verify-login-token/production/key-pass'
+  UserDataServiceTokenStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/user-data/staging/pass-key'
+  UserDataServiceTokenProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/authentication/user-data/production/pass-key'
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -121,6 +127,52 @@ Resources:
               Path: /authentication/signout
               Method: POST
               ApiId: !Ref oauth2HttpApiProduction
+
+  updateUserScopeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/update-user-scope/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: update user authorization scope
+      Environment:
+        Variables:
+          USER_DATA_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataServiceTokenProduction,
+              !If [CreateStagingResources, !Ref UserDataServiceTokenStaging, ''],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /authentication/authorization
+            Method: PUT
+            ApiId: !Ref oauth2HttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /authentication/authorization
+            Method: PUT
+            ApiId: !Ref oauth2HttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            Path: /authentication/authorization
+            Method: PUT
+            ApiId: !Ref oauth2HttpApiProduction
 
   sendPublicKeyFunction:
     Type: AWS::Serverless::Function
@@ -273,14 +325,14 @@ Resources:
           Condition: CreateDevResources
           Properties:
             Path: /authentication/oauth2/authorize
-            Method: ANY
+            Method: POST
             ApiId: !Ref oauth2HttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /authentication/oauth2/authorize
-            Method: ANY
+            Method: POST
             ApiId: !Ref oauth2HttpApiStaging
         ApiProd:
           Type: HttpApi
@@ -288,7 +340,7 @@ Resources:
           Properties:
             ApiId: !Ref oauth2HttpApiProduction
             Path: /authentication/oauth2/authorize
-            Method: ANY
+            Method: POST
 
   oauth2HttpApiDevelopment:
     Type: AWS::Serverless::HttpApi

@@ -1,11 +1,13 @@
 import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import { signoutUser } from './db'
-import jsonBodyParser from '@middy/http-json-body-parser'
-import { validate } from 'jsonschema'
-import schema from './signoutSchema.json'
+import { updateUserScope } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
+
+// list of usernames allowed to access this service
+const USER_NAMES = {
+  USER_DATA_SERVICE_TOKEN: 'user_data',
+}
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -66,29 +68,37 @@ const myHandler = async (event: any, context: any) => {
     logger.info(event)
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Basic ')) {
       throw HttpError(401, 'unauthorized')
     }
 
-    const { valid, errors } = validate(event.body, schema)
-    if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      })
+    const token = authToken.split(' ')[1]
+    const [user, pass] = Buffer.from(token, 'base64')
+      .toString('ascii')
+      .split(':')
+
+    if (
+      process.env.USER_DATA_SERVICE_TOKEN !== pass ||
+      USER_NAMES.USER_DATA_SERVICE_TOKEN !== user
+    ) {
+      throw HttpError(401, 'unauthorized')
     }
 
-    // get user_id from auth token
-    const user_id = '1231231'
-
-    if (!/[\w-]+/.test(event.body.refresh_token)) {
-      throw HttpError(400, 'invalid refresh token')
+    if (!event.body) {
+      throw HttpError(400, 'missing body')
     }
 
-    await signoutUser(user_id, event.body.refresh_token)
+    const { user_id, scope_type, scope_value } = JSON.parse(event.body)
+
+    if (!/^[\w-]{5,40}$/.test(user_id)) {
+      throw HttpError(400, 'invalid user id')
+    }
+
+    if (!/[\w-]+/.test(scope_type) || !/[\w-]+/.test(scope_value)) {
+      throw HttpError(400, 'invalid scope value or type')
+    }
+
+    await updateUserScope(user_id, scope_type, scope_value)
 
     response = {
       isBase64Encoded: false,
@@ -98,7 +108,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully logged out',
+        message: 'successfully updated',
       }),
     }
     return response
@@ -124,4 +134,3 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

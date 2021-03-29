@@ -1,7 +1,7 @@
 {
-  "name": "feeds",
+  "name": "photo-upload",
   "version": "1.0.0",
-  "description": "feeds service",
+  "description": "photo upload service",
   "main": "index.js",
   "license": "unlicensed",
   "private": true,

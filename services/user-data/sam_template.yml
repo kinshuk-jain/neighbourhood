@@ -141,23 +141,23 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /user/{user_id}/{proxy+}
-              Method: GET
+              Path: /user/details
+              Method: POST
               ApiId: !Ref crudUserDataHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /user/{user_id}/{proxy+}
-              Method: GET
+              Path: /user/details
+              Method: POST
               ApiId: !Ref crudUserDataHttpApiStaging
           ApiProd:
             Type: HttpApi
             Condition: CreateProdResources
             Properties:
               ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /user/{user_id}/{proxy+}
-              Method: GET
+              Path: /user/details
+              Method: POST
 
   updateUserDataFunction:
     Type: AWS::Serverless::Function
@@ -259,26 +259,3 @@ Resources:
     StageName: production
     Description: delete user from system
     DisableExecuteApiEndpoint: false
-
-  userDynamoDBTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: user_id
-        Type: String
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-      TableName: authentication-user
-
-  # TODO: need to update this table. Want to add global secondary indexes
-  userAliasDynamoDBTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: alias
-        Type: String
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-      TableName: authentication-user-alias

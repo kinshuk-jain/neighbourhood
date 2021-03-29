@@ -1,3 +1,6 @@
+import axios from 'axios'
+import { config, ENV } from './index'
+
 export const getAuthCodeData = async (
   code: string
 ): Promise<{
@@ -118,43 +121,90 @@ export const saveDataInRefreshTokenTable = async ({
     user_agent,
     for_blacklisted_user,
   })
+
+  // if scope changed between issue of auth code and issue of refresh token, we need to update
+  // it in refresh token. It needs to happen after token has been issued as status can change
+  // after we check and before refresh token is issued
+  const { is_blacklisted, scope: storedScope } = await getUserInfo(user_id)
+  if (is_blacklisted !== for_blacklisted_user || scope !== storedScope) {
+    // update refresh token table with is_blacklisted and/or scope
+    // if update fails delete refresh token and do not log user in
+    // if deletion also fails simply throw and token will not be sent to the user
+  }
+
   return true
 }
 
-const getUserBlacklistStatus = async (user_id: string): Promise<boolean> => {
+const getUserInfo = async (
+  user_id: string
+): Promise<{
+  scope: string
+  is_blacklisted: boolean
+}> => {
   // makre request to user_data service to get this data
   console.log('getting user data', user_id)
-  return false // return user.is_blacklisted
+
+  const { status, data } = await axios.post(
+    `${config[ENV].user_domain}/user/details`,
+    {
+      id_type: 'user_id',
+      id_value: user_id,
+    },
+    {
+      auth: {
+        username: 'authentication',
+        password: process.env.USER_DATA_API_KEY || '',
+      },
+    }
+  )
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Internal service error. Could not fetch user data')
+  }
+
+  return {
+    is_blacklisted: data.data.is_blacklisted,
+    scope: data.data.scope,
+  }
 }
 
 export const updateUserInfoOnLogin = async ({
   user_id,
   user_agent,
   ip_address,
-  refresh_token,
-  for_blacklisted_user,
 }: {
   user_id: string
   ip_address: string
   user_agent: string
-  refresh_token: string
-  for_blacklisted_user: boolean
 }): Promise<boolean> => {
-  // makre request to user_data service to update this data
-  // if user blacklist status changes at this point and refresh token is issued with
-  // different blacklist privileges, update refresh token table to reflect this change
-  const is_blacklisted = await getUserBlacklistStatus(user_id)
-  if (is_blacklisted !== for_blacklisted_user) {
-    // update refresh token table with is_blacklisted
-  }
-
   console.log('updating user info: ', {
     user_id,
     user_agent,
     ip_address,
     email_verified: true,
     first_login: false,
-    refresh_token, // is a list of refresh tokens
   })
+
+  // TODO: update endpoint
+  const { status } = await axios.post(
+    `${config[ENV].user_domain}/user/details`,
+    {
+      id_type: 'user_id',
+      id_value: user_id,
+    },
+    {
+      auth: {
+        username: 'authentication',
+        password: process.env.USER_DATA_API_KEY || '',
+      },
+    }
+  )
+
+  if (status < 200 || status >= 300) {
+    throw new Error(
+      'Internal service error. Could not update user data on login'
+    )
+  }
+
   return true
 }
