@@ -20,7 +20,7 @@ export const getDetails = async (
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
     approved: false,
     is_blacklisted: false,
-    reported_count: [], // list of userid who reported this user
+    reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
     profile_thumbnail: '',
   })
@@ -75,7 +75,7 @@ export const getDetailsByEmail = async (
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
     approved: false,
     is_blacklisted: false,
-    reported_count: [], // list of userid who reported this user
+    reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
     profile_thumbnail: '',
   })
@@ -128,7 +128,7 @@ export const getDetailsByAlias = async (
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
     approved: false,
     is_blacklisted: false,
-    reported_count: [], // list of userid who reported this user
+    reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
     profile_thumbnail: '',
   })

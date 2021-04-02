@@ -240,6 +240,7 @@ const myHandler: APIGatewayProxyHandler = async (
         },
       },
       {
+        timeout: 10000, // 10s timeout
         auth: {
           username: 'authentication',
           password: process.env.COMMS_API_KEY || '',

@@ -8,7 +8,7 @@ function display_usage {
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(sendEmail)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(sendEmail|sendNotification)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -27,6 +27,8 @@ cd ../../
 
 if [[ "$FUNCTION" =~ ^(sendEmail)$ ]]; then
   function_name="sendEmailFunction"
+elif [[ "$FUNCTION" =~ ^(sendNotification)$ ]]; then
+  function_name="sendNotificationFunction"
 else
   display_usage
 fi

@@ -117,6 +117,7 @@ const myHandler = async (event: any, context: any) => {
     // update show phone - just update it
     // update post login - just update it
     // update alias - just update it
+    // update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
     // update user email verified status - just update it
     // first login - just update it
     // update user black list status - send email and signout if refresh_token is present after making call to auth

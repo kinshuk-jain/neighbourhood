@@ -59,182 +59,85 @@ Resources:
             ]
       Events:
         ApiDevelopment:
-          Type: Api
+          Type: HttpApi
           Condition: CreateDevResources
           Properties:
             Path: /comms/email/{proxy+}
             Method: POST
-            RestApiId: !Ref sendEmailApiDevelopment
+            RestApiId: !Ref commsApiDevelopment
         ApiStaging:
-          Type: Api
+          Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /comms/email/{proxy+}
             Method: POST
-            RestApiId: !Ref sendEmailApiStaging
+            RestApiId: !Ref commsApiStaging
         ApiProd:
-          Type: Api
+          Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            RestApiId: !Ref sendEmailApiProd
+            RestApiId: !Ref commsApiProduction
             Path: /comms/email/{proxy+}
             Method: POST
 
-  sendEmailApiDevelopment:
-    Type: AWS::Serverless::Api
+  # TODO: define IAM policies and roles for this lambda to allow it to access SNS
+  sendNotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: functions/sendNotification/src/index.handler
+      CodeUri: functions/sendNotification/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: send emails
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /comms/notification/{proxy+}
+            Method: POST
+            ApiId: !Ref commsApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /comms/notification/{proxy+}
+            Method: POST
+            ApiId: !Ref commsApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref commsApiProduction
+            Path: /comms/notification/{proxy+}
+            Method: POST
+
+  commsApiDevelopment:
+    Type: AWS::Serverless::HttpApi
     Condition: CreateDevResources
-    Properties:
-      Tags:
-        Name: comms-api-development
-      StageName: development
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        - CachingEnabled: false
-        - MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+    StageName: development
+    Description: send comms to users
+    DisableExecuteApiEndpoint: false
 
-  sendEmailApiStaging:
-    Type: AWS::Serverless::Api
+  commsApiStaging:
+    Type: AWS::Serverless::HttpApi
     Condition: CreateStagingResources
-    Properties:
-      Tags:
-        Name: comms-api-staging
-      StageName: staging
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        - CachingEnabled: false
-        - MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+    StageName: staging
+    Description: send comms to users
+    DisableExecuteApiEndpoint: false
 
-  sendEmailApiProd:
-    Type: AWS::Serverless::Api
-    Condition: CreateProdResources
-    Properties:
-      Tags:
-        Name: comms-api-production
-      StageName: production
-      Models:
-        BodyValidate:
-          type: object
-          required:
-            - template
-            - params
-            - from
-            - subject
-            - recipients
-          properties:
-            template:
-              type: string
-            params:
-              type: object
-            subject:
-              type: string
-            recipients:
-              type: array
-      Auth:
-        DefaultAuthorizer: AWS_IAM
-      MethodSettings:
-        - CachingEnabled: false
-        - MetricsEnabled: true
-      GatewayResponses:
-        ACCESS_DENIED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        AUTHORIZER_FAILURE:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
-        UNAUTHORIZED:
-          StatusCode: 404
-          ResponseTemplates:
-            'application/json': '{"error": not found }'
-          ResponseParameters:
-            Headers:
-              Access-Control-Allow-Origin: "'*'"
+  commsApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: production
+    Description: send comms to users
+    DisableExecuteApiEndpoint: false

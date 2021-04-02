@@ -14,8 +14,6 @@ export const addSocietyRecord = async ({
   [key: string]: any
 }) => {
   // use google geocoding api to get latitude and longitude for the address
-  // check if distance from this lat,long combination is more than threshold from frontend given
-  // lat,long. If not use FE lat,long or else use this lat,long
   // if address is not found, we reject the request
   const tableName = 'society'
   logger.info({

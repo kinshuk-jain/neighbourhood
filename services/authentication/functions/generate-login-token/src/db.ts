@@ -11,6 +11,7 @@ export const getUserDataFromEmail = async (
       id_value: email,
     },
     {
+      timeout: 10000, // 10s timeout
       auth: {
         username: 'authentication',
         password: process.env.USER_DATA_API_KEY || '',
@@ -84,6 +85,7 @@ export const getUserDataFromAlias = async (
       id_value: alias,
     },
     {
+      timeout: 10000, // 10s timeout
       auth: {
         username: 'authentication',
         password: process.env.USER_DATA_API_KEY || '',

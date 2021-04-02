@@ -37,6 +37,19 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  SocietyMgmtCommsApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/comms-api/staging/pass-key'
+  SocietyMgmtCommsApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/comms-api/production/pass-key'
+  SocietyMgmtGeocodingApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/google-api/staging/pass-key'
+  SocietyMgmtGeocodingApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/google-api/production/pass-key'
+
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   createSocietyFunction:
@@ -50,6 +63,26 @@ Resources:
       Description: create society
       Environment:
         Variables:
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref SocietyMgmtCommsApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref SocietyMgmtCommsApiKeyStaging,
+                '',
+              ],
+            ]
+          GOOGLE_GEOCODING_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref SocietyMgmtGeocodingApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref SocietyMgmtGeocodingApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -210,6 +243,26 @@ Resources:
       Description: update society data
       Environment:
         Variables:
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref SocietyMgmtCommsApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref SocietyMgmtCommsApiKeyStaging,
+                '',
+              ],
+            ]
+          GOOGLE_GEOCODING_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref SocietyMgmtGeocodingApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref SocietyMgmtGeocodingApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,

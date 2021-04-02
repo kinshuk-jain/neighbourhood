@@ -7,13 +7,13 @@ import axios from 'axios'
 
 const config: { [key: string]: any } = {
   development: {
-    comms_domain: '',
+    comms_domain: 'http://localhost:3000',
   },
   staging: {
-    comms_domain: '',
+    comms_domain: 'http://localhost:3000',
   },
   production: {
-    comms_domain: '',
+    comms_domain: 'http://localhost:3000',
   },
 }
 
@@ -104,29 +104,31 @@ const myHandler = async (event: any, context: any) => {
     const userData = await getUserData(user_id)
 
     await deleteUser(user_id)
+    try {
+      const { status } = await axios.post(
+        `${config[ENV].comms_domain}/comms/email/send`,
+        {
+          template: 'delete-user',
+          recipients: [userData.email],
+          subject: 'Account deleted',
+          params: {
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+          },
+        },
+        {
+          timeout: 10000, // 10s timeout
+          auth: {
+            username: 'user_data',
+            password: process.env.COMMS_API_KEY || '',
+          },
+        }
+      )
 
-    const { status, data } = await axios.post(
-      `${config[ENV].comms_domain}/comms/email/send`,
-      {
-        template: 'delete-user',
-        recipients: [userData.email],
-        subject: 'Account deleted',
-        params: {
-          first_name: userData.first_name,
-          last_name: userData.last_name,
-        },
-      },
-      {
-        auth: {
-          username: 'user_data',
-          password: process.env.COMMS_API_KEY || '',
-        },
+      if (status < 200 || status >= 300) {
+        logger.info(`Could not send email while deleting user: ${user_id}`)
       }
-    )
-
-    if (status < 200 || status >= 300) {
-      throw HttpError(500, 'Could not send email', data.data)
-    }
+    } catch (e) {}
 
     response = {
       isBase64Encoded: false,

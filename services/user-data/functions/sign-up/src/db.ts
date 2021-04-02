@@ -39,7 +39,7 @@ export const createNewUser = async ({
     ip_address: '', // ip with which user logs in
     scope: 'user',
     billing_id: '12312',
-    reported_count: [], // list of users who reported current user
+    reported_count: [], // list of feeds of this user that were reported
     first_login: true,
     society_list: [society_id],
     profile_thumbnail: '',

@@ -6,6 +6,21 @@ import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
 import schema from './createSocietySchema.json'
 import { addSocietyRecord } from './db'
+import axios from 'axios'
+
+const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+  },
+}
+
+const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -90,7 +105,15 @@ const myHandler: APIGatewayProxyHandler = async (
       })
     }
 
-    const { name, address, society_type, show_directory = true } = event.body
+    const {
+      name,
+      address,
+      society_type,
+      show_directory = true,
+      user_email,
+      user_first_name,
+      user_last_name,
+    } = event.body
 
     if (!/^[\w-]{5,60}$/i.test(name)) {
       throw HttpError(400, 'society name invalid or too big')
@@ -123,6 +146,31 @@ const myHandler: APIGatewayProxyHandler = async (
         'content-type': 'application/json',
       },
       body: JSON.stringify({ status: 'success', message: 'society created' }),
+    }
+
+    // send email to admin that society creating request is accepted
+    const { status } = await axios.post(
+      `${config[ENV].comms_domain}/comms/email/send`,
+      {
+        template: 'create-society-request',
+        recipients: [user_email],
+        subject: 'Society creation request accepted',
+        params: {
+          first_name: user_first_name,
+          last_name: user_last_name,
+        },
+      },
+      {
+        timeout: 10000, // 10s timeout
+        auth: {
+          username: 'society_mgmt',
+          password: process.env.COMMS_API_KEY || '',
+        },
+      }
+    )
+
+    if (status < 200 || status >= 300) {
+      logger.info(`Could not send email while deleting user: ${user_id}`)
     }
 
     return response

@@ -151,6 +151,7 @@ const getUserInfo = async (
       id_value: user_id,
     },
     {
+      timeout: 10000, // 10s timeout
       auth: {
         username: 'authentication',
         password: process.env.USER_DATA_API_KEY || '',
@@ -193,6 +194,7 @@ export const updateUserInfoOnLogin = async ({
       id_value: user_id,
     },
     {
+      timeout: 10000, // 10s timeout
       auth: {
         username: 'authentication',
         password: process.env.USER_DATA_API_KEY || '',

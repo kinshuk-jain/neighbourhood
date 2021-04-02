@@ -23,7 +23,16 @@
         "street_address": { "type": "string" }
       },
       "required": ["postal_code", "city", "state", "street_address"]
-    }
+    },
+    "user_email": { "type": "string" },
+    "user_first_name": { "type": "string" },
+    "user_last_name": { "type": "string" }
   },
-  "required": ["name", "address", "society_type"]
+  "required": [
+    "name",
+    "address",
+    "society_type",
+    "user_email",
+    "user_first_name"
+  ]
 }

@@ -12,6 +12,8 @@ import { v4 as uuidv4 } from 'uuid'
 
 const templateNameToFuncMapping: { [key: string]: Function } = {
   'login-email': sendLoginCredsEmail,
+  'create-society-request': () => ({}),
+  'delete-user': () => ({}),
 }
 
 const HttpError = (status: number, message: string, body?: object): Error => {
@@ -38,6 +40,8 @@ export const handler: APIGatewayProxyHandler = async (
     // unblacklust user template
     // scope change template
     // email change template
+    // society created email
+    // create society request received
     if (!event.headers['Correlation-Id']) {
       const correlationId = uuidv4()
       logger.setCorrelationId(correlationId)

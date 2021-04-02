@@ -3,6 +3,7 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import logger from './logger'
+import { sendEmailToAllAdmins, sendNotificationToAllAdmins } from './send-email'
 
 import updateStatusSchema from './updateStatusSchema.json'
 import updateNameSchema from './updateNameSchema.json'
@@ -10,11 +11,10 @@ import updateMemberSchema from './updateMemberSchema.json'
 import updateAddressSchema from './updateAddressSchema.json'
 
 import {
-  updateSocietyBlacklistStatus,
+  updateSocietyPendingDeletionStatus,
   updateSocietyAddress,
   updateSocietyName,
   updateSocietyShowDirectoryFlag,
-  updateSocietyTutorialKey,
   updateSocietyVerifiedStatus,
   addSocietyAdmin,
   removeSocietyAdmin,
@@ -23,6 +23,20 @@ import {
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
+
+export const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -131,21 +145,12 @@ const myHandler: APIGatewayProxyHandler = async (
     const route_path_tokens = (route_path || [])[1].split('/')
     let isRouteNotFound = false
 
-    if (route_path_tokens[0] === 'tutorial') {
+    if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
-      schemaValidation(event.body, updateStatusSchema)
-      const { status } = event.body
-      await updateSocietyTutorialKey(society_id, status)
-    } else if (route_path_tokens[0] === 'blacklist') {
-      // sys admin privilege
-      schemaValidation(event.body, updateStatusSchema)
-      const { status } = event.body
-      await updateSocietyBlacklistStatus(society_id, status)
-    } else if (route_path_tokens[0] === 'verification') {
-      // sys admin privilege
-      schemaValidation(event.body, updateStatusSchema)
-      const { status } = event.body
-      await updateSocietyVerifiedStatus(society_id, status)
+      // if society is approved sent email + notification to admin
+      await updateSocietyVerifiedStatus(society_id, true)
+      // sendNotificationToAllAdmins()
+      // sendEmailToAllAdmins()
     } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
       schemaValidation(event.body, updateNameSchema)
@@ -154,6 +159,7 @@ const myHandler: APIGatewayProxyHandler = async (
         throw HttpError(400, 'invalid name')
       }
       await updateSocietyName(society_id, name)
+      // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
       schemaValidation(event.body, updateAddressSchema)
@@ -177,11 +183,19 @@ const myHandler: APIGatewayProxyHandler = async (
         state,
         city,
       })
+      // sendNotificationToAllAdmins()
+    } else if (route_path_tokens[0] === 'pending-deletion') {
+      // admin privilege
+      schemaValidation(event.body, updateStatusSchema)
+      const { status } = event.body
+      await updateSocietyPendingDeletionStatus(society_id, status)
+      // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'show-directory') {
       // admin privilege
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
       await updateSocietyShowDirectoryFlag(society_id, status)
+      // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'admin') {
       // admin privilege
       schemaValidation(event.body, updateMemberSchema)
