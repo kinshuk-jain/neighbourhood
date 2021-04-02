@@ -1,8 +1,23 @@
 import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import { deleteUser } from './db'
+import { deleteUser, getUserData } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
+import axios from 'axios'
+
+const config: { [key: string]: any } = {
+  development: {
+    comms_domain: '',
+  },
+  staging: {
+    comms_domain: '',
+  },
+  production: {
+    comms_domain: '',
+  },
+}
+
+const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -86,7 +101,32 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(404, 'not found')
     }
 
+    const userData = await getUserData(user_id)
+
     await deleteUser(user_id)
+
+    const { status, data } = await axios.post(
+      `${config[ENV].comms_domain}/comms/email/send`,
+      {
+        template: 'delete-user',
+        recipients: [userData.email],
+        subject: 'Account deleted',
+        params: {
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+        },
+      },
+      {
+        auth: {
+          username: 'user_data',
+          password: process.env.COMMS_API_KEY || '',
+        },
+      }
+    )
+
+    if (status < 200 || status >= 300) {
+      throw HttpError(500, 'Could not send email', data.data)
+    }
 
     response = {
       isBase64Encoded: false,

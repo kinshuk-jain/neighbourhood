@@ -4,3 +4,18 @@ export const deleteUser = async (user_id: string): Promise<boolean> => {
   console.log('deleting user..: ', user_id)
   return true
 }
+
+export const getUserData = async (
+  user_id: string
+): Promise<{
+  email: string
+  first_name: string
+  last_name: string
+}> => {
+  console.log('getting user data: ', user_id)
+  return {
+    email: '231231',
+    first_name: '1231',
+    last_name: '1231',
+  }
+}

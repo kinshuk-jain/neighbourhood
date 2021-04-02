@@ -69,12 +69,6 @@ Resources:
       Description: sign up users
       Environment:
         Variables:
-          COMMS_API_KEY:
-            !If [
-              CreateProdResources,
-              !Ref UserDataCommsApiKeyProduction,
-              !If [CreateStagingResources, !Ref UserDataCommsApiKeyStaging, ''],
-            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,

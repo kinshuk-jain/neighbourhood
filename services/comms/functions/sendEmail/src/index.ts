@@ -32,6 +32,12 @@ export const handler: APIGatewayProxyHandler = async (
 
   try {
     // allow auth, user-data to access this
+    // first login template
+    // delete user template
+    // blacklist user template
+    // unblacklust user template
+    // scope change template
+    // email change template
     if (!event.headers['Correlation-Id']) {
       const correlationId = uuidv4()
       logger.setCorrelationId(correlationId)
@@ -66,7 +72,7 @@ export const handler: APIGatewayProxyHandler = async (
       throw HttpError(400, 'invalid template name')
     }
 
-    await templateNameToFuncMapping[template](params.link, recipients)
+    await templateNameToFuncMapping[template](recipients, params)
 
     response = {
       statusCode: 200,

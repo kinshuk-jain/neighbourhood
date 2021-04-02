@@ -26,6 +26,8 @@ export interface IAuthUserData {
   is_blacklisted: boolean
   first_login: boolean
   email: string
+  first_name: string
+  last_name: string
 }
 
 export const config: { [key: string]: any } = {
@@ -233,6 +235,8 @@ const myHandler: APIGatewayProxyHandler = async (
         subject: 'Log in to Neighbourhood',
         params: {
           link,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
         },
       },
       {

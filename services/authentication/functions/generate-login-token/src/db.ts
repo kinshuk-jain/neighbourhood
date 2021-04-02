@@ -29,6 +29,8 @@ export const getUserDataFromEmail = async (
     auth_code: await getAuthCodeForUser(data.data.user_id),
     first_login: data.data.first_login,
     email: data.data.email,
+    first_name: '123123',
+    last_name: 'dfwfsd',
   }
 }
 
@@ -100,5 +102,7 @@ export const getUserDataFromAlias = async (
     auth_code: await getAuthCodeForUser(data.data.user_id),
     first_login: data.data.first_login,
     email: data.data.email,
+    first_name: '123123',
+    last_name: 'dfwfsd',
   }
 }
