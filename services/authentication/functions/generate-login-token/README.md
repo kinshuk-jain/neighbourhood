@@ -5,7 +5,5 @@ Uses imp features of PKCE to make auth secure and robust
 
 - '/services/authentication/comms/production/pass-key'
 - '/services/authentication/comms/staging/pass-key'
-- '/services/authentication/db/production/pass-key'
-- '/services/authentication/db/staging/pass-key'
 - '/services/authentication/user-data-api/staging/pass-key'
 - '/services/authentication/user-data-api/production/pass-key'

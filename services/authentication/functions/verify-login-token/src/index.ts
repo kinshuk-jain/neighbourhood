@@ -87,14 +87,21 @@ const myHandler: APIGatewayProxyHandler = async (
 ): Promise<APIGatewayProxyResult> => {
   context.callbackWaitsForEmptyEventLoop = false
 
-  // wait for resolution
-  if (!process.env.DB_KEY) {
-    await decryptedEnv
-  }
-
   const requestStartTime = Date.now()
   let response
   try {
+    // wait for resolution for 1s
+    if (!process.env.PVT_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     logger.info(event)
     const queryParams = event.queryStringParameters
     const { user_id } = event.body || {}

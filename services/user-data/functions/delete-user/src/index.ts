@@ -2,6 +2,7 @@ import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { deleteUser } from './db'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -54,6 +55,18 @@ const myHandler = async (event: any, context: any) => {
   const requestStartTime = Date.now()
   let response
   try {
+    // wait for resolution for 1s
+    if (!process.env.COMMS_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     logger.info(event)
     const authToken = event.headers['Authorization']
 

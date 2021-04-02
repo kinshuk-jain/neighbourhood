@@ -5,7 +5,6 @@ import { signoutUser } from './db'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './signoutSchema.json'
-import { decryptedEnv } from './getDecryptedEnvs'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -54,11 +53,6 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
-
-  // wait for resolution
-  if (!process.env.DB_KEY) {
-    await decryptedEnv
-  }
 
   const requestStartTime = Date.now()
   let response

@@ -37,6 +37,25 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  UserDataAuthServiceTokenStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/authentication/staging/pass-key'
+  UserDataAuthServiceTokenProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/authentication/production/pass-key'
+  UserDataAuthApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/authentication-api/production/pass-key'
+  UserDataAuthApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/authentication-api/production/pass-key'
+  UserDataCommsApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/comms-api/production/pass-key'
+  UserDataCommsApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/comms-api/production/pass-key'
+
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   signUpFunction:
@@ -50,6 +69,12 @@ Resources:
       Description: sign up users
       Environment:
         Variables:
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataCommsApiKeyProduction,
+              !If [CreateStagingResources, !Ref UserDataCommsApiKeyStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -90,6 +115,12 @@ Resources:
       Description: delete users
       Environment:
         Variables:
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataCommsApiKeyProduction,
+              !If [CreateStagingResources, !Ref UserDataCommsApiKeyStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -130,6 +161,12 @@ Resources:
         Description: get data for a user
         Environment:
           Variables:
+            AUTHENTICATION_SERVICE_TOKEN:
+              !If [
+                CreateProdResources,
+                !Ref UserDataAuthServiceTokenProduction,
+                !If [CreateStagingResources, !Ref UserDataAuthServiceTokenStaging, ''],
+              ]
             ENVIRONMENT:
               !If [
                 CreateProdResources,
@@ -170,6 +207,24 @@ Resources:
       Description: update user data
       Environment:
         Variables:
+          AUTHENTICATION_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataAuthServiceTokenProduction,
+              !If [CreateStagingResources, !Ref UserDataAuthServiceTokenStaging, ''],
+            ]
+          AUTHENTICATION_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataAuthApiKeyProduction,
+              !If [CreateStagingResources, !Ref UserDataAuthApiKeyStaging, ''],
+            ]
+          COMMS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataCommsApiKeyProduction,
+              !If [CreateStagingResources, !Ref UserDataCommsApiKeyStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,

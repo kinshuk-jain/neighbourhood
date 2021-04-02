@@ -31,6 +31,7 @@ export const handler: APIGatewayProxyHandler = async (
   let response
 
   try {
+    // allow auth, user-data to access this
     if (!event.headers['Correlation-Id']) {
       const correlationId = uuidv4()
       logger.setCorrelationId(correlationId)

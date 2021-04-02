@@ -2,7 +2,7 @@ import { KMS } from 'aws-sdk'
 import logger from './logger'
 
 const encryptedEnvironmentVariableNames =
-  process.env.ENVIRONMENT === 'development' ? [] : ['USER_DATA_SERVICE_TOKEN']
+  process.env.ENVIRONMENT === 'development' ? [] : ['COMMS_API_KEY']
 
 encryptedEnvironmentVariableNames.forEach((name) => {
   if (!process.env[name]) {

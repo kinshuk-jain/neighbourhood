@@ -4,7 +4,7 @@ import logger from './logger'
 const encryptedEnvironmentVariableNames =
   process.env.ENVIRONMENT === 'development'
     ? []
-    : ['PVT_KEY', 'KEY_PASS', 'DB_KEY', 'USER_DATA_API_KEY']
+    : ['PVT_KEY', 'KEY_PASS', 'USER_DATA_API_KEY']
 
 encryptedEnvironmentVariableNames.forEach((name) => {
   if (!process.env[name]) {

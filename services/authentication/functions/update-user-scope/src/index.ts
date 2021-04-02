@@ -4,9 +4,9 @@ import { v4 as uuidv4 } from 'uuid'
 import { updateUserScope } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
 
-// list of usernames allowed to access this service
-const USER_NAMES = {
-  USER_DATA_SERVICE_TOKEN: 'user_data',
+// map of usernames to their password keys - allowed to access this service
+const USER_NAMES: { [key: string]: string } = {
+  user_data: 'USER_DATA_SERVICE_TOKEN',
 }
 
 // should be first middleware
@@ -57,14 +57,21 @@ const HttpError = (status: number, message: string, body?: object): Error => {
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
 
-  // wait for resolution
-  if (!process.env.DB_KEY) {
-    await decryptedEnv
-  }
-
   const requestStartTime = Date.now()
   let response
   try {
+    // wait for resolution for 1s
+    if (!process.env.USER_DATA_SERVICE_TOKEN) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     logger.info(event)
     const authToken = event.headers['Authorization']
 
@@ -73,14 +80,11 @@ const myHandler = async (event: any, context: any) => {
     }
 
     const token = authToken.split(' ')[1]
-    const [user, pass] = Buffer.from(token, 'base64')
+    const [user = '', pass] = Buffer.from(token, 'base64')
       .toString('ascii')
       .split(':')
 
-    if (
-      process.env.USER_DATA_SERVICE_TOKEN !== pass ||
-      USER_NAMES.USER_DATA_SERVICE_TOKEN !== user
-    ) {
+    if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
       throw HttpError(401, 'unauthorized')
     }
 

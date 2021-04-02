@@ -49,12 +49,6 @@ Resources:
   AuthUserDataApiKeyProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/user-data-api/production/pass-key'
-  AuthDbKeyStaging:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: '/services/authentication/db/staging/pass-key'
-  AuthDbKeyProduction:
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: '/services/authentication/db/production/pass-key'
   PvtKeyStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/verify-login-token/staging/pvt-key'
@@ -73,10 +67,10 @@ Resources:
   KeyPassProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/verify-login-token/production/key-pass'
-  UserDataServiceTokenStaging:
+  AuthUserDataServiceTokenStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/user-data/staging/pass-key'
-  UserDataServiceTokenProduction:
+  AuthUserDataServiceTokenProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/user-data/production/pass-key'
 
@@ -93,12 +87,6 @@ Resources:
         Description: sign out users
         Environment:
           Variables:
-            DB_KEY:
-              !If [
-                CreateProdResources,
-                !Ref AuthDbKeyProduction,
-                !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
-              ]
             ENVIRONMENT:
               !If [
                 CreateProdResources,
@@ -142,8 +130,8 @@ Resources:
           USER_DATA_SERVICE_TOKEN:
             !If [
               CreateProdResources,
-              !Ref UserDataServiceTokenProduction,
-              !If [CreateStagingResources, !Ref UserDataServiceTokenStaging, ''],
+              !Ref AuthUserDataServiceTokenProduction,
+              !If [CreateStagingResources, !Ref AuthUserDataServiceTokenStaging, ''],
             ]
           ENVIRONMENT:
             !If [
@@ -249,12 +237,6 @@ Resources:
               !Ref KeyPassProduction,
               !If [CreateStagingResources, !Ref KeyPassStaging, ''],
             ]
-          DB_KEY:
-            !If [
-              CreateProdResources,
-              !Ref AuthDbKeyProduction,
-              !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
-            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -306,12 +288,6 @@ Resources:
               CreateProdResources,
               !Ref AuthCommsApiKeyProduction,
               !If [CreateStagingResources, !Ref AuthCommsApiKeyStaging, ''],
-            ]
-          DB_KEY:
-            !If [
-              CreateProdResources,
-              !Ref AuthDbKeyProduction,
-              !If [CreateStagingResources, !Ref AuthDbKeyStaging, ''],
             ]
           ENVIRONMENT:
             !If [

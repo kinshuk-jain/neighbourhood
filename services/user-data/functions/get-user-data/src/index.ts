@@ -2,6 +2,12 @@ import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
 import { getDetails, getDetailsByEmail, getDetailsByAlias } from './db'
+import { decryptedEnv } from './getDecryptedEnvs'
+
+// map of usernames to their password keys - allowed to access this service
+const USER_NAMES: { [key: string]: string } = {
+  authentication: 'AUTHENTICATION_SERVICE_TOKEN',
+}
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -53,7 +59,21 @@ const myHandler = async (event: any, context: any) => {
 
   const requestStartTime = Date.now()
   let response
+
   try {
+    // wait for resolution for 1s
+    if (!process.env.AUTHENTICATION_SERVICE_TOKEN) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
+    // allow auth to access this
     logger.info(event)
     const authToken = event.headers['Authorization']
 
@@ -63,8 +83,18 @@ const myHandler = async (event: any, context: any) => {
 
     if (authToken.startsWith('Basic')) {
       // verify basic auth and get scope from token
-    } else {
+      const token = authToken.split(' ')[1]
+      const [user = '', pass] = Buffer.from(token, 'base64')
+        .toString('ascii')
+        .split(':')
+
+      if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
+        throw HttpError(401, 'unauthorized')
+      }
+    } else if (authToken.startsWith('Bearer')) {
       // decode token
+    } else {
+      throw HttpError(401, 'unauthorized')
     }
 
     if (!event.body) {

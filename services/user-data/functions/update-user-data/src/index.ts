@@ -4,6 +4,12 @@ import { v4 as uuidv4 } from 'uuid'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './updateSchema.json'
+import { decryptedEnv } from './getDecryptedEnvs'
+
+// map of usernames to their password keys - allowed to access this service
+const USER_NAMES: { [key: string]: string } = {
+  authentication: 'AUTHENTICATION_SERVICE_TOKEN',
+}
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -56,10 +62,38 @@ const myHandler = async (event: any, context: any) => {
   const requestStartTime = Date.now()
   let response
   try {
+    // wait for resolution for 1s
+    if (!process.env.AUTHENTICATION_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     logger.info(event)
     const authToken = event.headers['Authorization']
 
     if (!authToken) {
+      throw HttpError(401, 'unauthorized')
+    }
+
+    if (authToken.startsWith('Basic')) {
+      // verify basic auth and get scope from token
+      const token = authToken.split(' ')[1]
+      const [user = '', pass] = Buffer.from(token, 'base64')
+        .toString('ascii')
+        .split(':')
+
+      if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
+        throw HttpError(401, 'unauthorized')
+      }
+    } else if (authToken.startsWith('Bearer')) {
+      // decode token
+    } else {
       throw HttpError(401, 'unauthorized')
     }
 
@@ -76,14 +110,17 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
+    // allow this to access auth and comms
+
     // update user phone - just update it
     // profile thumbnail - just update it
-    // update show phone
-    // update alias
-    // update user black list status - send email and signout if refresh_token is present after making call to auth
+    // update show phone - just update it
+    // update post login - just update it
+    // update alias - just update it
     // update user email verified status - just update it
-    // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is present after making call to auth
     // first login - just update it
+    // update user black list status - send email and signout if refresh_token is present after making call to auth
+    // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is present after making call to auth
     // society list - remove society id from the list jsut update it. Adding is more complex not clear how to do it
     // update user address
     // update email

@@ -1,4 +1,4 @@
-### SSM secrets (unencrypted)
+### SSM secrets
 
-- '/services/authentication/db/production/pass-key'
-- '/services/authentication/db/staging/pass-key'
+- '/services/authentication/user-data/staging/pass-key'
+- '/services/authentication/user-data/production/pass-key'
