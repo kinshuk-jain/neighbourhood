@@ -60,6 +60,8 @@ const myHandler = async (event: any, context: any) => {
   const requestStartTime = Date.now()
   let response
   try {
+    logger.info(event)
+
     // wait for resolution for 1s
     if (!process.env.USER_DATA_SERVICE_TOKEN) {
       await Promise.race([
@@ -72,7 +74,6 @@ const myHandler = async (event: any, context: any) => {
       ])
     }
 
-    logger.info(event)
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Basic ')) {

@@ -7,6 +7,7 @@ import logger from './logger'
 import schema from './createSocietySchema.json'
 import { addSocietyRecord } from './db'
 import axios from 'axios'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 const config: { [key: string]: any } = {
   development: {
@@ -79,6 +80,18 @@ const myHandler: APIGatewayProxyHandler = async (
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.GOOGLE_GEOCODING_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
 
     const authToken = event.headers['Authorization']
 

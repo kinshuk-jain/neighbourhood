@@ -3,6 +3,7 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import logger from './logger'
+import { decryptedEnv } from './getDecryptedEnvs'
 import { sendEmailToAllAdmins, sendNotificationToAllAdmins } from './send-email'
 
 import updateStatusSchema from './updateStatusSchema.json'
@@ -107,6 +108,18 @@ const myHandler: APIGatewayProxyHandler = async (
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.COMMS_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
 
     const authToken = event.headers['Authorization']
 

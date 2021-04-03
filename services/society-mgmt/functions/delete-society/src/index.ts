@@ -7,6 +7,7 @@ import {
 import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
 import { deleteSociety, updateSocietyPendingDeletionStatus } from './db'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -62,6 +63,19 @@ const myHandler: APIGatewayProxyHandler = async (
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.COMMS_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((resolve, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     const authToken = event.headers['Authorization']
 
     if (!authToken) {

@@ -109,6 +109,8 @@ const myHandler: APIGatewayProxyHandler = async (
   const requestStartTime = Date.now()
   let response
   try {
+    logger.info(event)
+
     // wait for resolution for 1s
     if (!process.env.USER_DATA_API_KEY) {
       await Promise.race([
@@ -120,8 +122,6 @@ const myHandler: APIGatewayProxyHandler = async (
         }),
       ])
     }
-
-    logger.info(event)
 
     if (!event.body) {
       throw HttpError(400, 'missing required parameters')

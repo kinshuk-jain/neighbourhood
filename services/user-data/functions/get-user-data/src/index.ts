@@ -61,6 +61,8 @@ const myHandler = async (event: any, context: any) => {
   let response
 
   try {
+    logger.info(event)
+
     // wait for resolution for 1s
     if (!process.env.AUTHENTICATION_SERVICE_TOKEN) {
       await Promise.race([
@@ -73,8 +75,6 @@ const myHandler = async (event: any, context: any) => {
       ])
     }
 
-    // allow auth to access this
-    logger.info(event)
     const authToken = event.headers['Authorization']
 
     if (!authToken) {

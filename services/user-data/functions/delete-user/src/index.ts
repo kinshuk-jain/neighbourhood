@@ -70,6 +70,8 @@ const myHandler = async (event: any, context: any) => {
   const requestStartTime = Date.now()
   let response
   try {
+    logger.info(event)
+
     // wait for resolution for 1s
     if (!process.env.COMMS_API_KEY) {
       await Promise.race([
@@ -82,7 +84,6 @@ const myHandler = async (event: any, context: any) => {
       ])
     }
 
-    logger.info(event)
     const authToken = event.headers['Authorization']
 
     if (!authToken) {

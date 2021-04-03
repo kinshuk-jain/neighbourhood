@@ -93,6 +93,8 @@ const myHandler: APIGatewayProxyHandler = async (
   const requestStartTime = Date.now()
   let response
   try {
+    logger.info(event)
+
     // wait for resolution for 1s
     if (!process.env.PVT_KEY) {
       await Promise.race([
@@ -105,7 +107,6 @@ const myHandler: APIGatewayProxyHandler = async (
       ])
     }
 
-    logger.info(event)
     const queryParams = event.queryStringParameters
     const { user_id } = event.body || {}
 
