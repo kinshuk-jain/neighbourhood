@@ -5,7 +5,24 @@ import { signoutUser } from './db'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './signoutSchema.json'
+import { verifyToken } from './verifyAuthToken'
 
+export const config: { [key: string]: any } = {
+  development: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
@@ -60,8 +77,18 @@ const myHandler = async (event: any, context: any) => {
     logger.info(event)
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
+    }
+
+    // get user id from authToken
+    const { user_id } = (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
     }
 
     const { valid, errors } = validate(event.body, schema)
@@ -74,9 +101,6 @@ const myHandler = async (event: any, context: any) => {
         })),
       })
     }
-
-    // get user_id from auth token
-    const user_id = '1231231'
 
     if (!/[\w-]+/.test(event.body.refresh_token)) {
       throw HttpError(400, 'invalid refresh token')

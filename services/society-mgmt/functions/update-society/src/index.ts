@@ -24,16 +24,23 @@ import {
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
+import { verifyToken } from './verifyAuthToken'
 
 export const config: { [key: string]: any } = {
   development: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   staging: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   production: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
 }
 
@@ -123,10 +130,24 @@ const myHandler: APIGatewayProxyHandler = async (
 
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
-    // TODO: if user is blacklisted, he/she cannot update a society
+
+    // get user id from authToken
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'user blacklisted, not allowed')
+    }
 
     if ('not admin or sysadmin privilege') {
       throw HttpError(404, 'not found')
@@ -154,18 +175,26 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
+    const checkPrivilege = (scope: string, privilege: string) => {
+      if (scope !== privilege) {
+        throw HttpError(403, 'not allowed')
+      }
+    }
+
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
     let isRouteNotFound = false
 
     if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
+      checkPrivilege(scope, 'sysadmin')
       // if society is approved sent email + notification to admin
       await updateSocietyVerifiedStatus(society_id, true)
       // sendNotificationToAllAdmins()
       // sendEmailToAllAdmins()
     } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
+      checkPrivilege(scope, 'sysadmin')
       schemaValidation(event.body, updateNameSchema)
       const { name } = event.body
       if (!/^[a-zA-Z0-9-']{2,40}$/i.test(name)) {
@@ -175,6 +204,7 @@ const myHandler: APIGatewayProxyHandler = async (
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
+      checkPrivilege(scope, 'sysadmin')
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
       if (!/^[\w-]{2,40}$/i.test(country)) {
@@ -199,18 +229,20 @@ const myHandler: APIGatewayProxyHandler = async (
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'pending-deletion') {
       // admin privilege
+      checkPrivilege(scope, 'admin')
       schemaValidation(event.body, updateStatusSchema)
-      const { status } = event.body
-      await updateSocietyPendingDeletionStatus(society_id, status)
+      await updateSocietyPendingDeletionStatus(society_id, false)
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'show-directory') {
       // admin privilege
+      checkPrivilege(scope, 'admin')
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
       await updateSocietyShowDirectoryFlag(society_id, status)
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'admin') {
       // admin privilege
+      checkPrivilege(scope, 'admin')
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 
@@ -227,6 +259,7 @@ const myHandler: APIGatewayProxyHandler = async (
       }
     } else if (route_path_tokens[0] === 'contact') {
       // admin privilege
+      checkPrivilege(scope, 'admin')
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 

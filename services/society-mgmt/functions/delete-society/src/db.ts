@@ -13,5 +13,9 @@ export const updateSocietyPendingDeletionStatus = async (
   user_id: string
 ) => {
   console.log('marking society for deletion: set pending_deletion = true')
-  logger.info({ society_id, user_id })
+  logger.info({
+    society_id,
+    pending_deletion: true,
+    delete_request_by: user_id,
+  })
 }

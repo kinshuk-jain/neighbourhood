@@ -8,20 +8,27 @@ import schema from './createSocietySchema.json'
 import { addSocietyRecord } from './db'
 import axios from 'axios'
 import { decryptedEnv } from './getDecryptedEnvs'
+import { verifyToken } from './verifyAuthToken'
 
-const config: { [key: string]: any } = {
+export const config: { [key: string]: any } = {
   development: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   staging: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   production: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
 }
 
-const ENV = process.env.ENVIRONMENT || 'development'
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -95,12 +102,24 @@ const myHandler: APIGatewayProxyHandler = async (
 
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
+
     // get user id from authToken
-    const user_id = '1231231'
-    // TODO: if user is blacklisted, he/she cannot create a society
+    const { blacklisted, user_id } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'User blacklisted. Cannot create society')
+    }
 
     if (!event.body) {
       throw HttpError(401, 'missing body')

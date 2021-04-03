@@ -1,5 +1,4 @@
 import { pem2jwk } from 'pem-jwk'
-import { createHash } from 'crypto'
 import logger from './logger'
 
 const requiredEnvVars = ['PUB_KEY']
@@ -11,11 +10,9 @@ requiredEnvVars.forEach((name) => {
   }
 })
 
-// the public key is injected from ssm at deploy time
-const keyId = createHash('md5')
-  .update(process.env.PUB_KEY || '')
-  .digest('hex')
+const keyId = 'qH7ew01sEvtw1v2uOOXzrz8tFIGxeUct'
 
+// the public key is injected from ssm at deploy time
 export const handler = async () => {
   const jwks = [
     () => ({

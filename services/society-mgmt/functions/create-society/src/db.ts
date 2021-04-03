@@ -71,6 +71,7 @@ export const addSocietyRecord = async ({
     directory: [],
     society_type,
     show_directory,
+    delete_request_by: [], // list of users who have requested deletion of this society
     pending_deletion: false, // sets the society for deletion, only sysadmin can delete
     verified: false, // verify whether this society is valid and the person creating it is really its admin or not
   })

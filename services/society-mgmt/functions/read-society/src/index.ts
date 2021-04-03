@@ -18,6 +18,27 @@ import {
   getVerificationStatus,
   getAllMembers,
 } from './db'
+import { verifyToken } from './verifyAuthToken'
+
+export const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -73,12 +94,27 @@ const myHandler: APIGatewayProxyHandler = async (
   let response
   try {
     logger.info(event)
+
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
-    // TODO: if user is blacklisted, he/she cannot read a society
+
+    // get user id from authToken
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'user blacklisted, not allowed')
+    }
 
     if (
       !event.pathParameters ||
@@ -93,6 +129,12 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (!society_id.match(/^[\w-]{5,40}$/)) {
       throw HttpError(404, 'not found')
+    }
+
+    const checkAdminPrivilege = (scope: string) => {
+      if (scope !== 'admin') {
+        throw HttpError(403, 'not allowed')
+      }
     }
 
     let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
@@ -113,22 +155,27 @@ const myHandler: APIGatewayProxyHandler = async (
       responseBody = getName(society_id)
     } else if (route_path_tokens[0] === 'blacklist') {
       // admin privilege
+      checkAdminPrivilege(scope)
       // return blacklist status of society
       responseBody = getStatus(society_id)
     } else if (route_path_tokens[0] === 'invoice') {
       // admin privilege
+      checkAdminPrivilege(scope)
       // return invoice of society
       responseBody = getInvoice(society_id)
     } else if (route_path_tokens[0] === 'admins') {
       // admin privilege
+      checkAdminPrivilege(scope)
       // return admins of society
       responseBody = getAdmins(society_id)
     } else if (route_path_tokens[0] === 'verification') {
       // admin privilege
+      checkAdminPrivilege(scope)
       // return verification status of society
       responseBody = getVerificationStatus(society_id)
     } else if (route_path_tokens[0] === 'members') {
       // admin privilege
+      checkAdminPrivilege(scope)
       // return all users of our app in this society
       responseBody = getAllMembers(society_id)
     } else {

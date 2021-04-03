@@ -13,6 +13,27 @@ import {
   listSocietyPendingDeletion,
   listSocietiesByName,
 } from './db'
+import { verifyToken } from './verifyAuthToken'
+
+export const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -69,13 +90,27 @@ const myHandler: APIGatewayProxyHandler = async (
   let response
   try {
     logger.info(event)
+
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
 
-    // TODO: if user is blacklisted, he/she cannot list a society
+    // get user id from authToken
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'user blacklisted, not allowed')
+    }
 
     const { valid, errors } = validate(event.queryStringParameters, schema)
 
@@ -118,17 +153,26 @@ const myHandler: APIGatewayProxyHandler = async (
 
     let responseBody
 
+    const checkSysAdminPrivilege = (scope: string) => {
+      if (scope !== 'sysadmin') {
+        throw HttpError(403, 'not allowed')
+      }
+    }
+
     switch (filter) {
       case 'pending_approval':
         // sysadmin
+        checkSysAdminPrivilege(scope)
         responseBody = await listSocietyNotApproved(pageNumber, pageSize)
         break
       case 'pending_deletion':
         // sysadmin
+        checkSysAdminPrivilege(scope)
         responseBody = await listSocietyPendingDeletion(pageNumber, pageSize)
         break
       case 'type':
         // sysadmin
+        checkSysAdminPrivilege(scope)
         responseBody = await listSocietyByType(value, pageNumber, pageSize)
         break
       case 'name':

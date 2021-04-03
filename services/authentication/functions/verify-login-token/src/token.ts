@@ -28,7 +28,8 @@ export function createAccessToken(
         expiresIn: 900,
         audience: user_id,
         issuer: config[ENV].my_domain,
-        algorithm: 'RS256',
+        algorithm: 'RS512',
+        keyid: 'qH7ew01sEvtw1v2uOOXzrz8tFIGxeUct',
       },
       (err, token) => {
         if (err) {

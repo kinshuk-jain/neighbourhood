@@ -13,6 +13,7 @@ export const listSocietyNotApproved = async (
 }
 
 // do not list societies pending approval
+// list only non residential societies
 export const listSocietiesByName = async (
   prefix: string,
   page_number: number,

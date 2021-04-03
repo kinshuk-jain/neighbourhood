@@ -8,7 +8,27 @@ import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
 import { deleteSociety, updateSocietyPendingDeletionStatus } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
+import { verifyToken } from './verifyAuthToken'
 
+export const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
@@ -78,12 +98,24 @@ const myHandler: APIGatewayProxyHandler = async (
 
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
+
     // get user id from authToken
-    const user_id = '1231231'
-    // TODO: if user is blacklisted, he/she cannot delete a society
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'User blacklisted. Cannot delete society')
+    }
 
     if (!event.pathParameters || !event.pathParameters.society_id) {
       throw HttpError(400, 'missing society id')
@@ -93,9 +125,16 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    // todo: based on scope either delete society or mark it for deletion using updateSocietyPendingDeletionStatus
     // if sysadmin delete, if admin mark it for deletion
-    await deleteSociety(event.pathParameters.society_id, user_id)
+    if (scope === 'sysadmin') {
+      await deleteSociety(event.pathParameters.society_id, user_id)
+      // TODO: send push notification to all society members
+    } else if (scope === 'admin') {
+      await updateSocietyPendingDeletionStatus(
+        event.pathParameters.society_id,
+        user_id
+      )
+    }
 
     response = {
       isBase64Encoded: false,
