@@ -52,7 +52,7 @@ export const handler: APIGatewayProxyHandler = async (
     if (!process.env.AUTHENTICATION_SERVICE_TOKEN) {
       await Promise.race([
         decryptedEnv,
-        new Promise((resolve, reject) => {
+        new Promise((_, reject) => {
           setTimeout(() => {
             reject('internal error: env vars not loaded')
           }, 1000)

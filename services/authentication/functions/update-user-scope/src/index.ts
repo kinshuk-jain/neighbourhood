@@ -66,7 +66,7 @@ const myHandler = async (event: any, context: any) => {
     if (!process.env.USER_DATA_SERVICE_TOKEN) {
       await Promise.race([
         decryptedEnv,
-        new Promise((resolve, reject) => {
+        new Promise((_, reject) => {
           setTimeout(() => {
             reject('internal error: env vars not loaded')
           }, 1000)

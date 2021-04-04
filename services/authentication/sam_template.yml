@@ -37,6 +37,40 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  AuthenticationLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: AuthenticationLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: AuthenticationLambdaBasicExecution
+
   AuthCommsApiKeyStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/authentication/comms-api/staging/pass-key'
@@ -78,43 +112,44 @@ Resources:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   signOutFunction:
     Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        CodeUri: functions/sign-out/dist
-        Runtime: nodejs12.x
-        MemorySize: 128
-        Timeout: 100
-        Description: sign out users
-        Environment:
-          Variables:
-            ENVIRONMENT:
-              !If [
-                CreateProdResources,
-                production,
-                !If [CreateStagingResources, staging, development],
-              ]
-        Events:
-          ApiDevelopment:
-            Type: HttpApi
-            Condition: CreateDevResources
-            Properties:
-              Path: /authentication/signout
-              Method: POST
-              ApiId: !Ref oauth2HttpApiDevelopment
-          ApiStaging:
-            Type: HttpApi
-            Condition: CreateStagingResources
-            Properties:
-              Path: /authentication/signout
-              Method: POST
-              ApiId: !Ref oauth2HttpApiStaging
-          ApiProd:
-            Type: HttpApi
-            Condition: CreateProdResources
-            Properties:
-              Path: /authentication/signout
-              Method: POST
-              ApiId: !Ref oauth2HttpApiProduction
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/sign-out/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: !Ref AuthenticationLambdaRole
+      Timeout: 100
+      Description: sign out users
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /authentication/signout
+            Method: POST
+            ApiId: !Ref oauth2HttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /authentication/signout
+            Method: POST
+            ApiId: !Ref oauth2HttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            Path: /authentication/signout
+            Method: POST
+            ApiId: !Ref oauth2HttpApiProduction
 
   updateUserScopeFunction:
     Type: AWS::Serverless::Function
@@ -123,6 +158,7 @@ Resources:
       CodeUri: functions/update-user-scope/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: !Ref AuthenticationLambdaRole
       Timeout: 100
       Description: update user authorization scope
       Environment:
@@ -131,7 +167,11 @@ Resources:
             !If [
               CreateProdResources,
               !Ref AuthUserDataServiceTokenProduction,
-              !If [CreateStagingResources, !Ref AuthUserDataServiceTokenStaging, ''],
+              !If [
+                CreateStagingResources,
+                !Ref AuthUserDataServiceTokenStaging,
+                '',
+              ],
             ]
           ENVIRONMENT:
             !If [
@@ -169,6 +209,7 @@ Resources:
       CodeUri: functions/send-public-key/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: !Ref AuthenticationLambdaRole
       Timeout: 100
       Description: send public key for token validation
       Environment:
@@ -215,11 +256,12 @@ Resources:
       CodeUri: functions/verify-login-token/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: !Ref AuthenticationLambdaRole
       Timeout: 100
       Description: generate access and refresh tokens
       Environment:
         Variables:
-          USER_DATA_API_KEY: 
+          USER_DATA_API_KEY:
             !If [
               CreateProdResources,
               !Ref AuthUserDataApiKeyProduction,
@@ -272,12 +314,13 @@ Resources:
       Handler: index.handler
       CodeUri: functions/generate-login-token/dist
       Runtime: nodejs12.x
+      Role: !Ref AuthenticationLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: generate login token
       Environment:
         Variables:
-          USER_DATA_API_KEY: 
+          USER_DATA_API_KEY:
             !If [
               CreateProdResources,
               !Ref AuthUserDataApiKeyProduction,
