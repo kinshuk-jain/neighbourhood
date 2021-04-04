@@ -149,7 +149,7 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(403, 'user blacklisted, not allowed')
     }
 
-    if ('not admin or sysadmin privilege') {
+    if (scope !== 'admin' && scope !== 'sysadmin') {
       throw HttpError(404, 'not found')
     }
 
@@ -175,8 +175,8 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    const checkPrivilege = (scope: string, privilege: string) => {
-      if (scope !== privilege) {
+    const checkPrivilege = (scope: string, privilege: string[]) => {
+      if (!privilege.includes(scope)) {
         throw HttpError(403, 'not allowed')
       }
     }
@@ -187,14 +187,14 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
-      checkPrivilege(scope, 'sysadmin')
+      checkPrivilege(scope, ['sysadmin'])
       // if society is approved sent email + notification to admin
       await updateSocietyVerifiedStatus(society_id, true)
       // sendNotificationToAllAdmins()
       // sendEmailToAllAdmins()
     } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
-      checkPrivilege(scope, 'sysadmin')
+      checkPrivilege(scope, ['sysadmin'])
       schemaValidation(event.body, updateNameSchema)
       const { name } = event.body
       if (!/^[a-zA-Z0-9-']{2,40}$/i.test(name)) {
@@ -204,7 +204,7 @@ const myHandler: APIGatewayProxyHandler = async (
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'address') {
       // sys admin privilege
-      checkPrivilege(scope, 'sysadmin')
+      checkPrivilege(scope, ['sysadmin'])
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
       if (!/^[\w-]{2,40}$/i.test(country)) {
@@ -229,20 +229,20 @@ const myHandler: APIGatewayProxyHandler = async (
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'pending-deletion') {
       // admin privilege
-      checkPrivilege(scope, 'admin')
+      checkPrivilege(scope, ['admin', 'sysadmin'])
       schemaValidation(event.body, updateStatusSchema)
       await updateSocietyPendingDeletionStatus(society_id, false)
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'show-directory') {
       // admin privilege
-      checkPrivilege(scope, 'admin')
+      checkPrivilege(scope, ['admin', 'sysadmin'])
       schemaValidation(event.body, updateStatusSchema)
       const { status } = event.body
       await updateSocietyShowDirectoryFlag(society_id, status)
       // sendNotificationToAllAdmins()
     } else if (route_path_tokens[0] === 'admin') {
       // admin privilege
-      checkPrivilege(scope, 'admin')
+      checkPrivilege(scope, ['admin', 'sysadmin'])
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 
@@ -259,7 +259,7 @@ const myHandler: APIGatewayProxyHandler = async (
       }
     } else if (route_path_tokens[0] === 'contact') {
       // admin privilege
-      checkPrivilege(scope, 'admin')
+      checkPrivilege(scope, ['admin', 'sysadmin'])
       schemaValidation(event.body, updateMemberSchema)
       const { id } = event.body
 

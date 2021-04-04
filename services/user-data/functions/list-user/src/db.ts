@@ -1,10 +1,15 @@
 // do not show users with is_blacklisted = true
 export const listUsersBySociety = async (
+  user_id: string,
   society_id: string,
   page_number: number,
   page_size: number
 ): Promise<Array<string>> => {
-  console.log('list all users in this society: ', society_id)
+  console.log(
+    'list all users in this society provided it matches users own list of societies: ',
+    society_id,
+    user_id
+  )
   console.log(
     'retrieve results from: ',
     (page_number - 1) * page_size,

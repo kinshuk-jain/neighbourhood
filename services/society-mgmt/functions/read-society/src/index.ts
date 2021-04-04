@@ -132,7 +132,7 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     const checkAdminPrivilege = (scope: string) => {
-      if (scope !== 'admin') {
+      if (['admin', 'sysadmin'].includes(scope)) {
         throw HttpError(403, 'not allowed')
       }
     }

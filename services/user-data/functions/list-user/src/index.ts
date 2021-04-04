@@ -12,6 +12,25 @@ import {
   listUsersReported,
 } from './db'
 
+import { verifyToken } from './verifyAuthToken'
+
+export const config: { [key: string]: any } = {
+  development: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
+
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
@@ -64,10 +83,25 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
+    }
+
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'user blacklisted, not allowed')
     }
 
     const { valid, errors } = validate(event.queryStringParameters, schema)
@@ -109,31 +143,47 @@ const myHandler = async (event: any, context: any) => {
       throw new Error('page number less than 1 not allowed')
     }
 
+    const checkPrivilege = (scope: string, privilege: string[]) => {
+      if (!privilege.includes(scope)) {
+        throw HttpError(403, 'not allowed')
+      }
+    }
+
     let responseBody
 
     switch (filter) {
       case 'society':
         // check user privilege
-        responseBody = await listUsersBySociety(value, pageNumber, pageSize)
+        responseBody = await listUsersBySociety(
+          user_id,
+          value,
+          pageNumber,
+          pageSize
+        )
         break
       case 'pending_approval':
         // check admin privilege
+        checkPrivilege(scope, ['admin', 'sysadmin'])
         responseBody = await listUsersNotApproved(pageNumber, pageSize)
         break
       case 'blacklisted':
-        // check admin privilege
+        // check sysadmin privilege
+        checkPrivilege(scope, ['sysadmin'])
         responseBody = await listUsersBlacklisted(pageNumber, pageSize)
         break
       case 'reported':
-        // check admin privilege
+        // check sysadmin privilege
+        checkPrivilege(scope, ['sysadmin'])
         responseBody = await listUsersReported(pageNumber, pageSize)
         break
       case 'pending_email_verification':
-        // check admin privilege
+        // check sysadmin privilege
+        checkPrivilege(scope, ['sysadmin'])
         responseBody = await listUsersEmailNotVerified(pageNumber, pageSize)
         break
       case 'postal_code':
-        // check admin privilege
+        // check sysadmin privilege
+        checkPrivilege(scope, ['sysadmin'])
         responseBody = await listUsersInRegion(value, pageNumber, pageSize)
         break
       default:

@@ -4,20 +4,27 @@ import { v4 as uuidv4 } from 'uuid'
 import { deleteUser, getUserData } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
 import axios from 'axios'
+import { verifyToken } from './verifyAuthToken'
 
-const config: { [key: string]: any } = {
+export const config: { [key: string]: any } = {
   development: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   staging: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
   production: {
     comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
   },
 }
 
-const ENV = process.env.ENVIRONMENT || 'development'
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -86,20 +93,35 @@ const myHandler = async (event: any, context: any) => {
 
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
 
-    // TODO: if user is blacklisted, he/she cannot deelete an account except their own
+    const { blacklisted, user_id: accessTokenUserId, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!accessTokenUserId) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
 
     if (!event.pathParameters || !event.pathParameters.user_id) {
-      throw HttpError(400, 'missing body')
+      throw HttpError(404, 'not found')
     }
 
     const user_id = event.pathParameters.user_id
 
     if (!user_id.match(/^[\w-]{5,40}$/)) {
       throw HttpError(404, 'not found')
+    }
+
+    if (
+      (blacklisted || ['admin', 'user'].includes(scope)) &&
+      accessTokenUserId !== user_id
+    ) {
+      throw HttpError(403, 'not allowed')
     }
 
     const userData = await getUserData(user_id)

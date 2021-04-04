@@ -5,6 +5,27 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './updateSchema.json'
 import { decryptedEnv } from './getDecryptedEnvs'
+import { verifyToken } from './verifyAuthToken'
+
+export const config: { [key: string]: any } = {
+  development: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    comms_domain: 'http://localhost:3000',
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
@@ -82,6 +103,9 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    let accessScope = '',
+      userId
+
     if (authToken.startsWith('Basic')) {
       // verify basic auth and get scope from token
       const token = authToken.split(' ')[1]
@@ -92,13 +116,27 @@ const myHandler = async (event: any, context: any) => {
       if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
         throw HttpError(401, 'unauthorized')
       }
+      // TODO: check the scope
+      accessScope = 'sysadmin'
     } else if (authToken.startsWith('Bearer')) {
       // decode token
+      const { blacklisted, user_id, scope } =
+        (await verifyToken(authToken.split(' ')[1])) || {}
+
+      if (!user_id) {
+        throw HttpError(
+          500,
+          'internal service error: error decoding access token'
+        )
+      }
+      if (blacklisted) {
+        throw HttpError(403, 'user blacklisted, not allowed')
+      }
+      accessScope = scope
+      userId = user_id
     } else {
       throw HttpError(401, 'unauthorized')
     }
-
-    // do not allow blacklisted users to update anything
 
     const { valid, errors } = validate(event.body, schema)
     if (!valid) {

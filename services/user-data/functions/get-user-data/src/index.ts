@@ -3,6 +3,24 @@ import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
 import { getDetails, getDetailsByEmail, getDetailsByAlias } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
+import { verifyToken } from './verifyAuthToken'
+
+export const config: { [key: string]: any } = {
+  development: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  staging: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+  production: {
+    auth_domain: 'http://localhost:3000',
+    my_domain: 'http://localhost:3000',
+  },
+}
+
+export const ENV = process.env.ENVIRONMENT || 'development'
 
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
@@ -93,6 +111,14 @@ const myHandler = async (event: any, context: any) => {
       }
     } else if (authToken.startsWith('Bearer')) {
       // decode token
+      const { user_id } = (await verifyToken(authToken.split(' ')[1])) || {}
+
+      if (!user_id) {
+        throw HttpError(
+          500,
+          'internal service error: error decoding access token'
+        )
+      }
     } else {
       throw HttpError(401, 'unauthorized')
     }
@@ -104,6 +130,7 @@ const myHandler = async (event: any, context: any) => {
     const { id_type = '', id_value = '' } = JSON.parse(event.body)
 
     let responseBody
+
     if (id_type.toLowerCase() === 'user_id') {
       if (!/^[\w-]{5,40}$/.test(id_value)) {
         throw HttpError(400, 'invalid user id')
