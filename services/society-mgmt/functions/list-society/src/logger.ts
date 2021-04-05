@@ -1,22 +1,4 @@
-import * as winston from 'winston'
-
-// helper to mask any sensitive data in logs
-export const maskLog = (logs: any) => {
-  const mask = '*****'
-  if (typeof logs.message === 'object') {
-    if (logs.message.headers) {
-      logs.message.headers['Authorization'] = mask
-      logs.message
-    }
-
-    if (logs.message.multiValueHeaders) {
-      logs.message['multiValueHeaders'] = mask
-    }
-  }
-  return logs
-}
-
-const maskRewriter = winston.format(maskLog)
+import pino from 'pino'
 
 class EnhancedLogger {
   cid?: string
@@ -31,26 +13,11 @@ class EnhancedLogger {
   }
 
   createLogger() {
-    return winston.createLogger({
-      transports: [
-        new winston.transports.Console({
-          format:
-            process.env.ENVIRONMENT === 'development'
-              ? winston.format.combine(
-                  winston.format.timestamp(),
-                  winston.format.simple(),
-                  winston.format.prettyPrint(),
-                  winston.format.colorize({
-                    all: true,
-                  })
-                )
-              : winston.format.combine(
-                  maskRewriter(),
-                  winston.format.timestamp(),
-                  winston.format.json()
-                ),
-        }),
-      ],
+    return pino({
+      redact: {
+        paths: ['*.Authorization'],
+        censor: '******',
+      },
     })
   }
 

@@ -1,4 +1,4 @@
-import { KMS } from 'aws-sdk'
+import KMS from 'aws-sdk/clients/kms'
 import logger from './logger'
 
 const encryptedEnvironmentVariableNames =

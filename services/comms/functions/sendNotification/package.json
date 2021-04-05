@@ -1,0 +1,13 @@
+{
+  "name": "sendNotification",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "pino": "^6.11.2"
+  },
+  "devDependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "@types/pino": "^6.3.6"
+  }
+}
