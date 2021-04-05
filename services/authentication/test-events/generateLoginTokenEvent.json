@@ -1,0 +1,44 @@
+{
+  "hostname": "4a86f57dbb15",
+  "version": "2.0",
+  "routeKey": "POST /authentication/oauth2/authorize",
+  "rawPath": "/authentication/oauth2/authorize",
+  "rawQueryString": "response_type=code&scope=df&state&code_challenge=dddddd&code_challenge_method=S256",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3001",
+    "User-Agent": "insomnia/2021.2.2",
+    "Content-Type": "application/json",
+    "Authorization": "******",
+    "Accept": "*/*",
+    "Content-Length": "27",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3001",
+    "Correlation-Id": "adbeb80c-0161-40b4-8499-f5c65dd1db97"
+  },
+  "queryStringParameters": {
+    "response_type": "code",
+    "scope": "df",
+    "state": "",
+    "code_challenge": "dddddd",
+    "code_challenge_method": "S256"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "POST",
+      "path": "/authentication/oauth2/authorize",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "95d2b404-810d-4a56-ae0a-dd26cd380280",
+    "routeKey": "POST /authentication/oauth2/authorize",
+    "stage": null
+  },
+  "body": "{\n\t\"email\": \"abc@eee.com\"\n}",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false
+}

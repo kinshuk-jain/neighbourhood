@@ -1,39 +1,32 @@
 {
-  "hostname": "acf99fa36496",
   "version": "2.0",
-  "routeKey": "POST /authentication/signout",
-  "rawPath": "/authentication/signout",
+  "routeKey": "GET /.well-known/jwks.json",
+  "rawPath": "/.well-known/jwks.json",
   "rawQueryString": "",
   "cookies": [],
   "headers": {
     "Host": "localhost:3000",
     "User-Agent": "insomnia/2021.2.2",
-    "Content-Type": "application/json",
-    "Authorization": "******",
     "Accept": "*/*",
-    "Content-Length": "43",
     "X-Forwarded-Proto": "http",
-    "X-Forwarded-Port": "3000",
-    "Correlation-Id": "71fc738a-bf41-4d5c-906b-91b148f5a1a0"
+    "X-Forwarded-Port": "3000"
   },
   "queryStringParameters": {},
   "requestContext": {
     "accountId": "123456789012",
     "apiId": "1234567890",
     "http": {
-      "method": "POST",
-      "path": "/authentication/signout",
+      "method": "GET",
+      "path": "/.well-known/jwks.json",
       "protocol": "HTTP/1.1",
       "sourceIp": "127.0.0.1",
       "userAgent": "Custom User Agent String"
     },
-    "requestId": "9cfef465-8cb9-499a-bb0e-83238e006ba6",
-    "routeKey": "POST /authentication/signout",
+    "requestId": "79e3b088-1fea-43e7-a339-c6940a9cf722",
+    "routeKey": "GET /.well-known/jwks.json",
     "stage": null
   },
-  "body": {
-    "refresh_token": "1231-dfsd-1231-ddsd"
-  },
+  "body": "",
   "pathParameters": {},
   "stageVariables": null,
   "isBase64Encoded": false

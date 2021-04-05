@@ -12,9 +12,8 @@
   "dependencies": {
     "@middy/core": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
+    "jose": "npm:jose-node-cjs-runtime@3.11.3",
     "jsonschema": "^1.4.0",
-    "jsonwebtoken": "^8.5.1",
-    "jwks-rsa": "^2.0.2",
     "pino": "^6.11.2",
     "uuid": "^8.3.2"
   },

@@ -125,15 +125,15 @@ const myHandler: APIGatewayProxyHandler = async (
       response_type,
       state,
       scope,
-      code_challenge,
-      code_challenge_method,
+      code_challenge = '',
+      code_challenge_method = '',
     } = event.queryStringParameters
 
     if (
       response_type.toLowerCase() !== 'code' ||
       !scope ||
       !code_challenge ||
-      !/[\w-]+/.test(code_challenge) ||
+      !/^[\w-]+$/.test(code_challenge) ||
       code_challenge_method !== 'S256'
     ) {
       throw HttpError(400, 'request has invalid params')

@@ -1,40 +1,29 @@
-import jwt, { JwtHeader, SigningKeyCallback } from 'jsonwebtoken'
-import jwksClient from 'jwks-rsa'
 import { config, ENV } from './config'
+import { createRemoteJWKSet } from 'jose/jwks/remote'
+import { jwtVerify, JWTPayload } from 'jose/jwt/verify'
 
-const client = jwksClient({
-  jwksUri: `${config[ENV].auth_domain}/.well-known/jwks.json`,
-})
+let jwks = createRemoteJWKSet(
+  new URL(`${config[ENV].auth_domain}/.well-known/jwks.json`)
+)
 
-function getKey(header: JwtHeader, callback: SigningKeyCallback) {
-  client.getSigningKey(header.kid, (err, key: any) => {
-    if (err) throw err
-    const signingKey = key.publicKey || key.rsaPublicKey
-    callback(null, signingKey)
-  })
-}
-
-export const verifyToken = (
+export const verifyToken = async (
   token: string
-): Promise<{ [key: string]: any } | undefined | null> => {
-  return new Promise((res, rej) => {
-    if (process.env.ENVIRONMENT === 'development') {
-      res(jwt.decode(token) as { [key: string]: any })
-    } else {
-      jwt.verify(
-        token,
-        getKey,
-        {
-          algorithms: ['RS512'],
-          issuer: config[ENV].my_domain,
-        },
-        function (err, decoded) {
-          if (err) {
-            rej(err)
-          }
-          res(decoded)
-        }
-      )
+): Promise<JWTPayload | { [key: string]: any }> => {
+  if (process.env.ENVIRONMENT === 'development') {
+    const { 1: payload } = token.split('.')
+    if (!payload) {
+      throw 'invalid token'
     }
-  })
+    try {
+      return JSON.parse(Buffer.from(payload, 'base64').toString())
+    } catch (e) {
+      throw e
+    }
+  } else {
+    const { payload } = await jwtVerify(token, jwks, {
+      algorithms: ['RS512'],
+      issuer: config[ENV].my_domain,
+    })
+    return payload
+  }
 }

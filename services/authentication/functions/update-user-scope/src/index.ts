@@ -9,6 +9,8 @@ const USER_NAMES: { [key: string]: string } = {
   user_data: 'USER_DATA_SERVICE_TOKEN',
 }
 
+const validScopes = ['admin', 'sysadmin', 'user']
+
 // should be first middleware
 const setCorrelationId = () => ({
   before: (handler: any, next: middy.NextFunction) => {
@@ -93,17 +95,17 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'missing body')
     }
 
-    const { user_id, scope_type, scope_value } = JSON.parse(event.body)
+    const { user_id, prev_scope = '', new_scope = '' } = JSON.parse(event.body)
 
     if (!/^[\w-]{5,40}$/.test(user_id)) {
       throw HttpError(400, 'invalid user id')
     }
 
-    if (!/[\w-]+/.test(scope_type) || !/[\w-]+/.test(scope_value)) {
+    if (!validScopes.includes(prev_scope) || !validScopes.includes(new_scope)) {
       throw HttpError(400, 'invalid scope value or type')
     }
 
-    await updateUserScope(user_id, scope_type, scope_value)
+    await updateUserScope(user_id, prev_scope, new_scope)
 
     response = {
       isBase64Encoded: false,

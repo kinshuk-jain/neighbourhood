@@ -1,0 +1,41 @@
+{
+  "hostname": "de4120c341f0",
+  "version": "2.0",
+  "routeKey": "PUT /authentication/authorization",
+  "rawPath": "/authentication/authorization",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Content-Type": "application/json",
+    "Authorization": "******",
+    "Accept": "*/*",
+    "Content-Length": "76",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "d73cc3d8-f128-4d57-81d3-20b9c3122ed6"
+  },
+  "queryStringParameters": {},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "PUT",
+      "path": "/authentication/authorization",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "b3be109b-c8e7-475f-88ec-529929fd3198",
+    "routeKey": "PUT /authentication/authorization",
+    "stage": null
+  },
+  "body": "{\n\t\"user_id\": \"123-www-www\",\n\t\"prev_scope\": \"user\",\n  \"new_scope\": \"admin\"\n}",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "msg": {
+    "correlation_id": "d73cc3d8-f128-4d57-81d3-20b9c3122ed6"
+  }
+}

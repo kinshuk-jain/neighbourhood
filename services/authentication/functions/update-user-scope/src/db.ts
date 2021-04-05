@@ -1,14 +1,14 @@
 export const updateUserScope = async (
   user_id: string,
-  scopeType: string,
-  scopeValue: string
+  prevScope: string,
+  newScope: string
 ): Promise<boolean> => {
   console.log(
     'update user scope in refresh token table: ',
     user_id,
-    scopeType,
-    scopeValue
+    prevScope,
+    newScope
   )
-  // for all refresh tokens for the user id, change value of scopeType to scopeValue
+  // for all refresh tokens for the user id, change value of prevScope to newScope
   return true
 }

@@ -1,0 +1,38 @@
+{
+  "hostname": "c240a87cdb52",
+  "version": "2.0",
+  "routeKey": "POST /user/details",
+  "rawPath": "/user/details",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Content-Type": "application/json",
+    "Authorization": "******",
+    "Accept": "*/*",
+    "Content-Length": "54",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "08dbe73d-0732-4bc7-8502-aee8450a9fc0"
+  },
+  "queryStringParameters": {},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "POST",
+      "path": "/user/details",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "bb7b4f86-f942-46f9-89ad-24add3ab36a8",
+    "routeKey": "POST /user/details",
+    "stage": null
+  },
+  "body": "{\n\t\"id_type\": \"user_id\",\n\t\"id_value\": \"1234-sdfs-22\"\n}",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false
+}
