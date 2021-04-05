@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { IAuthUserData, ENV, config } from './index'
+import { ENV, config } from './config'
+import { IAuthUserData } from './interfaces'
 
 export const getUserDataFromEmail = async (
   email: string

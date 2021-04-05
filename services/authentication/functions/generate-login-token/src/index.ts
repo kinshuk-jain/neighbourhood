@@ -17,38 +17,8 @@ import {
 } from './db'
 import logger from './logger'
 import { decryptedEnv } from './getDecryptedEnvs'
-
-export interface IAuthUserData {
-  user_id: string
-  auth_code?: string[]
-  scope: string
-  is_blacklisted: boolean
-  first_login: boolean
-  email: string
-  first_name: string
-  last_name: string
-}
-
-export const config: { [key: string]: any } = {
-  staging: {
-    comms_domain: 'http://localhost:3000',
-    user_domain: 'http://localhost:3000',
-    redirect_link: '',
-  },
-  development: {
-    comms_domain: 'http://localhost:3000',
-    user_domain: 'http://localhost:3000',
-    redirect_link: 'http://localhost:3000/auth/oauth/redirect',
-  },
-  production: {
-    comms_domain: 'http://localhost:3000',
-    user_domain: 'http://localhost:3000',
-    redirect_link: '',
-  },
-}
-
-export const ENV = process.env.ENVIRONMENT || 'development'
-
+import { ENV, config } from './config'
+import { IAuthUserData } from './interfaces'
 // TODO: do we need to have a hosted page with this redirect link??
 const redirect_link = config[ENV].redirect_link
 

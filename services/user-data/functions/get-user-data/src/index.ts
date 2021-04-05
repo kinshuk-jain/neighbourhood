@@ -5,23 +5,6 @@ import { getDetails, getDetailsByEmail, getDetailsByAlias } from './db'
 import { decryptedEnv } from './getDecryptedEnvs'
 import { verifyToken } from './verifyAuthToken'
 
-export const config: { [key: string]: any } = {
-  development: {
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  staging: {
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  production: {
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-}
-
-export const ENV = process.env.ENVIRONMENT || 'development'
-
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
   authentication: 'AUTHENTICATION_SERVICE_TOKEN',

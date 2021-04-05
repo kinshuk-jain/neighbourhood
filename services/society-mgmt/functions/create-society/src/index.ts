@@ -9,26 +9,7 @@ import { addSocietyRecord } from './db'
 import axios from 'axios'
 import { decryptedEnv } from './getDecryptedEnvs'
 import { verifyToken } from './verifyAuthToken'
-
-export const config: { [key: string]: any } = {
-  development: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  staging: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  production: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-}
-
-export const ENV = process.env.ENVIRONMENT || 'development'
+import { config, ENV } from './config'
 
 // should be first middleware
 const setCorrelationId = () => ({

@@ -1,6 +1,6 @@
 import jwt, { JwtHeader, SigningKeyCallback } from 'jsonwebtoken'
 import jwksClient from 'jwks-rsa'
-import { config, ENV } from './index'
+import { config, ENV } from './config'
 
 const client = jwksClient({
   jwksUri: `${config[ENV].auth_domain}/.well-known/jwks.json`,

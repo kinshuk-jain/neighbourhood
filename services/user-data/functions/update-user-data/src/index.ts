@@ -7,26 +7,6 @@ import schema from './updateSchema.json'
 import { decryptedEnv } from './getDecryptedEnvs'
 import { verifyToken } from './verifyAuthToken'
 
-export const config: { [key: string]: any } = {
-  development: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  staging: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-  production: {
-    comms_domain: 'http://localhost:3000',
-    auth_domain: 'http://localhost:3000',
-    my_domain: 'http://localhost:3000',
-  },
-}
-
-export const ENV = process.env.ENVIRONMENT || 'development'
-
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
   authentication: 'AUTHENTICATION_SERVICE_TOKEN',

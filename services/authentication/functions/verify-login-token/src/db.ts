@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { config, ENV } from './index'
+import { config, ENV } from './config'
 
 export const getAuthCodeData = async (
   code: string

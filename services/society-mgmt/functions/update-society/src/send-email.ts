@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { config, ENV } from './index'
+import { config, ENV } from './config'
 import logger from './logger'
 
 export const sendEmailToAllAdmins = async (

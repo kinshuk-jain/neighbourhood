@@ -82,22 +82,22 @@ Resources:
           Properties:
             Path: /user/signup
             Method: POST
-            ApiId: !Ref signUpApiDevelopment
+            ApiId: !Ref crudUserDataHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
             Path: /user/signup
             Method: POST
-            ApiId: !Ref signUpApiStaging
+            ApiId: !Ref crudUserDataHttpApiStaging
         ApiProd:
           Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            ApiId: !Ref signUpApiProd
+            ApiId: !Ref crudUserDataHttpApiProduction
             Path: /user/signup
             Method: POST
-  
+
   deleteUserFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -146,49 +146,53 @@ Resources:
 
   getUserDataFunction:
     Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        CodeUri: functions/get-user-data/dist
-        Runtime: nodejs12.x
-        MemorySize: 128
-        Timeout: 100
-        Description: get data for a user
-        Environment:
-          Variables:
-            AUTHENTICATION_SERVICE_TOKEN:
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/get-user-data/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: get data for a user
+      Environment:
+        Variables:
+          AUTHENTICATION_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataAuthServiceTokenProduction,
               !If [
-                CreateProdResources,
-                !Ref UserDataAuthServiceTokenProduction,
-                !If [CreateStagingResources, !Ref UserDataAuthServiceTokenStaging, ''],
-              ]
-            ENVIRONMENT:
-              !If [
-                CreateProdResources,
-                production,
-                !If [CreateStagingResources, staging, development],
-              ]
-        Events:
-          ApiDevelopment:
-            Type: HttpApi
-            Condition: CreateDevResources
-            Properties:
-              Path: /user/details
-              Method: POST
-              ApiId: !Ref crudUserDataHttpApiDevelopment
-          ApiStaging:
-            Type: HttpApi
-            Condition: CreateStagingResources
-            Properties:
-              Path: /user/details
-              Method: POST
-              ApiId: !Ref crudUserDataHttpApiStaging
-          ApiProd:
-            Type: HttpApi
-            Condition: CreateProdResources
-            Properties:
-              ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /user/details
-              Method: POST
+                CreateStagingResources,
+                !Ref UserDataAuthServiceTokenStaging,
+                '',
+              ],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /user/details
+            Method: POST
+            ApiId: !Ref crudUserDataHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /user/details
+            Method: POST
+            ApiId: !Ref crudUserDataHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudUserDataHttpApiProduction
+            Path: /user/details
+            Method: POST
 
   updateUserDataFunction:
     Type: AWS::Serverless::Function
@@ -205,7 +209,11 @@ Resources:
             !If [
               CreateProdResources,
               !Ref UserDataAuthServiceTokenProduction,
-              !If [CreateStagingResources, !Ref UserDataAuthServiceTokenStaging, ''],
+              !If [
+                CreateStagingResources,
+                !Ref UserDataAuthServiceTokenStaging,
+                '',
+              ],
             ]
           AUTHENTICATION_API_KEY:
             !If [
@@ -250,43 +258,43 @@ Resources:
 
   listUserFunction:
     Type: AWS::Serverless::Function
-      Properties:
-        Handler: index.handler
-        CodeUri: functions/list-user/dist
-        Runtime: nodejs12.x
-        MemorySize: 128
-        Timeout: 100
-        Description: list users who belong to a set of data
-        Environment:
-          Variables:
-            ENVIRONMENT:
-              !If [
-                CreateProdResources,
-                production,
-                !If [CreateStagingResources, staging, development],
-              ]
-        Events:
-          ApiDevelopment:
-            Type: HttpApi
-            Condition: CreateDevResources
-            Properties:
-              Path: /user/list
-              Method: GET
-              ApiId: !Ref crudUserDataHttpApiDevelopment
-          ApiStaging:
-            Type: HttpApi
-            Condition: CreateStagingResources
-            Properties:
-              Path: /user/list
-              Method: GET
-              ApiId: !Ref crudUserDataHttpApiStaging
-          ApiProd:
-            Type: HttpApi
-            Condition: CreateProdResources
-            Properties:
-              ApiId: !Ref crudUserDataHttpApiProduction
-              Path: /user/list
-              Method: GET
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/list-user/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Timeout: 100
+      Description: list users who belong to a set of data
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /user/list
+            Method: GET
+            ApiId: !Ref crudUserDataHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /user/list
+            Method: GET
+            ApiId: !Ref crudUserDataHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudUserDataHttpApiProduction
+            Path: /user/list
+            Method: GET
 
   crudUserDataHttpApiDevelopment:
     Type: AWS::Serverless::HttpApi
