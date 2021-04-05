@@ -1,23 +1,22 @@
 // FE generates a r code_verifier and code_challenge
 // code_verifier is a 32 char random utf8 string which is sha256-ed in hex encoding to
 // create code_challenge
-
 import middy from '@middy/core'
+import querystring from 'querystring'
+import axios from 'axios'
+import { randomBytes } from 'crypto'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
-import schema from './authorizeSchema.json'
 import { validate } from 'jsonschema'
-import logger from './logger'
 import { v4 as uuidv4 } from 'uuid'
+import schema from './authorizeSchema.json'
 import {
   getUserDataFromEmail,
   saveAuthCode,
   removeAuthCode,
   getUserDataFromAlias,
 } from './db'
-import querystring from 'querystring'
-import { randomBytes } from 'crypto'
+import logger from './logger'
 import { decryptedEnv } from './getDecryptedEnvs'
-import axios from 'axios'
 
 export interface IAuthUserData {
   user_id: string
