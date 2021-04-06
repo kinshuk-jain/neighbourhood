@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken'
+import { SignJWT } from 'jose/jwt/sign'
 import logger from './logger'
-import { randomBytes } from 'crypto'
+import { randomBytes, createPrivateKey } from 'crypto'
 import { config, ENV } from './config'
 
 export async function createRefreshToken(): Promise<string> {
@@ -13,33 +13,22 @@ export function createAccessToken(
   scope: string,
   for_blacklisted_user: boolean
 ): Promise<any> {
-  return new Promise((resolve, reject) => {
-    jwt.sign(
-      {
-        blacklisted: for_blacklisted_user ? true : false,
-        scope,
-        user_id,
-      },
-      {
+  return new SignJWT({
+    blacklisted: for_blacklisted_user ? true : false,
+    scope,
+    user_id,
+  })
+    .setProtectedHeader({ alg: 'RS512' })
+    .setIssuedAt()
+    .setIssuer(config[ENV].my_domain)
+    .setAudience(user_id)
+    .setExpirationTime('15m')
+    .sign(
+      createPrivateKey({
         key: process.env.PVT_KEY || '',
         passphrase: process.env.KEY_PASS || '',
-      },
-      {
-        expiresIn: 900,
-        audience: user_id,
-        issuer: config[ENV].my_domain,
-        algorithm: 'RS512',
-        keyid: 'qH7ew01sEvtw1v2uOOXzrz8tFIGxeUct',
-      },
-      (err, token) => {
-        if (err) {
-          reject(err)
-        }
-        resolve(token)
-      }
+      })
     )
-  })
-    .then((token) => token)
     .catch((err) => {
       logger.info({
         type: 'error signing token',

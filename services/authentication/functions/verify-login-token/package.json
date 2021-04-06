@@ -8,15 +8,14 @@
     "@middy/core": "^1.5.2",
     "@middy/http-json-body-parser": "^1.5.2",
     "axios": "^0.21.1",
+    "jose": "npm:jose-node-cjs-runtime@3.11.3",
     "jsonschema": "^1.4.0",
-    "jsonwebtoken": "^8.5.1",
     "pino": "^6.11.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/jsonschema": "^1.1.1",
-    "@types/jsonwebtoken": "^8.5.0",
     "@types/pino": "^6.3.6",
     "@types/uuid": "^8.3.0"
   },
