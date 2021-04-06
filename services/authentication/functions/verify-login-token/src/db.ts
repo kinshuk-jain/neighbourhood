@@ -16,11 +16,12 @@ export const getAuthCodeData = async (
   console.log('returning auth data')
   return {
     code,
-    code_challenge: '123',
+    code_challenge:
+      '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225',
     code_challenge_method: 'sha256',
-    user_id: '2222',
-    scope: 'ddd',
-    expiry_time: 12312312312,
+    user_id: '123-232-3232',
+    scope: 'user',
+    expiry_time: Date.now() + 1000,
     for_blacklisted_user: false,
   }
 }
@@ -47,8 +48,8 @@ export const getRefreshTokenData = async (
   console.log('getting refresh token data: ' + token)
   return {
     token,
-    user_id: '1231231',
-    expiry_time: 1231231,
+    user_id: '123-232-3232',
+    expiry_time: Date.now() + 1000,
     revoked: false,
     times_used: 1,
     last_used_on: 0,
@@ -143,29 +144,37 @@ const getUserInfo = async (
 }> => {
   // makre request to user_data service to get this data
   console.log('getting user data', user_id)
-
-  const { status, data } = await axios.post(
-    `${config[ENV].user_domain}/user/details`,
-    {
-      id_type: 'user_id',
-      id_value: user_id,
-    },
-    {
-      timeout: 10000, // 10s timeout
-      auth: {
-        username: 'authentication',
-        password: process.env.USER_DATA_API_KEY || '',
+  let userData: { [key: string]: any } = {}
+  if (process.env.ENVIRONMENT !== 'development') {
+    const { status, data } = await axios.post(
+      `${config[ENV].user_domain}/user/details`,
+      {
+        id_type: 'user_id',
+        id_value: user_id,
       },
-    }
-  )
+      {
+        timeout: 10000, // 10s timeout
+        auth: {
+          username: 'authentication',
+          password: process.env.USER_DATA_API_KEY || '',
+        },
+      }
+    )
 
-  if (status < 200 || status >= 300) {
-    throw new Error('Internal service error. Could not fetch user data')
+    if (status < 200 || status >= 300) {
+      throw new Error('Internal service error. Could not fetch user data')
+    }
+    userData = data.data
+  } else {
+    userData = {
+      is_blacklisted: false,
+      scope: 'user',
+    }
   }
 
   return {
-    is_blacklisted: data.data.is_blacklisted,
-    scope: data.data.scope,
+    is_blacklisted: userData.is_blacklisted,
+    scope: userData.scope,
   }
 }
 
@@ -186,26 +195,28 @@ export const updateUserInfoOnLogin = async ({
     first_login: false,
   })
 
-  // TODO: update endpoint
-  const { status } = await axios.post(
-    `${config[ENV].user_domain}/user/details`,
-    {
-      id_type: 'user_id',
-      id_value: user_id,
-    },
-    {
-      timeout: 10000, // 10s timeout
-      auth: {
-        username: 'authentication',
-        password: process.env.USER_DATA_API_KEY || '',
+  if (process.env.ENVIRONMENT !== 'development') {
+    // TODO: update endpoint
+    const { status } = await axios.post(
+      `${config[ENV].user_domain}/user/details`,
+      {
+        id_type: 'user_id',
+        id_value: user_id,
       },
-    }
-  )
-
-  if (status < 200 || status >= 300) {
-    throw new Error(
-      'Internal service error. Could not update user data on login'
+      {
+        timeout: 10000, // 10s timeout
+        auth: {
+          username: 'authentication',
+          password: process.env.USER_DATA_API_KEY || '',
+        },
+      }
     )
+
+    if (status < 200 || status >= 300) {
+      throw new Error(
+        'Internal service error. Could not update user data on login'
+      )
+    }
   }
 
   return true

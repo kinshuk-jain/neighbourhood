@@ -5,7 +5,8 @@
     "grant_type": { "type": "string" },
     "scope": { "type": "string" },
     "code": { "type": "string" },
-    "code_verifier": { "type": "string" }
+    "code_verifier": { "type": "string" },
+    "user_id": { "type": "string" }
   },
-  "required": ["grant_type", "code", "code_verifier"]
+  "required": ["grant_type", "code", "code_verifier", "user_id"]
 }

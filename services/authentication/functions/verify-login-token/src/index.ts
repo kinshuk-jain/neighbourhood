@@ -88,9 +88,8 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     const queryParams = event.queryStringParameters
-    const { user_id } = event.body || {}
 
-    if (!queryParams || !queryParams.grant_type || !user_id) {
+    if (!queryParams || !queryParams.grant_type) {
       throw HttpError(400, 'missing params')
     }
 
@@ -108,9 +107,13 @@ const myHandler: APIGatewayProxyHandler = async (
 
       if (
         !queryParams.refresh_token ||
-        !/^[\w-]{2,40}$/i.test(queryParams.refresh_token)
+        !/^[\w-]{2,50}$/i.test(queryParams.refresh_token)
       ) {
         throw HttpError(400, 'invalid refresh token')
+      }
+
+      if (!queryParams.user_id || !/^[\w-]{5,40}$/i.test(queryParams.user_id)) {
+        throw HttpError(400, 'invalid user_id')
       }
 
       const {
@@ -128,7 +131,7 @@ const myHandler: APIGatewayProxyHandler = async (
         !token ||
         revoked ||
         Date.now() >= expiry_time ||
-        stored_user_id !== user_id
+        stored_user_id !== queryParams.user_id
       ) {
         throw HttpError(401, 'invalid refresh token')
       }
@@ -157,7 +160,7 @@ const myHandler: APIGatewayProxyHandler = async (
         },
         body: JSON.stringify({
           access_token: await createAccessToken(
-            user_id,
+            queryParams.user_id,
             scope,
             for_blacklisted_user
           ),
@@ -180,7 +183,11 @@ const myHandler: APIGatewayProxyHandler = async (
         })
       }
 
-      const { code, code_verifier } = queryParams
+      const { code, code_verifier, user_id } = queryParams
+
+      if (!user_id || !/^[\w-]{5,40}$/i.test(user_id)) {
+        throw HttpError(400, 'invalid user_id')
+      }
 
       if (!code || !/^[\w-]{2,40}$/i.test(code)) {
         throw HttpError(400, 'invalid code')

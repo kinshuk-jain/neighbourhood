@@ -1,0 +1,44 @@
+{
+  "hostname": "e4525d7ad269",
+  "version": "2.0",
+  "routeKey": "POST /authentication/oauth2/token",
+  "rawPath": "/authentication/oauth2/token",
+  "rawQueryString": "grant_type=authorization_code&code=123456&code_verifier=123456789&user_id=123-232-3232",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Accept": "*/*",
+    "Content-Length": "0",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "0a79c7af-cfc8-4874-8bd5-381bc126cebf"
+  },
+  "queryStringParameters": {
+    "grant_type": "authorization_code",
+    "code": "123456",
+    "code_verifier": "123456789",
+    "user_id": "123-232-3232"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "POST",
+      "path": "/authentication/oauth2/token",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "ebd751ce-905f-4cd2-aabf-eb6a6108fed8",
+    "routeKey": "POST /authentication/oauth2/token",
+    "stage": null
+  },
+  "body": "",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "msg": {
+    "correlation_id": "0a79c7af-cfc8-4874-8bd5-381bc126cebf"
+  }
+}

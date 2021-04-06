@@ -4,7 +4,8 @@
   "properties": {
     "grant_type": { "type": "string" },
     "scope": { "type": "string" },
-    "refresh_token": { "type": "string" }
+    "refresh_token": { "type": "string" },
+    "user_id": { "type": "string" }
   },
-  "required": ["grant_type", "refresh_token"]
+  "required": ["grant_type", "refresh_token", "user_id"]
 }

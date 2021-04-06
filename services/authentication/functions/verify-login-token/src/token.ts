@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import logger from './logger'
 import { randomBytes } from 'crypto'
-import { config, ENV } from './index'
+import { config, ENV } from './config'
 
 export async function createRefreshToken(): Promise<string> {
   // randomBytes uses libuv thread pool
