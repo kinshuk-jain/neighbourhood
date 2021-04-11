@@ -37,6 +37,40 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  UserDataLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: UserDataLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: UserDataLambdaBasicExecution
+
   UserDataAuthServiceTokenStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/authentication/staging/pass-key'
@@ -66,6 +100,7 @@ Resources:
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
+      Role: UserDataLambdaRole
       Description: sign up users
       Environment:
         Variables:
@@ -104,6 +139,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/delete-user/dist
       Runtime: nodejs12.x
+      Role: UserDataLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: delete users
@@ -150,6 +186,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/get-user-data/dist
       Runtime: nodejs12.x
+      Role: UserDataLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: get data for a user
@@ -200,6 +237,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/update-user-data/dist
       Runtime: nodejs12.x
+      Role: UserDataLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: update user data
@@ -262,6 +300,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/list-user/dist
       Runtime: nodejs12.x
+      Role: UserDataLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: list users who belong to a set of data

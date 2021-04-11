@@ -130,16 +130,24 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (!/^[\w-]{5,60}$/i.test(name)) {
       throw HttpError(400, 'society name invalid or too big')
-    } else if (!/^[a-zA-Z0-9-,\/]{2,60}$/i.test(address.street_address)) {
+    } else if (!/^[a-zA-Z0-9-,\s\/]{2,60}$/i.test(address.street_address)) {
       throw HttpError(400, 'invalid street address')
-    } else if (!/^[\w-]{2,40}$/i.test(address.state)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(address.state)) {
       throw HttpError(400, 'invalid state')
-    } else if (!/^[\w-]{2,40}$/i.test(address.city)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(address.city)) {
       throw HttpError(400, 'invalid city')
-    } else if (!/^[\w-]{2,40}$/i.test(address.country)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(address.country)) {
       throw HttpError(400, 'invalid country')
-    } else if (!/^[0-9]{4,8}$/.test(address.postal_code)) {
+    } else if (!/^[0-9-\s]{4,8}$/.test(address.postal_code)) {
       throw HttpError(400, 'invalid postal code')
+    } else if (
+      !/^[a-zA-Z0-9-]{2,20}\s?[a-zA-Z0-9-]{0,20}$/.test(user_first_name)
+    ) {
+      throw HttpError(400, 'invalid first name')
+    } else if (
+      !/^([\w-]+){2,40}@([\w-]+){2,}\.([a-z]+){2,}$/.test(user_email)
+    ) {
+      throw HttpError(400, 'email invalid or too big')
     }
 
     // on create, we must verify society name, address and admin manually.
@@ -162,28 +170,32 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // send email to admin that society creating request is accepted
-    const { status } = await axios.post(
-      `${config[ENV].comms_domain}/comms/email/send`,
-      {
-        template: 'create-society-request',
-        recipients: [user_email],
-        subject: 'Society creation request accepted',
-        params: {
-          first_name: user_first_name,
-          last_name: user_last_name,
+    if (process.env.ENVIRONMENT !== 'development') {
+      const { status } = await axios.post(
+        `${config[ENV].comms_domain}/comms/email/send`,
+        {
+          template: 'create-society-request',
+          recipients: [user_email],
+          subject: 'Society creation request accepted',
+          params: {
+            first_name: user_first_name,
+            last_name: user_last_name,
+          },
         },
-      },
-      {
-        timeout: 10000, // 10s timeout
-        auth: {
-          username: 'society_mgmt',
-          password: process.env.COMMS_API_KEY || '',
-        },
-      }
-    )
+        {
+          timeout: 10000, // 10s timeout
+          auth: {
+            username: 'society_mgmt',
+            password: process.env.COMMS_API_KEY || '',
+          },
+        }
+      )
 
-    if (status < 200 || status >= 300) {
-      logger.info(`Could not send email while deleting user: ${user_id}`)
+      if (status < 200 || status >= 300) {
+        logger.info(`Could not send email while deleting user: ${user_id}`)
+      }
+    } else {
+      logger.info('sent email')
     }
 
     return response

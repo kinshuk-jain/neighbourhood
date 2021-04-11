@@ -5,17 +5,13 @@
     "page_number": { "type": "string" },
     "page_size": { "type": "string" },
     "filter": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "pending_approval",
-          "pending_email_verification",
-          "blacklisted",
-          "society",
-          "region"
-        ]
-      }
+      "enum": [
+        "pending_approval",
+        "pending_email_verification",
+        "blacklisted",
+        "society",
+        "region"
+      ]
     },
     "value": { "type": "string" }
   },

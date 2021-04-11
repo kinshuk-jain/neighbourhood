@@ -37,6 +37,40 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  CommsLambdaBasicRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: CommsLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: CommsLambdaBasicExecution
+
   CommsAuthServiceTokenStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/comms/authentication/staging/pass-key'
@@ -66,6 +100,7 @@ Resources:
       CodeUri: functions/sendEmail/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: CommsLambdaBasicRole
       Timeout: 100
       Description: send emails
       Environment:
@@ -132,6 +167,7 @@ Resources:
       Handler: functions/sendNotification/src/index.handler
       CodeUri: functions/sendNotification/dist
       Runtime: nodejs12.x
+      Role: CommsLambdaBasicRole
       MemorySize: 128
       Timeout: 100
       Description: send emails

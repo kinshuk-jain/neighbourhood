@@ -167,6 +167,7 @@ const myHandler: APIGatewayProxyHandler = async (
         // user privilege
         // val = "lat=123123;lon=123123"
         responseBody = await listSocietyByLocation(value, pageNumber, pageSize)
+        break
       default:
         throw HttpError(400, 'invalid filter')
     }

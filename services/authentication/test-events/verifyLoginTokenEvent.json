@@ -38,7 +38,5 @@
   "pathParameters": {},
   "stageVariables": null,
   "isBase64Encoded": false,
-  "msg": {
-    "correlation_id": "0a79c7af-cfc8-4874-8bd5-381bc126cebf"
-  }
+  "correlation_id": "0a79c7af-cfc8-4874-8bd5-381bc126cebf"
 }

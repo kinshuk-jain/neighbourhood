@@ -37,6 +37,40 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  ContactsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: ContactsLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: ContactsLambdaBasicExecution
+
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   deleteContactFunction:
@@ -45,6 +79,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/delete-contact/dist
       Runtime: nodejs12.x
+      Role: ContactsLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: delete contacts
@@ -86,6 +121,7 @@ Resources:
         CodeUri: functions/get-contact/dist
         Runtime: nodejs12.x
         MemorySize: 128
+        Role: ContactsLambdaRole
         Timeout: 100
         Description: get data for a contact
         Environment:
@@ -126,6 +162,7 @@ Resources:
         CodeUri: functions/list-contact/dist
         Runtime: nodejs12.x
         MemorySize: 128
+        Role: ContactsLambdaRole
         Timeout: 100
         Description: list contacts who belong to a set of data
         Environment:
@@ -166,6 +203,7 @@ Resources:
       CodeUri: functions/update-contact/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: ContactsLambdaRole
       Timeout: 100
       Description: update contact data
       Environment:
@@ -205,6 +243,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/create-contact/dist
       Runtime: nodejs12.x
+      Role: ContactsLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: create contact

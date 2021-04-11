@@ -1,0 +1,44 @@
+{
+  "level": 30,
+  "time": 1618142507163,
+  "pid": 16,
+  "hostname": "371d021ce358",
+  "version": "2.0",
+  "routeKey": "GET /society/list/",
+  "rawPath": "/society/list",
+  "rawQueryString": "page_number=1&filter=location&value=lat%3D123123%3Blon%3D123123",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Authorization": "Bearer eyJ1c2VyX2lkIj.eyJ1c2VyX2lkIjoiMTIzLWFzZGYtMTIzIiwgImJsYWNrbGlzdGVkIjpmYWxzZSwic2NvcGUiOiJzeXNhZG1pbiJ9",
+    "Accept": "*/*",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "de4750ae-5149-4ac5-b9db-cc84103e229b"
+  },
+  "queryStringParameters": {
+    "page_number": "1",
+    "filter": "location",
+    "value": "lat=123123;lon=123123"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "GET",
+      "path": "/society/list",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "40a4cc72-f333-46a9-aa7f-0a581492c2cc",
+    "routeKey": "GET /society/list/",
+    "stage": "Prod"
+  },
+  "body": "",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "correlation_id": "de4750ae-5149-4ac5-b9db-cc84103e229b"
+}

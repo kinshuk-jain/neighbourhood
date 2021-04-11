@@ -661,13 +661,6 @@
   dependencies:
     jsonschema "*"
 
-"@types/jsonwebtoken@^8.5.1":
-  version "8.5.1"
-  resolved "https://registry.yarnpkg.com/@types/jsonwebtoken/-/jsonwebtoken-8.5.1.tgz#56958cb2d80f6d74352bd2e501a018e2506a8a84"
-  integrity sha512-rNAPdomlIUX0i0cg2+I+Q1wOUr531zHBQ+cV/28PJ39bSPKjahatZZ2LMuhiguETkCgLVzfruw/ZvNMNkKoSzw==
-  dependencies:
-    "@types/node" "*"
-
 "@types/mime@^1":
   version "1.3.2"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-1.3.2.tgz#93e25bf9ee75fe0fd80b594bc4feb0e862111b5a"
@@ -2538,6 +2531,11 @@ jose@^2.0.2:
   integrity sha512-EArN9f6aq1LT/fIGGsfghOnNXn4noD+3dG5lL/ljY3LcRjw1u9w+4ahu/4ahsN6N0kRLyyW6zqdoYk7LNx3+YQ==
   dependencies:
     "@panva/asn1.js" "^1.0.0"
+
+"jose@npm:jose-node-cjs-runtime@3.11.3":
+  version "3.11.3"
+  resolved "https://registry.yarnpkg.com/jose-node-cjs-runtime/-/jose-node-cjs-runtime-3.11.3.tgz#3ef85ce528b00bd03c7c358517252d34ad02f881"
+  integrity sha512-BMlluOSxexKyqugN24mrcHCkyG8/ES1uqBgTo6h9UVXdsWCPYMwyREVZ2zNSZRtUIAcI4ot0MBgCu7WipIZ5BQ==
 
 js-tokens@^4.0.0:
   version "4.0.0"

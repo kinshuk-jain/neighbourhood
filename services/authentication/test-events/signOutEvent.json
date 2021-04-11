@@ -9,7 +9,7 @@
     "Host": "localhost:3000",
     "User-Agent": "insomnia/2021.2.2",
     "Content-Type": "application/json",
-    "Authorization": "******",
+    "Authorization": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJleGFtcGxlLmNvbSIsImV4cCI6MTQyNjQyODAwLCJzY29wZSI6ICJ1c2VyIiwidXNlcl9pZCI6IjEzMTIzMyJ9",
     "Accept": "*/*",
     "Content-Length": "43",
     "X-Forwarded-Proto": "http",

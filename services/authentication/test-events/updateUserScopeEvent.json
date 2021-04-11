@@ -9,7 +9,7 @@
     "Host": "localhost:3000",
     "User-Agent": "insomnia/2021.2.2",
     "Content-Type": "application/json",
-    "Authorization": "******",
+    "Authorization": "Basic dXNlcl9kYXRhOllicDFTdVFGdVBWQU9Wd0drcGFGcTNhdm0xVTNpdWxQ",
     "Accept": "*/*",
     "Content-Length": "76",
     "X-Forwarded-Proto": "http",
@@ -35,7 +35,5 @@
   "pathParameters": {},
   "stageVariables": null,
   "isBase64Encoded": false,
-  "msg": {
-    "correlation_id": "d73cc3d8-f128-4d57-81d3-20b9c3122ed6"
-  }
+  "correlation_id": "d73cc3d8-f128-4d57-81d3-20b9c3122ed6"
 }

@@ -93,8 +93,10 @@ const myHandler = async (event: any, context: any) => {
     ) {
       throw HttpError(400, 'email invalid or too big')
     } else if (
-      !/^[a-zA-Z0-9-]{2,40}$/i.test(event.body.first_name) ||
-      !/^[a-zA-Z0-9-]{2,40}$/i.test(event.body.first_name)
+      !/^[a-zA-Z0-9-]{2,20}\s?[a-zA-Z0-9-]{0,20}$/i.test(
+        event.body.first_name
+      ) ||
+      !/^[a-zA-Z0-9-]{2,20}\s?[a-zA-Z0-9-]{0,20}$/i.test(event.body.last_name)
     ) {
       throw HttpError(400, 'invalid name or too big')
     } else if (!/^[0-9]{4,8}$/.test(event.body.address.postal_code)) {

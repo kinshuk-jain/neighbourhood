@@ -37,6 +37,40 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
+  SocietyMgmtLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: SocietyMgmtLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: SocietyMgmtLambdaBasicExecution
+
   SocietyMgmtCommsApiKeyStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/society-mgmt/comms-api/staging/pass-key'
@@ -60,6 +94,7 @@ Resources:
       Runtime: nodejs12.x
       MemorySize: 128
       Timeout: 100
+      Role: SocietyMgmtLambdaRole
       Description: create society
       Environment:
         Variables:
@@ -119,6 +154,7 @@ Resources:
       CodeUri: functions/read-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: SocietyMgmtLambdaRole
       Timeout: 100
       Description: get data for a society
       Environment:
@@ -158,6 +194,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/list-society/dist
       Runtime: nodejs12.x
+      Role: SocietyMgmtLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: get data for societies that belong to a subset
@@ -198,6 +235,7 @@ Resources:
       Handler: index.handler
       CodeUri: functions/delete-society/dist
       Runtime: nodejs12.x
+      Role: SocietyMgmtLambdaRole
       MemorySize: 128
       Timeout: 100
       Description: delete society
@@ -239,6 +277,7 @@ Resources:
       CodeUri: functions/update-society/dist
       Runtime: nodejs12.x
       MemorySize: 128
+      Role: SocietyMgmtLambdaRole
       Timeout: 100
       Description: update society data
       Environment:

@@ -3,11 +3,7 @@
   "type": "object",
   "properties": {
     "society_type": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["general", "residential"]
-      }
+      "enum": ["general", "residential"]
     },
     "show_directory": {
       "type": "boolean"

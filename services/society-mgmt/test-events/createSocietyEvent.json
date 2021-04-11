@@ -1,54 +1,52 @@
 {
-  "correlation_id": "41535c26-9d89-411a-8c9d-90255a09d763",
-  "level": "info",
-  "message": {
-    "version": "2.0",
-    "routeKey": "POST /society",
-    "rawPath": "/society",
-    "rawQueryString": "",
-    "cookies": ["JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66"],
-    "headers": {
-      "Host": "localhost:3000",
-      "User-Agent": "insomnia/2020.5.2",
-      "Cookie": "JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66",
-      "Accept": "*/*",
-      "Tpp": "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}",
-      "Content-Type": "application/json",
-      "Authorization": "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09",
-      "Content-Length": "188",
-      "X-Forwarded-Proto": "http",
-      "X-Forwarded-Port": "3000"
-    },
-    "queryStringParameters": {},
-    "requestContext": {
-      "accountId": "123456789012",
-      "apiId": "1234567890",
-      "http": {
-        "method": "POST",
-        "path": "/society",
-        "protocol": "HTTP/1.1",
-        "sourceIp": "127.0.0.1",
-        "userAgent": "Custom User Agent String"
-      },
-      "requestId": "48f35811-8cca-414d-9e92-2b21c4920dba",
-      "routeKey": "POST /society",
-      "stage": "Prod"
-    },
-    "body": {
-      "name": "login-email",
-      "address": {
-        "city": "city",
-        "state": "state",
-        "postal_code": "111111",
-        "street_address": "123 no street"
-      },
-      "society_type": "physical",
-      "user_id": "123"
-    },
-    "pathParameters": {},
-    "stageVariables": null,
-    "isBase64Encoded": false,
-    "correlationId": "41535c26-9d89-411a-8c9d-90255a09d763"
+  "version": "2.0",
+  "routeKey": "POST /society",
+  "rawPath": "/society",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Content-Type": "application/json",
+    "Authorization": "Bearer eyJ1c2V.eyJ1c2VyX2lkIjoiMTIzLWFzZGYtMTIzIiwgImJsYWNrbGlzdGVkIjpmYWxzZX0=",
+    "Accept": "*/*",
+    "Content-Length": "314",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "651d27df-edd5-480f-bdfb-5cedfb228bbd"
   },
-  "timestamp": "2021-03-10T15:26:28.814Z"
+  "queryStringParameters": {},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "POST",
+      "path": "/society",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "5a055a62-a472-4e30-b862-de0135b914bd",
+    "routeKey": "POST /society",
+    "stage": "Prod"
+  },
+  "body": {
+    "society_type": "general",
+    "show_directory": true,
+    "name": "test-society",
+    "address": {
+      "city": "Duckland",
+      "state": "test",
+      "country": "AU",
+      "postal_code": "100555",
+      "street_address": "1 cuckoo palace"
+    },
+    "user_email": "blah@example.com",
+    "user_first_name": "blah blah",
+    "user_last_name": ""
+  },
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "correlation_id": "651d27df-edd5-480f-bdfb-5cedfb228bbd"
 }

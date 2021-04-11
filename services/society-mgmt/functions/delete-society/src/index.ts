@@ -115,6 +115,8 @@ const myHandler: APIGatewayProxyHandler = async (
         event.pathParameters.society_id,
         user_id
       )
+    } else {
+      throw HttpError(404, 'not found')
     }
 
     response = {
