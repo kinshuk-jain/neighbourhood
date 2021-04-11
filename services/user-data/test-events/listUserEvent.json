@@ -1,0 +1,44 @@
+{
+  "level": 30,
+  "time": 1618151723422,
+  "pid": 16,
+  "hostname": "6aba2eed831c",
+  "version": "2.0",
+  "routeKey": "GET /user/list",
+  "rawPath": "/user/list",
+  "rawQueryString": "page_number=1&filter=blacklisted&value=lat%3D123123%3Blon%3D123123",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Authorization": "Bearer eyJ1c2VyX2lkIj.eyJ1c2VyX2lkIjoiMTIzLWFzZGYtMTIzIiwgImJsYWNrbGlzdGVkIjpmYWxzZSwic2NvcGUiOiJzeXNhZG1pbiJ9",
+    "Accept": "*/*",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "f576ffdd-84e8-4c76-91a6-d039226e3eea"
+  },
+  "queryStringParameters": {
+    "page_number": "1",
+    "filter": "blacklisted",
+    "value": "lat=123123;lon=123123"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "GET",
+      "path": "/user/list",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "40b76521-4d64-4cd8-9a00-2885d463e9cc",
+    "routeKey": "GET /user/list",
+    "stage": null
+  },
+  "body": "",
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "correlation_id": "f576ffdd-84e8-4c76-91a6-d039226e3eea"
+}

@@ -133,10 +133,6 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    if (!event.body) {
-      throw HttpError(401, 'missing body')
-    }
-
     if (
       !event.pathParameters ||
       !event.pathParameters.society_id ||
@@ -168,7 +164,6 @@ const myHandler: APIGatewayProxyHandler = async (
     if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
       checkPrivilege(scope, ['sysadmin'])
-      // if society is approved sent email + notification to admin
       await updateSocietyVerifiedStatus(society_id, true)
       // sendNotificationToAllAdmins()
       // sendEmailToAllAdmins()
@@ -187,15 +182,15 @@ const myHandler: APIGatewayProxyHandler = async (
       checkPrivilege(scope, ['sysadmin'])
       schemaValidation(event.body, updateAddressSchema)
       const { postal_code, street_address, country, state, city } = event.body
-      if (!/^[\w-]{2,40}$/i.test(country)) {
+      if (!/^[\w-\s]{2,40}$/i.test(country)) {
         throw HttpError(400, 'invalid country')
-      } else if (!/^[0-9]{4,8}$/.test(postal_code)) {
+      } else if (!/^[0-9\s]{4,8}$/.test(postal_code)) {
         throw HttpError(400, 'invalid postal code')
-      } else if (!/^[a-zA-Z0-9-,\/]{2,60}$/i.test(street_address)) {
+      } else if (!/^[a-zA-Z0-9-,\s\/]{2,60}$/i.test(street_address)) {
         throw HttpError(400, 'invalid street address')
-      } else if (!/^[\w-]{2,40}$/i.test(state)) {
+      } else if (!/^[\w-\s]{2,40}$/i.test(state)) {
         throw HttpError(400, 'invalid state')
-      } else if (!/^[\w-]{2,40}$/i.test(city)) {
+      } else if (!/^[\w-\s]{2,40}$/i.test(city)) {
         throw HttpError(400, 'invalid city')
       }
 

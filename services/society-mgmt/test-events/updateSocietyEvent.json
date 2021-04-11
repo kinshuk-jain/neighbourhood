@@ -1,79 +1,67 @@
 {
-  "correlation_id": "b0546593-836e-45dd-b634-fe788058403e",
-  "level": "info",
-  "message": {
-    "body": {
-      "postal_code": "123123",
-      "city": "12312",
-      "state": "sdsd",
-      "country": "sddd",
-      "street_address": "address"
-    },
-    "headers": {
-      "Accept": "*/*",
-      "Authorization": "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09",
-      "Content-Length": "114",
-      "Content-Type": "application/json",
-      "Cookie": "JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66",
-      "Host": "localhost:3000",
-      "Tpp": "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}",
-      "User-Agent": "insomnia/2020.5.2",
-      "X-Forwarded-Port": "3000",
-      "X-Forwarded-Proto": "http"
-    },
-    "httpMethod": "POST",
-    "isBase64Encoded": false,
-    "multiValueHeaders": {
-      "Accept": ["*/*"],
-      "Authorization": [
-        "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09"
-      ],
-      "Content-Length": ["114"],
-      "Content-Type": ["application/json"],
-      "Cookie": ["JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66"],
-      "Host": ["localhost:3000"],
-      "Tpp": [
-        "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}"
-      ],
-      "User-Agent": ["insomnia/2020.5.2"],
-      "X-Forwarded-Port": ["3000"],
-      "X-Forwarded-Proto": ["http"]
-    },
-    "multiValueQueryStringParameters": null,
-    "path": "/society/1234/address",
-    "pathParameters": { "proxy": "1234/address" },
-    "queryStringParameters": null,
-    "requestContext": {
-      "accountId": "123456789012",
-      "apiId": "1234567890",
-      "domainName": "localhost:3000",
-      "extendedRequestId": null,
-      "httpMethod": "POST",
-      "identity": {
-        "accountId": null,
-        "apiKey": null,
-        "caller": null,
-        "cognitoAuthenticationProvider": null,
-        "cognitoAuthenticationType": null,
-        "cognitoIdentityPoolId": null,
-        "sourceIp": "127.0.0.1",
-        "user": null,
-        "userAgent": "Custom User Agent String",
-        "userArn": null
-      },
-      "path": "/society/{proxy+}/",
-      "protocol": "HTTP/1.1",
-      "requestId": "f2b9ab15-5bc5-42b9-b924-79b8f913f80a",
-      "requestTime": "10/Mar/2021:14:23:31 +0000",
-      "requestTimeEpoch": 1615386211,
-      "resourceId": "123456",
-      "resourcePath": "/society/{proxy+}/",
-      "stage": "Prod"
-    },
-    "resource": "/society/{proxy+}/",
-    "stageVariables": null,
-    "version": "1.0",
-    "correlationId": "b0546593-836e-45dd-b634-fe788058403e"
+  "body": {
+    "city": "Duckland",
+    "state": "test",
+    "country": "AU",
+    "postal_code": "100555",
+    "street_address": "1 cuckoo palace"
   },
-  "timestamp": "2021-03-10T14:39:40.732Z"
+  "headers": {
+    "Accept": "*/*",
+    "Authorization": "Bearer eyJ1c2VyX2lkIj.eyJ1c2VyX2lkIjoiMTIzLWFzZGYtMTIzIiwgImJsYWNrbGlzdGVkIjpmYWxzZSwic2NvcGUiOiJzeXNhZG1pbiJ9",
+    "Content-Length": "123",
+    "Content-Type": "application/json",
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "X-Forwarded-Port": "3000",
+    "X-Forwarded-Proto": "http",
+    "Correlation-Id": "7a1aa9c9-f114-4592-90da-ca6a0516f614"
+  },
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {
+    "Accept": ["*/*"],
+    "Authorization": "******",
+    "Content-Length": ["123"],
+    "Content-Type": ["application/json"],
+    "Host": ["localhost:3000"],
+    "User-Agent": ["insomnia/2021.2.2"],
+    "X-Forwarded-Port": ["3000"],
+    "X-Forwarded-Proto": ["http"]
+  },
+  "multiValueQueryStringParameters": null,
+  "path": "/society/12345-asdf/address",
+  "pathParameters": { "proxy": "address", "society_id": "12345-asdf" },
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "domainName": "localhost:3000",
+    "extendedRequestId": null,
+    "httpMethod": "POST",
+    "identity": {
+      "accountId": null,
+      "apiKey": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityPoolId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "Custom User Agent String",
+      "userArn": null
+    },
+    "path": "/society/{society_id}/{proxy+}/",
+    "protocol": "HTTP/1.1",
+    "requestId": "1d4806c5-249b-4c21-aab2-81539272abd6",
+    "requestTime": "11/Apr/2021:12:38:39 +0000",
+    "requestTimeEpoch": 1618144719,
+    "resourceId": "123456",
+    "resourcePath": "/society/{society_id}/{proxy+}/",
+    "stage": "Prod"
+  },
+  "resource": "/society/{society_id}/{proxy+}/",
+  "stageVariables": null,
+  "version": "1.0",
+  "correlation_id": "7a1aa9c9-f114-4592-90da-ca6a0516f614"
 }

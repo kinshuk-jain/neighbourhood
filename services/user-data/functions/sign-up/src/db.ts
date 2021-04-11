@@ -6,7 +6,7 @@ export const createNewUser = async ({
   address,
   phone,
   email,
-  society_id,
+  society_id = '',
 }: {
   first_name: string
   last_name: string

@@ -76,7 +76,6 @@ const myHandler = async (event: any, context: any) => {
     }
 
     if (
-      !event.body.society_id ||
       !event.body.email ||
       !event.body.first_name ||
       !event.body.last_name ||
@@ -101,17 +100,17 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'invalid name or too big')
     } else if (!/^[0-9]{4,8}$/.test(event.body.address.postal_code)) {
       throw HttpError(400, 'invalid postal code')
-    } else if (!/^\+?[0-9]{6,15}$/.test(event.body.phone)) {
+    } else if (!/^\+?[0-9]{6,18}$/.test(event.body.phone)) {
       throw HttpError(400, 'invalid phone')
     } else if (
-      !/^[a-zA-Z0-9-,\/]{2,60}$/i.test(event.body.address.street_address)
+      !/^[a-zA-Z0-9-,\s\/]{2,60}$/i.test(event.body.address.street_address)
     ) {
       throw HttpError(400, 'invalid street address')
-    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.state)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(event.body.address.state)) {
       throw HttpError(400, 'invalid state')
-    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.city)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(event.body.address.city)) {
       throw HttpError(400, 'invalid city')
-    } else if (!/^[\w-]{2,40}$/i.test(event.body.address.country)) {
+    } else if (!/^[\w-\s]{2,40}$/i.test(event.body.address.country)) {
       throw HttpError(400, 'invalid country')
     }
 

@@ -54,8 +54,8 @@ export const addSocietyRecord = async ({
     }
 
     // see https://developers.google.com/maps/documentation/geocoding/overview#StatusCodes
-    lat = data.results[1].geometry.location.lat
-    lng = data.results[1].geometry.location.lng
+    lat = data.results[0].geometry.location.lat
+    lng = data.results[0].geometry.location.lng
   }
 
   logger.info({

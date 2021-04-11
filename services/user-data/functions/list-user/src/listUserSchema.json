@@ -15,5 +15,5 @@
     },
     "value": { "type": "string" }
   },
-  "required": ["page_number", "filter"]
+  "required": ["filter"]
 }

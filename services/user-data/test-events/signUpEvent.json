@@ -1,0 +1,50 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /user/signup",
+  "rawPath": "/user/signup",
+  "rawQueryString": "",
+  "cookies": [],
+  "headers": {
+    "Host": "localhost:3000",
+    "User-Agent": "insomnia/2021.2.2",
+    "Content-Type": "application/json",
+    "Accept": "*/*",
+    "Content-Length": "288",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000",
+    "Correlation-Id": "ad5d5701-25fc-4250-bb53-ad6ac9257715"
+  },
+  "queryStringParameters": {},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "http": {
+      "method": "POST",
+      "path": "/user/signup",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Custom User Agent String"
+    },
+    "requestId": "e494522d-890e-4895-96dd-af041afe2da8",
+    "routeKey": "POST /user/signup",
+    "stage": null
+  },
+  "body": {
+    "first_name": "Donald duck",
+    "last_name": "mcquarie",
+    "phone": "+4912233331231",
+    "email": "blah@example.com",
+    "address": {
+      "postal_code": "100555",
+      "state": "disney",
+      "city": "disneyland",
+      "street_address": "13 disneyland, mcquack"
+    },
+    "scope": "user",
+    "society_id": ""
+  },
+  "pathParameters": {},
+  "stageVariables": null,
+  "isBase64Encoded": false,
+  "correlation_id": "ad5d5701-25fc-4250-bb53-ad6ac9257715"
+}
