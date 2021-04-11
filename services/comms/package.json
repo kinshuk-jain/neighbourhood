@@ -6,7 +6,8 @@
   "license": "unlicensed",
   "private": true,
   "workspaces": [
-    "functions/*"
+    "functions/*",
+    "templates/"
   ],
   "scripts": {
     "build": "yarn workspaces run build",

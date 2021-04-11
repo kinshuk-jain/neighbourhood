@@ -1,4 +1,5 @@
 var path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 const config = (mode) => ({
   mode,
@@ -7,14 +8,22 @@ const config = (mode) => ({
   },
   entry: path.resolve(__dirname, 'index.ts'),
   output: {
-    path: __dirname + '/dist',
+    path: path.resolve(__dirname, '/dist'),
     filename: 'bundle.js',
   },
   devServer: {
     contentBase: path.resolve(__dirname, 'public'),
+    port: 8000,
+    publicPath: '/',
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      inject: true,
+      template: path.resolve(__dirname, 'public/index.html'),
+    }),
+  ],
+  resolve: { extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'] },
   module: {
-    resolve: { extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'] },
     rules: [
       { test: /\.tsx?$/, exclude: /node_modules/, use: ['ts-loader'] },
       {
