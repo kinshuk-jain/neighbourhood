@@ -4,6 +4,7 @@ import {
 } from '../../../templates/emails/login'
 import { sendEmail } from './sendEmail'
 import ReactDOMServer from 'react-dom/server'
+import logger from './logger'
 import React from 'react'
 
 export function sendLoginCredsEmail(
@@ -11,17 +12,24 @@ export function sendLoginCredsEmail(
   params: { [key: string]: string }
 ) {
   if (!Array.isArray(recipient)) {
-    throw 'recipient must be an array of recipients'
+    throw new Error('recipient must be an array of recipients')
   } else if (!params.link) {
-    throw 'input missing: login link'
+    throw new Error('input missing: login link')
   } else if (!params.first_name) {
-    throw 'input missing: first_name'
+    throw new Error('input missing: first_name')
   } else if (!params.last_name) {
-    throw 'input missing: last_name'
+    throw new Error('input missing: last_name')
   }
 
   const subject = 'Your login for neighbourhood.com'
   const sender = 'Neighbourhood Login <no-reply@neighbourhood.com>'
+
+  if (process.env.ENVIRONMENT === 'development') {
+    logger.info(
+      ReactDOMServer.renderToString(React.createElement(LoginEmail, {}))
+    )
+    return Promise.resolve(true)
+  }
 
   return sendEmail({
     from: sender,

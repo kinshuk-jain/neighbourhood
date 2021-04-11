@@ -59,7 +59,7 @@ export const handler: APIGatewayProxyHandler = async (
         }),
       ])
     }
-    // allow auth, user-data to access this
+
     // first login template
     // delete user template
     // blacklist user template

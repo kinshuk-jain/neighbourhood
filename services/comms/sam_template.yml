@@ -1,14 +1,7 @@
-# This is the SAM template that represents the architecture of your serverless application
-# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
-
-# The AWSTemplateFormatVersion identifies the capabilities of the template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
   comms-api for external communication
 
-# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
 Transform:
   - AWS::Serverless-2016-10-31
 
@@ -34,8 +27,6 @@ Conditions:
     - !Ref EnvType
     - development
 
-# Resources declares the AWS resources that you want to include in the stack
-# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
   CommsLambdaBasicRole:
     Type: AWS::IAM::Role
@@ -90,9 +81,6 @@ Resources:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/comms/user-data/production/pass-key'
 
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  # TODO: define IAM policies and roles for this lambda to allow it to access SES
   sendEmailFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -103,6 +91,9 @@ Resources:
       Role: CommsLambdaBasicRole
       Timeout: 100
       Description: send emails
+      Policies:
+        - SESCrudPolicy:
+            IdentityName: 'blah@neighbourhood.com' # TODO - add domain name from which emails will be sent
       Environment:
         Variables:
           USER_DATA_SERVICE_TOKEN:
