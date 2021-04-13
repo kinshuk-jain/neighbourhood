@@ -1,7 +1,4 @@
-import {
-  LoginEmail,
-  non_html_support_text,
-} from '../../../templates/emails/login'
+import { LoginEmail } from '../../../templates'
 import { sendEmail } from './sendEmail'
 import ReactDOMServer from 'react-dom/server'
 import logger from './logger'
@@ -35,7 +32,7 @@ export function sendLoginCredsEmail(
     from: sender,
     to: recipient,
     subject,
-    bodyText: non_html_support_text,
+    bodyText: LoginEmail.getNonHtmlSupportText(),
     // FIXME: optimize this, We can store a stringified version already
     // can create a template in SES and sendTemplatedEmail
     bodyHtml: ReactDOMServer.renderToString(
