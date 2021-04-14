@@ -152,7 +152,7 @@ const myHandler: APIGatewayProxyHandler = async (
 
     // on create, we must verify society name, address and admin manually.
     await addSocietyRecord({
-      admins: [user_id],
+      admins: [{ user_id, email: user_email }],
       name,
       user_id,
       address,

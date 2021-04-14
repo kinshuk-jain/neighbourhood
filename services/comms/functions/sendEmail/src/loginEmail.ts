@@ -1,4 +1,4 @@
-import { LoginEmail } from '../../../templates'
+import { LoginEmail } from '../templates'
 import { sendEmail } from './sendEmail'
 import ReactDOMServer from 'react-dom/server'
 import logger from './logger'

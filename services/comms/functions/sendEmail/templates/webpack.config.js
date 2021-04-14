@@ -7,7 +7,7 @@ const config = (mode) => ({
   },
   entry: path.resolve(__dirname, './development/index.ts'),
   output: {
-    path: __dirname + '/dist',
+    path: path.resolve(__dirname, './dist'),
     filename: 'index.js',
     publicPath: '/dist/',
   },
@@ -19,7 +19,18 @@ const config = (mode) => ({
   resolve: { extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'] },
   module: {
     rules: [
-      { test: /\.tsx?$/, exclude: /node_modules/, use: ['ts-loader'] },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              configFile: '../tsconfig.json',
+            },
+          },
+        ],
+      },
       {
         test: /(\.css)$/,
         exclude: /node_modules/,

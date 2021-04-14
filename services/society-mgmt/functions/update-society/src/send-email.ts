@@ -3,15 +3,15 @@ import { config, ENV } from './config'
 import logger from './logger'
 
 export const sendEmailToAllAdmins = async (
-  email: string,
   template: string,
   params: { [key: string]: any }
 ) => {
+  // call db to get emails of all admins for this society
   const { status } = await axios.post(
     `${config[ENV].comms_domain}/comms/email/send`,
     {
       template,
-      recipients: [email],
+      recipients: ['aa@example.com'],
       subject: 'Society creation request accepted',
       params,
     },
@@ -25,7 +25,7 @@ export const sendEmailToAllAdmins = async (
   )
 
   if (status < 200 || status >= 300) {
-    logger.info(`Could not send email to user: ${email}`)
+    logger.info(`Could not send email to user`)
   }
 }
 
@@ -34,7 +34,7 @@ export const sendNotificationToAllAdmins = async (
   template: string,
   params: { [key: string]: any }
 ) => {
-  // TODO: update comms api usage for notification sending
+  // update comms api usage for notification sending
   const { status } = await axios.post(
     `${config[ENV].comms_domain}/comms/notification/send`,
     {

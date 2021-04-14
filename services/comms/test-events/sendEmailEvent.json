@@ -1,72 +1,70 @@
 {
   "correlation_id": "undefined",
   "level": "info",
-  "message": {
-    "body": "{\n\t\"template\": \"login-email\",\n\t\"params\": {},\n\t\"subject\": \"sdsd\",\n\t\"recipients\": [\"sddd\"]\n}",
-    "headers": {
-      "Accept": "*/*",
-      "Authorization": "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09",
-      "Content-Length": "90",
-      "Content-Type": "application/json",
-      "Cookie": "JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66",
-      "Host": "localhost:3000",
-      "Tpp": "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}",
-      "User-Agent": "insomnia/2020.5.2",
-      "X-Forwarded-Port": "3000",
-      "X-Forwarded-Proto": "http"
-    },
-    "httpMethod": "POST",
-    "isBase64Encoded": false,
-    "multiValueHeaders": {
-      "Accept": ["*/*"],
-      "Authorization": [
-        "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09"
-      ],
-      "Content-Length": ["90"],
-      "Content-Type": ["application/json"],
-      "Cookie": ["JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66"],
-      "Host": ["localhost:3000"],
-      "Tpp": [
-        "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}"
-      ],
-      "User-Agent": ["insomnia/2020.5.2"],
-      "X-Forwarded-Port": ["3000"],
-      "X-Forwarded-Proto": ["http"]
-    },
-    "multiValueQueryStringParameters": null,
-    "path": "/comms/email/send",
-    "pathParameters": { "proxy": "send" },
-    "queryStringParameters": null,
-    "requestContext": {
-      "accountId": "123456789012",
-      "apiId": "1234567890",
-      "domainName": "localhost:3000",
-      "extendedRequestId": null,
-      "httpMethod": "POST",
-      "identity": {
-        "accountId": null,
-        "apiKey": null,
-        "caller": null,
-        "cognitoAuthenticationProvider": null,
-        "cognitoAuthenticationType": null,
-        "cognitoIdentityPoolId": null,
-        "sourceIp": "127.0.0.1",
-        "user": null,
-        "userAgent": "Custom User Agent String",
-        "userArn": null
-      },
-      "path": "/comms/email/{proxy+}",
-      "protocol": "HTTP/1.1",
-      "requestId": "1515268e-8133-4f46-9d65-13fdb4226dfd",
-      "requestTime": "10/Mar/2021:14:41:52 +0000",
-      "requestTimeEpoch": 1615387312,
-      "resourceId": "123456",
-      "resourcePath": "/comms/email/{proxy+}",
-      "stage": "production"
-    },
-    "resource": "/comms/email/{proxy+}",
-    "stageVariables": null,
-    "version": "1.0"
+  "body": "{\n\t\"template\": \"login-email\",\n\t\"params\": {},\n\t\"subject\": \"sdsd\",\n\t\"recipients\": [\"sddd\"]\n}",
+  "headers": {
+    "Accept": "*/*",
+    "Authorization": "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09",
+    "Content-Length": "90",
+    "Content-Type": "application/json",
+    "Cookie": "JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66",
+    "Host": "localhost:3000",
+    "Tpp": "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}",
+    "User-Agent": "insomnia/2020.5.2",
+    "X-Forwarded-Port": "3000",
+    "X-Forwarded-Proto": "http"
   },
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "multiValueHeaders": {
+    "Accept": ["*/*"],
+    "Authorization": [
+      "Basic dHBwLXZlcmlmaWNhdGlvbi1zZXJ2aWNlLXVzZXI6OFdxMDh6dGJHZUdDS1ZKeTdhRStqZz09"
+    ],
+    "Content-Length": ["90"],
+    "Content-Type": ["application/json"],
+    "Cookie": ["JSESSIONID=B68E3F866CD840A442F9FAD33CD98D66"],
+    "Host": ["localhost:3000"],
+    "Tpp": [
+      "{\"name\": \"Finanz Guru\", \"eidasRoles\": [\"PIS\"],\"authNumber\":\"PSDDE-BAFIN-TPPNAME\"}"
+    ],
+    "User-Agent": ["insomnia/2020.5.2"],
+    "X-Forwarded-Port": ["3000"],
+    "X-Forwarded-Proto": ["http"]
+  },
+  "multiValueQueryStringParameters": null,
+  "path": "/comms/email/send",
+  "pathParameters": { "proxy": "send" },
+  "queryStringParameters": null,
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "domainName": "localhost:3000",
+    "extendedRequestId": null,
+    "httpMethod": "POST",
+    "identity": {
+      "accountId": null,
+      "apiKey": null,
+      "caller": null,
+      "cognitoAuthenticationProvider": null,
+      "cognitoAuthenticationType": null,
+      "cognitoIdentityPoolId": null,
+      "sourceIp": "127.0.0.1",
+      "user": null,
+      "userAgent": "Custom User Agent String",
+      "userArn": null
+    },
+    "path": "/comms/email/{proxy+}",
+    "protocol": "HTTP/1.1",
+    "requestId": "1515268e-8133-4f46-9d65-13fdb4226dfd",
+    "requestTime": "10/Mar/2021:14:41:52 +0000",
+    "requestTimeEpoch": 1615387312,
+    "resourceId": "123456",
+    "resourcePath": "/comms/email/{proxy+}",
+    "stage": "production"
+  },
+  "resource": "/comms/email/{proxy+}",
+  "stageVariables": null,
+  "version": "1.0",
   "timestamp": "2021-03-10T14:45:43.513Z"
 }

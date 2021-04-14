@@ -78,8 +78,12 @@ export const updateSocietyShowDirectoryFlag = async (
 ) => {
   logger.info({ society_id, show_directory: status })
 }
-export const addSocietyAdmin = async (society_id: string, user_id: string) => {
-  logger.info({ society_id, user_id }) // add this user_id to list of admins
+export const addSocietyAdmin = async (
+  society_id: string,
+  user_id: string,
+  email: string
+) => {
+  logger.info({ society_id, user_id, email }) // add this user_id to list of admins as {user_id, email}
 }
 export const removeSocietyAdmin = async (
   society_id: string,

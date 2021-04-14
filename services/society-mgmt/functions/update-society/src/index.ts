@@ -166,7 +166,7 @@ const myHandler: APIGatewayProxyHandler = async (
       checkPrivilege(scope, ['sysadmin'])
       await updateSocietyVerifiedStatus(society_id, true)
       // sendNotificationToAllAdmins()
-      // sendEmailToAllAdmins()
+      // sendEmailToAllAdmins('')
     } else if (route_path_tokens[0] === 'name') {
       // sys admin privilege
       checkPrivilege(scope, ['sysadmin'])
@@ -226,7 +226,14 @@ const myHandler: APIGatewayProxyHandler = async (
       }
 
       if (route_path_tokens[1] === 'add') {
-        await addSocietyAdmin(society_id, id)
+        const { email } = event.body
+        if (
+          !email ||
+          !/^([\w-]+){2,40}@([\w-]+){2,}\.([a-z]+){2,}$/.test(email)
+        ) {
+          throw HttpError(400, 'invalid admin email')
+        }
+        await addSocietyAdmin(society_id, id, email)
       } else if (route_path_tokens[1] === 'remove') {
         await removeSocietyAdmin(society_id, id)
       } else {
