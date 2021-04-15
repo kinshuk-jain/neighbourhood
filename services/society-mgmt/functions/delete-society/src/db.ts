@@ -12,6 +12,7 @@ export const updateSocietyPendingDeletionStatus = async (
   society_id: string,
   user_id: string
 ) => {
+  // mark society for deletion only if user_id is in admin list of society_id
   console.log('marking society for deletion: set pending_deletion = true')
   logger.info({
     society_id,

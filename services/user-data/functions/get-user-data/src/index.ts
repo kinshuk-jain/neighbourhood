@@ -77,12 +77,15 @@ const myHandler = async (event: any, context: any) => {
     }
 
     const authToken = event.headers['Authorization']
+    let isBearerAuth = true
+    let userId = ''
 
     if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
 
     if (authToken.startsWith('Basic')) {
+      isBearerAuth = false
       // verify basic auth and get scope from token
       const token = authToken.split(' ')[1]
       const [user = '', pass] = Buffer.from(token, 'base64')
@@ -94,9 +97,9 @@ const myHandler = async (event: any, context: any) => {
       }
     } else if (authToken.startsWith('Bearer')) {
       // decode token
-      const { user_id } = (await verifyToken(authToken.split(' ')[1])) || {}
+      userId = ((await verifyToken(authToken.split(' ')[1])) || {}).user_id
 
-      if (!user_id) {
+      if (!userId) {
         throw HttpError(
           500,
           'internal service error: error decoding access token'
@@ -110,9 +113,11 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'missing body')
     }
 
-    const { id_type = '', id_value = '' } = JSON.parse(event.body)
-
     let responseBody
+    const {
+      id_type = isBearerAuth ? 'user_id' : '',
+      id_value = isBearerAuth ? userId : '',
+    } = isBearerAuth ? {} : JSON.parse(event.body)
 
     if (id_type.toLowerCase() === 'user_id') {
       if (!/^[\w-]{5,40}$/.test(id_value)) {

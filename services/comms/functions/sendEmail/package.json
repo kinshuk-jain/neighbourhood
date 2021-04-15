@@ -7,7 +7,7 @@
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
     "start:invoke": "../../scripts/run.sh invoke sendEmail -e 'test-events/sendEmailEvent.json'",
     "start:run": "../../scripts/run.sh run sendEmail",
-    "serve-template": "cd templates && webpack serve --mode development",
+    "serve-template": "yarn run build-template && cd templates && webpack serve --mode development",
     "build-template": "webpack --config ./templates/webpack.config.js --mode development"
   },
   "dependencies": {
