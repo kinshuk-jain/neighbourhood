@@ -84,8 +84,10 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -107,10 +109,10 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // if sysadmin delete, if admin mark it for deletion
-    if (scope === 'sysadmin') {
+    if (scope.root === true) {
       await deleteSociety(event.pathParameters.society_id, user_id)
       // TODO: send push notification to all society members
-    } else if (scope === 'admin') {
+    } else if (scope[event.pathParameters.society_id] === 'admin') {
       await updateSocietyPendingDeletionStatus(
         event.pathParameters.society_id,
         user_id

@@ -21,7 +21,6 @@ import {
   removeSocietyAdmin,
   addSocietyImpContact,
   removeSocietyImpContact,
-  verifyAdmin,
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -116,8 +115,10 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -128,10 +129,6 @@ const myHandler: APIGatewayProxyHandler = async (
 
     if (blacklisted) {
       throw HttpError(403, 'user blacklisted, not allowed')
-    }
-
-    if (scope !== 'admin' && scope !== 'sysadmin') {
-      throw HttpError(404, 'not found')
     }
 
     if (
@@ -149,19 +146,27 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    if (scope === 'admin') {
-      // see if admin of current society
-      const isAdmin = await verifyAdmin(user_id, society_id)
-      if (!isAdmin) {
-        throw HttpError(404, 'not found')
-      }
+    if (scope[society_id] !== 'admin' && scope.root !== true) {
+      throw HttpError(404, 'not found')
     }
 
     let route_path = event.pathParameters.proxy.match(
       /^\/?([\w-]+(\/[\w-]+)?)\/?/
     )
-    const checkPrivilege = (scope: string, privilege: string[]) => {
-      if (!privilege.includes(scope)) {
+    const checkPrivilege = (
+      scope: Record<string, any>,
+      privilege: string[]
+    ) => {
+      if (
+        privilege.length === 1 &&
+        privilege.includes('sysadmin') &&
+        scope.root !== true
+      ) {
+        throw HttpError(403, 'not allowed')
+      } else if (
+        scope.root !== true &&
+        !privilege.includes(scope[society_id])
+      ) {
         throw HttpError(403, 'not allowed')
       }
     }

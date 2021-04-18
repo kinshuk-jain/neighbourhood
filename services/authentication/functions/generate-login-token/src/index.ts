@@ -124,14 +124,12 @@ const myHandler: APIGatewayProxyHandler = async (
     const {
       response_type,
       state,
-      scope,
       code_challenge = '',
       code_challenge_method = '',
     } = event.queryStringParameters
 
     if (
       response_type.toLowerCase() !== 'code' ||
-      !scope ||
       !code_challenge ||
       !/^[\w-]+$/.test(code_challenge) ||
       code_challenge_method !== 'S256'
@@ -160,19 +158,6 @@ const myHandler: APIGatewayProxyHandler = async (
     //   throw HttpError(401, 'user blacklisted')
     // }
 
-    const allowedScopes = scope
-      .split(' ')
-      .filter(
-        (scope: string) =>
-          validScopes.includes(scope) && userData.scope.includes(scope)
-      )
-
-    if (!allowedScopes.length) {
-      throw HttpError(400, 'invalid scopes')
-    }
-
-    const scopeString = allowedScopes.join(' ')
-
     // randomBytes uses libuv thread pool
     const authCode = randomBytes(32).toString('base64')
     if (userData.auth_code) {
@@ -184,13 +169,13 @@ const myHandler: APIGatewayProxyHandler = async (
       code_challenge,
       code_challenge_method: 'sha256',
       user_id,
-      scope: scopeString,
+      scope: userData.scope,
       for_blacklisted_user: userData.is_blacklisted,
     })
 
     const link = `https://${redirect_link}/?${querystring.stringify({
       code: authCode,
-      scope: scopeString,
+      scope: userData.scope,
       state,
       user_id,
       first_login: userData.first_login,

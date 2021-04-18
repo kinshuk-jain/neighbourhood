@@ -110,11 +110,3 @@ export const removeSocietyImpContact = async (
 ) => {
   logger.info({ society_id, contact_id }) // remove this contact_id from list of imp_contacts
 }
-export const verifyAdmin = async (
-  user_id: string,
-  society_id: string
-): Promise<boolean> => {
-  // check if user_id is in adminlist of society_id
-  console.log(user_id, society_id)
-  return true
-}

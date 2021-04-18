@@ -4,14 +4,12 @@
   "properties": {
     "response_type": { "type": "string" },
     "state": { "type": "string" },
-    "scope": { "type": "string" },
     "code_challenge": { "type": "string" },
     "code_challenge_method": { "type": "string" }
   },
   "required": [
     "response_type",
     "state",
-    "scope",
     "code_challenge",
     "code_challenge_method"
   ]

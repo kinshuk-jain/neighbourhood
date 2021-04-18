@@ -240,7 +240,7 @@ const myHandler: APIGatewayProxyHandler = async (
       await saveDataInRefreshTokenTable({
         token: refreshToken,
         user_id,
-        scope: for_blacklisted_user ? 'user' : scope,
+        scope,
         for_blacklisted_user,
         ip_address: event.requestContext.http
           ? event.requestContext.http.sourceIp

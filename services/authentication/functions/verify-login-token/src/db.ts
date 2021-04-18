@@ -20,7 +20,7 @@ export const getAuthCodeData = async (
       '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225',
     code_challenge_method: 'sha256',
     user_id: '123-232-3232',
-    scope: 'user',
+    scope: 'user', // it is stringified scope object
     expiry_time: Date.now() + 1000,
     for_blacklisted_user: false,
   }
@@ -55,7 +55,7 @@ export const getRefreshTokenData = async (
     last_used_on: 0,
     ip_address: '121231',
     user_agent: '12312312',
-    scope: '1111',
+    scope: '1111', // it is stringified scope object
     for_blacklisted_user: false,
   }
 }
@@ -168,7 +168,9 @@ const getUserInfo = async (
   } else {
     userData = {
       is_blacklisted: false,
-      scope: 'user',
+      scope: JSON.stringify({
+        society_id: 'user',
+      }), // stringified scope object
     }
   }
 

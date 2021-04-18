@@ -78,8 +78,10 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -133,8 +135,8 @@ const myHandler: APIGatewayProxyHandler = async (
 
     let responseBody
 
-    const checkSysAdminPrivilege = (scope: string) => {
-      if (scope !== 'sysadmin') {
+    const checkSysAdminPrivilege = (scope: Record<string, any>) => {
+      if (scope.root !== true) {
         throw HttpError(403, 'not allowed')
       }
     }

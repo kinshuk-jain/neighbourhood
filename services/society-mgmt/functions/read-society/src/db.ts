@@ -26,11 +26,3 @@ export const getVerificationStatus = (society_id: string) => {
   // get only if society is not deleted
   console.info('get verification status: ', society_id)
 }
-export const verifyAdmin = async (
-  user_id: string,
-  society_id: string
-): Promise<boolean> => {
-  // check if user_id is in part of society_id
-  console.log(user_id, society_id)
-  return true
-}

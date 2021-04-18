@@ -9,7 +9,7 @@ const USER_NAMES: { [key: string]: string } = {
   user_data: 'USER_DATA_SERVICE_TOKEN',
 }
 
-const validScopes = ['admin', 'sysadmin', 'user']
+const validScopes = ['admin', 'user']
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -95,17 +95,36 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'missing body')
     }
 
-    const { user_id, prev_scope = '', new_scope = '' } = JSON.parse(event.body)
+    const { user_id, prev_scope, new_scope } = JSON.parse(event.body)
 
     if (!/^[\w-]{5,40}$/.test(user_id)) {
       throw HttpError(400, 'invalid user id')
     }
 
-    if (!validScopes.includes(prev_scope) || !validScopes.includes(new_scope)) {
+    if (
+      !new_scope ||
+      typeof new_scope !== 'object' ||
+      Array.isArray(new_scope) ||
+      Object.values(new_scope).every(
+        (value) => typeof value === 'string' && !validScopes.includes(value)
+      )
+    ) {
       throw HttpError(400, 'invalid scope value or type')
     }
 
-    await updateUserScope(user_id, prev_scope, new_scope)
+    if (
+      !prev_scope ||
+      typeof prev_scope !== 'object' ||
+      Array.isArray(prev_scope)
+    ) {
+      throw HttpError(400, 'invalid scope value or type')
+    }
+
+    await updateUserScope(
+      user_id,
+      JSON.stringify(prev_scope),
+      JSON.stringify(new_scope)
+    )
 
     response = {
       isBase64Encoded: false,

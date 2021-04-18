@@ -15,7 +15,6 @@ import {
   getContacts,
   getStatus,
   getVerificationStatus,
-  verifyAdmin,
 } from './db'
 import { verifyToken } from './verifyAuthToken'
 
@@ -81,8 +80,10 @@ const myHandler: APIGatewayProxyHandler = async (
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -110,18 +111,13 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    if (scope !== 'sysadmin') {
-      // see if admin/user of current society
-      const isAdmin = await verifyAdmin(user_id, society_id)
-      if (!isAdmin) {
-        throw HttpError(404, 'not found')
-      }
+    if (scope.root !== true && !scope[society_id]) {
+      throw HttpError(404, 'not found')
     }
 
-    const checkAdminPrivilege = (scope: string) => {
-      if (!['admin', 'sysadmin'].includes(scope)) {
+    const checkAdminPrivilege = (scope: Record<string, any>) => {
+      if (scope.root !== true && scope[society_id] !== 'admin')
         throw HttpError(403, 'not allowed')
-      }
     }
 
     let route_path = event.pathParameters.proxy.match(/^\/?([\w-]+)\/?/)
