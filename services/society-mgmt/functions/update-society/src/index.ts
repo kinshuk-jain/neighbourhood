@@ -21,6 +21,7 @@ import {
   removeSocietyAdmin,
   addSocietyImpContact,
   removeSocietyImpContact,
+  verifyAdmin,
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -142,15 +143,23 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    let route_path = event.pathParameters.proxy.match(
-      /^\/?([\w-]+(\/[\w-]+)?)\/?/
-    )
     const society_id = event.pathParameters.society_id
 
     if (!society_id.match(/^[\w-]{5,40}$/)) {
       throw HttpError(404, 'not found')
     }
 
+    if (scope === 'admin') {
+      // see if admin of current society
+      const isAdmin = await verifyAdmin(user_id, society_id)
+      if (!isAdmin) {
+        throw HttpError(404, 'not found')
+      }
+    }
+
+    let route_path = event.pathParameters.proxy.match(
+      /^\/?([\w-]+(\/[\w-]+)?)\/?/
+    )
     const checkPrivilege = (scope: string, privilege: string[]) => {
       if (!privilege.includes(scope)) {
         throw HttpError(403, 'not allowed')
@@ -164,7 +173,7 @@ const myHandler: APIGatewayProxyHandler = async (
     if (route_path_tokens[0] === 'verification') {
       // sys admin privilege
       checkPrivilege(scope, ['sysadmin'])
-      await updateSocietyVerifiedStatus(society_id, true)
+      await updateSocietyVerifiedStatus(society_id, user_id, true)
       // sendNotificationToAllAdmins()
       // sendEmailToAllAdmins('')
     } else if (route_path_tokens[0] === 'name') {

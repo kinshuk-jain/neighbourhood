@@ -12,11 +12,10 @@ import {
   getName,
   getInvoice,
   getAddress,
-  getDirectory,
   getContacts,
   getStatus,
   getVerificationStatus,
-  getAllMembers,
+  verifyAdmin,
 } from './db'
 import { verifyToken } from './verifyAuthToken'
 
@@ -111,6 +110,14 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
+    if (scope !== 'sysadmin') {
+      // see if admin/user of current society
+      const isAdmin = await verifyAdmin(user_id, society_id)
+      if (!isAdmin) {
+        throw HttpError(404, 'not found')
+      }
+    }
+
     const checkAdminPrivilege = (scope: string) => {
       if (!['admin', 'sysadmin'].includes(scope)) {
         throw HttpError(403, 'not allowed')
@@ -124,9 +131,6 @@ const myHandler: APIGatewayProxyHandler = async (
     if (route_path_tokens[0] === 'contacts') {
       // return imp contacts of society
       responseBody = getContacts(society_id)
-    } else if (route_path_tokens[0] === 'directory') {
-      // return directory of society if show_directory is true
-      responseBody = getDirectory(society_id)
     } else if (route_path_tokens[0] === 'address') {
       // return address of society
       responseBody = getAddress(society_id)
@@ -153,11 +157,6 @@ const myHandler: APIGatewayProxyHandler = async (
       checkAdminPrivilege(scope)
       // return verification status of society
       responseBody = getVerificationStatus(society_id)
-    } else if (route_path_tokens[0] === 'members') {
-      // admin privilege
-      checkAdminPrivilege(scope)
-      // return all users of our app in this society
-      responseBody = getAllMembers(society_id)
     } else {
       throw HttpError(404, 'not found')
     }

@@ -2,10 +2,6 @@ export const getContacts = (society_id: string) => {
   // get only if society is not deleted
   console.info('get contacts: ', society_id)
 }
-export const getDirectory = (society_id: string) => {
-  // get only if society is not deleted
-  console.info('get directory: ', society_id)
-}
 export const getStatus = (society_id: string) => {
   // get only if society is not deleted
   console.info('get status: ', society_id)
@@ -30,7 +26,11 @@ export const getVerificationStatus = (society_id: string) => {
   // get only if society is not deleted
   console.info('get verification status: ', society_id)
 }
-export const getAllMembers = (society_id: string) => {
-  // get all user of our app in this society
-  console.info('get all members of society: ', society_id)
+export const verifyAdmin = async (
+  user_id: string,
+  society_id: string
+): Promise<boolean> => {
+  // check if user_id is in part of society_id
+  console.log(user_id, society_id)
+  return true
 }

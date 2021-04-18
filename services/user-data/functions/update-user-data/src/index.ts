@@ -96,7 +96,6 @@ const myHandler = async (event: any, context: any) => {
       if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
         throw HttpError(401, 'unauthorized')
       }
-      // TODO: check the scope
       accessScope = 'sysadmin'
     } else if (authToken.startsWith('Bearer')) {
       // decode token
@@ -118,6 +117,66 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.user_id ||
+      !event.pathParameters.user_id.match(/^[\w-]{5,40}$/) ||
+      !event.pathParameters.proxy ||
+      !event.pathParameters.proxy.match(/^\/?[\w-]+(\/[\w-]+)?\/?([\?#].*)?$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    let route_path = event.pathParameters.proxy.match(
+      /^\/?([\w-]+(\/[\w-]+)?)\/?/
+    )
+
+    const checkPrivilege = (scope: string, privilege: string[]) => {
+      if (!privilege.includes(scope)) {
+        throw HttpError(403, 'not allowed')
+      }
+    }
+
+    const route_path_tokens = (route_path || [])[1].split('/')
+
+    switch (route_path_tokens[0]) {
+      case 'post-login':
+        // only sysadmin
+        checkPrivilege(accessScope, ['sysadmin'])
+        // update post login - just update it
+        break
+      case 'phone':
+        // just update it
+        checkPrivilege(accessScope, ['sysadmin', 'user'])
+        break
+      case 'thumbnail':
+        // just update it
+        break
+      case 'show-phone':
+        // just update it
+        break
+      case 'alias':
+        // todo: clarify how this will work without need for email sending
+        // add entry in DB that contains
+        // user-id, email, alias
+        // just update it
+        break
+      case 'email-verification':
+        // just update it
+        // only sysadmin
+        break
+      case 'report-post':
+        // update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
+        break
+      case 'society-list':
+      // if residential society, simply add/remove society_id to users society list
+      // if generic society, removal is simple. In case of addition, send notification to admins
+      // add to list of pending approval in db
+      case 'approval-status':
+      // only admin privilege
+      // just update it
+    }
+
     const { valid, errors } = validate(event.body, schema)
     if (!valid) {
       throw HttpError(400, 'body missing required parameters', {
@@ -129,22 +188,10 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
-    // allow this to access auth and comms
-
-    // update user phone - just update it
-    // profile thumbnail - just update it
-    // update show phone - just update it
-    // update post login - just update it
-    // update alias - just update it
-    // update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
-    // update user email verified status - just update it
-    // first login - just update it
     // update user black list status - send email and signout if refresh_token is present after making call to auth
     // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is present after making call to auth
-    // society list - remove society id from the list jsut update it. Adding is more complex not clear how to do it
     // update user address
     // update email
-    // update user approval status
 
     response = {
       isBase64Encoded: false,

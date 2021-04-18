@@ -16,6 +16,11 @@ export const createNewUser = async ({
   society_id: string
 }): Promise<string> => {
   // may be receive alias from user as well
+  // on signup create 3 entries
+  // one adds data in user table
+  // one adds data in table mapping email to userid or can also be a secondary index doing the same
+  // add another table or secondary index mapping alias to userid
+  // add secondary index mapping society_id, user_id and add to it first_name, last_name, address
   const user_id = uuidv4()
   console.log('signing up new user', {
     user_id,
@@ -34,16 +39,29 @@ export const createNewUser = async ({
     is_blacklisted: false,
     email_verified: false,
     show_phone: true,
-    approved: false,
     user_agent: '', // user agent with which user logs in
     ip_address: '', // ip with which user logs in
     scope: 'user',
     billing_id: '12312',
+    is_reported: false,
     reported_count: [], // list of feeds of this user that were reported
     first_login: true,
     society_list: [society_id],
     profile_thumbnail: '',
   })
+
+  // we need another table for this
+  // this table contains all users whose request for joining society is pending
+  console.info({
+    society_id,
+    user_id,
+    first_name,
+    last_name,
+    address,
+    scope: 'user',
+    pending_approval: true,
+  })
+
   return user_id
 }
 

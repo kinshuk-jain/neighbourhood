@@ -2,7 +2,7 @@ export const listSocietyNotApproved = async (
   page_number: number,
   page_size: number
 ): Promise<Array<string>> => {
-  console.info('list societies approved===false ')
+  console.info('list societies verified===false ')
   console.log(
     'retrieve results from: ',
     (page_number - 1) * page_size,

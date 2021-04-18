@@ -68,9 +68,12 @@ export const updateSocietyAddress = async (
 }
 export const updateSocietyVerifiedStatus = async (
   society_id: string,
+  user_id: string,
   status: boolean
 ) => {
-  logger.info({ society_id, verified: status })
+  // TODO: add this society to society_list of admin in user-data
+  // add this user in admin list of current society
+  logger.info({ society_id, user_id, verified: status })
 }
 export const updateSocietyShowDirectoryFlag = async (
   society_id: string,
@@ -83,12 +86,16 @@ export const addSocietyAdmin = async (
   user_id: string,
   email: string
 ) => {
+  // user_id must not be a preexisting admin in current society
+  // jsut add user to admin list
   logger.info({ society_id, user_id, email }) // add this user_id to list of admins as {user_id, email}
 }
 export const removeSocietyAdmin = async (
   society_id: string,
   user_id: string
 ) => {
+  // user_id must be a preexisting admin in current society
+  // jsut remove user from admin list
   logger.info({ society_id, user_id }) // remove this user_id from list of admins
 }
 export const addSocietyImpContact = async (
@@ -102,4 +109,12 @@ export const removeSocietyImpContact = async (
   contact_id: string
 ) => {
   logger.info({ society_id, contact_id }) // remove this contact_id from list of imp_contacts
+}
+export const verifyAdmin = async (
+  user_id: string,
+  society_id: string
+): Promise<boolean> => {
+  // check if user_id is in adminlist of society_id
+  console.log(user_id, society_id)
+  return true
 }

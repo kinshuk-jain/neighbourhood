@@ -57,9 +57,10 @@ export const addSocietyRecord = async ({
     lat = data.results[0].geometry.location.lat
     lng = data.results[0].geometry.location.lng
   }
+  const society_id = uuidv4()
 
   logger.info({
-    society_id: uuidv4(),
+    society_id,
     name,
     billing_id: 123,
     admins,
@@ -68,13 +69,13 @@ export const addSocietyRecord = async ({
     longitude: lng,
     address,
     imp_contacts: [], // array of contact ids
-    directory: [],
     society_type,
     show_directory,
     delete_request_by: [], // list of users who have requested deletion of this society
     pending_deletion: false, // sets the society for deletion, only sysadmin can delete
     verified: false, // verify whether this society is valid and the person creating it is really its admin or not
   })
+
   // put this in DB if not exists
   // if a deleted society exists by this name, then allow
 }

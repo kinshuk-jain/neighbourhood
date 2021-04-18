@@ -4,12 +4,12 @@ import logger from './logger'
 import { validate } from 'jsonschema'
 import schema from './listUserSchema.json'
 import {
-  listUsersNotApproved,
   listUsersEmailNotVerified,
   listUsersBySociety,
   listUsersInRegion,
   listUsersBlacklisted,
   listUsersReported,
+  listUsersNotApproved,
 } from './db'
 
 import { verifyToken } from './verifyAuthToken'
@@ -140,6 +140,7 @@ const myHandler = async (event: any, context: any) => {
         responseBody = await listUsersBySociety(
           user_id,
           value,
+          scope !== 'sysadmin',
           pageNumber,
           pageSize
         )
@@ -147,7 +148,13 @@ const myHandler = async (event: any, context: any) => {
       case 'pending_approval':
         // check admin privilege
         checkPrivilege(scope, ['admin', 'sysadmin'])
-        responseBody = await listUsersNotApproved(pageNumber, pageSize)
+        responseBody = await listUsersNotApproved(
+          user_id,
+          value,
+          scope === 'admin',
+          pageNumber,
+          pageSize
+        )
         break
       case 'blacklisted':
         // check sysadmin privilege

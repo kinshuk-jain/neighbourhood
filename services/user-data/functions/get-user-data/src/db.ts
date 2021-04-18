@@ -18,7 +18,6 @@ export const getDetails = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
@@ -41,7 +40,6 @@ export const getDetails = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     email_verified: false,
     profile_thumbnail: '',
@@ -73,7 +71,6 @@ export const getDetailsByEmail = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
@@ -96,7 +93,6 @@ export const getDetailsByEmail = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     email_verified: false,
     profile_thumbnail: '',
@@ -126,7 +122,6 @@ export const getDetailsByAlias = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     reported_count: [], // list of feeds of this user that were reported
     email_verified: false,
@@ -149,7 +144,6 @@ export const getDetailsByAlias = async (
     email: '123@example.com',
     first_login: true,
     society_list: [], // may be we want to include society names with society ids in this list to show on frontend
-    approved: false,
     is_blacklisted: false,
     email_verified: false,
     profile_thumbnail: '',
