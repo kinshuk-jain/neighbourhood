@@ -15,11 +15,9 @@ export const createNewUser = async ({
   email: string
   society_id: string
 }): Promise<string> => {
-  // may be receive alias from user as well
   // on signup create 3 entries
   // one adds data in user table
   // one adds data in table mapping email to userid or can also be a secondary index doing the same
-  // add another table or secondary index mapping alias to userid
   // add secondary index mapping society_id, user_id and add to it first_name, last_name, address
   const user_id = uuidv4()
   console.log('signing up new user', {

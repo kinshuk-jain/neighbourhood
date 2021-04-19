@@ -151,6 +151,47 @@ Resources:
             Method: POST
             ApiId: !Ref oauth2HttpApiProduction
 
+  manageAliasFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/manage-alias/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: !Ref AuthenticationLambdaRole
+      Timeout: 100
+      Description: manage aliases
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /authentication/alias/
+            Method: ANY
+            ApiId: !Ref oauth2HttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /authentication/alias/
+            Method: ANY
+            ApiId: !Ref oauth2HttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            Path: /authentication/alias/
+            Method: ANY
+            ApiId: !Ref oauth2HttpApiProduction
+
   updateUserScopeFunction:
     Type: AWS::Serverless::Function
     Properties:

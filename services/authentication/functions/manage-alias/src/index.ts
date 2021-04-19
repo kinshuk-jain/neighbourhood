@@ -1,14 +1,8 @@
+import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import logger from './logger'
-import { getDetails, getDetailsByEmail } from './db'
-import { decryptedEnv } from './getDecryptedEnvs'
+import { addUserAlias, removeUserAlias, updateUserAlias } from './db'
 import { verifyToken } from './verifyAuthToken'
-
-// map of usernames to their password keys - allowed to access this service
-const USER_NAMES: { [key: string]: string } = {
-  authentication: 'AUTHENTICATION_SERVICE_TOKEN',
-}
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -60,77 +54,67 @@ const myHandler = async (event: any, context: any) => {
 
   const requestStartTime = Date.now()
   let response
-
   try {
     logger.info(event)
 
-    // wait for resolution for 1s
-    if (!process.env.AUTHENTICATION_SERVICE_TOKEN) {
-      await Promise.race([
-        decryptedEnv,
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            reject('internal error: env vars not loaded')
-          }, 1000)
-        }),
-      ])
-    }
-
     const authToken = event.headers['Authorization']
-    let isBearerAuth = true
-    let userId = ''
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
 
-    if (authToken.startsWith('Basic')) {
-      isBearerAuth = false
-      // verify basic auth and get scope from token
-      const token = authToken.split(' ')[1]
-      const [user = '', pass] = Buffer.from(token, 'base64')
-        .toString('ascii')
-        .split(':')
+    // get user id from authToken
+    const { user_id } = (await verifyToken(authToken.split(' ')[1])) || {}
 
-      if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
-        throw HttpError(401, 'unauthorized')
-      }
-    } else if (authToken.startsWith('Bearer')) {
-      // decode token
-      userId = ((await verifyToken(authToken.split(' ')[1])) || {}).user_id
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
 
-      if (!userId) {
-        throw HttpError(
-          500,
-          'internal service error: error decoding access token'
-        )
-      }
-    } else {
-      throw HttpError(401, 'unauthorized')
+    if (!/^[\w-]{5,40}$/.test(user_id)) {
+      throw HttpError(400, 'invalid user id')
     }
 
     if (!event.body) {
       throw HttpError(400, 'missing body')
     }
 
-    let responseBody
-    const {
-      id_type = isBearerAuth ? 'user_id' : '',
-      id_value = isBearerAuth ? userId : '',
-    } = isBearerAuth ? {} : JSON.parse(event.body)
+    const body = JSON.parse(event.body)
 
-    if (id_type.toLowerCase() === 'user_id') {
-      if (!/^[\w-]{5,40}$/.test(id_value)) {
-        throw HttpError(400, 'invalid user id')
+    if (event.requestContext.http.method === 'POST') {
+      // add alias
+      if (
+        !body.alias ||
+        typeof body.alias !== 'string' ||
+        !body.imei ||
+        typeof body.imei !== 'string' ||
+        !body.public_key ||
+        typeof body.public_key !== 'string'
+      ) {
+        throw HttpError(400, 'invalid request body')
       }
-      responseBody = await getDetails(id_value)
-    } else if (id_type.toLowerCase() === 'email') {
-      if (!/^([\w-]+){2,40}@([\w-]+){2,}\.([a-z]+){2,}$/.test(id_value)) {
-        throw HttpError(400, 'invalid email value')
+      await addUserAlias(body.alias, user_id, body.imei, body.public_key)
+    } else if (event.requestContext.http.method === 'PUT') {
+      // update alias
+      if (
+        !body.previous_alias ||
+        !body.new_alias ||
+        typeof body.previous_alias !== 'string' ||
+        typeof body.new_alias !== 'string'
+      ) {
+        throw HttpError(400, 'invalid request body')
       }
-      responseBody = await getDetailsByEmail(id_value)
+      await updateUserAlias(body.previous_alias, body.new_alias)
+    } else if (event.requestContext.http.method === 'DELETE') {
+      // remove alias
+      if (!body.alias || typeof body.alias !== 'string') {
+        throw HttpError(400, 'invalid alias')
+      }
+      await removeUserAlias(body.alias)
     } else {
-      throw HttpError(400, 'invalid id_type')
+      throw HttpError(404, 'not found')
     }
 
     response = {
@@ -141,7 +125,6 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        data: responseBody,
       }),
     }
     return response
@@ -155,6 +138,7 @@ const myHandler = async (event: any, context: any) => {
       body: JSON.stringify({
         status: 'failure',
         error: e.message || 'Something went wrong',
+        ...(e.body ? { body: e.body } : {}),
       }),
     }
     return response

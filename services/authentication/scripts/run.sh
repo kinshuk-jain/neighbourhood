@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <update-user-scope|send-public-key|sign-out|generate-login-token|verify-login-token>"
+  echo "Usage: $0 <invoke|run> <update-user-scope|manage-alias|send-public-key|sign-out|generate-login-token|verify-login-token>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(update-user-scope|send-public-key|sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(update-user-scope|manage-alias|send-public-key|sign-out|generate-login-token|verify-login-token)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -35,6 +35,8 @@ elif [[ "$FUNCTION" =~ ^(send-public-key)$ ]]; then
   function_name="sendPublicKeyFunction"
 elif [[ "$FUNCTION" =~ ^(update-user-scope)$ ]]; then
   function_name="updateUserScopeFunction"
+elif [[ "$FUNCTION" =~ ^(manage-alias)$ ]]; then
+  function_name="manageAliasFunction"
 else
   display_usage
 fi

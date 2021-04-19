@@ -1,1 +1,12 @@
-{}
+{
+  "id": "/user-acounts/update-user-post-login",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string" },
+    "user_agent": { "type": "string" },
+    "ip_address": { "type": "string" },
+    "email_verified": { "type": "boolean" },
+    "first_login": { "type": "boolean" }
+  },
+  "required": ["first_name", "last_name"]
+}

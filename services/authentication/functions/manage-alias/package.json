@@ -1,0 +1,21 @@
+{
+  "name": "manage-alias",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke manage-alias -e 'test-events/manageAliasEvent.json'",
+    "start:run": "../../scripts/run.sh run manage-alias"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "pino": "^6.11.2",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/pino": "^6.3.6",
+    "@types/uuid": "^8.3.0"
+  }
+}

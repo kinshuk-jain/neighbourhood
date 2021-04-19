@@ -198,12 +198,14 @@ export const updateUserInfoOnLogin = async ({
   })
 
   if (process.env.ENVIRONMENT !== 'development') {
-    // TODO: update endpoint
     const { status } = await axios.post(
-      `${config[ENV].user_domain}/user/details`,
+      `${config[ENV].user_domain}/user/${user_id}/post-login`,
       {
-        id_type: 'user_id',
-        id_value: user_id,
+        user_id,
+        user_agent,
+        ip_address,
+        email_verified: true,
+        first_login: false,
       },
       {
         timeout: 10000, // 10s timeout
