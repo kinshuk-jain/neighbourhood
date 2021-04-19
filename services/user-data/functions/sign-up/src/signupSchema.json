@@ -6,7 +6,6 @@
     "last_name": { "type": "string" },
     "phone": { "type": "string" },
     "email": { "type": "string" },
-    "scope": { "type": "string" },
     "society_id": { "type": "string" },
     "profile_thumbnail": { "type": "string" },
     "address": {
@@ -21,5 +20,5 @@
       "required": ["postal_code", "city", "state", "street_address"]
     }
   },
-  "required": ["first_name", "last_name", "phone", "email", "address", "scope"]
+  "required": ["first_name", "last_name", "phone", "email", "address"]
 }

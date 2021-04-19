@@ -72,6 +72,7 @@ export const updateSocietyVerifiedStatus = async (
   status: boolean
 ) => {
   // TODO: add this society to society_list of admin in user-data
+  // update scope in user-data for admin
   // add this user in admin list of current society
   logger.info({ society_id, user_id, verified: status })
 }

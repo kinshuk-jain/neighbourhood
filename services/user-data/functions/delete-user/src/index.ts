@@ -78,8 +78,10 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
-    const { blacklisted, user_id: accessTokenUserId, scope } =
+    const { blacklisted, user_id: accessTokenUserId, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!accessTokenUserId) {
       throw HttpError(
@@ -98,10 +100,7 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(404, 'not found')
     }
 
-    if (
-      (blacklisted || ['admin', 'user'].includes(scope)) &&
-      accessTokenUserId !== user_id
-    ) {
+    if ((blacklisted || scope.root !== true) && accessTokenUserId !== user_id) {
       throw HttpError(403, 'not allowed')
     }
 

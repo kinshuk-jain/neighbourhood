@@ -73,8 +73,10 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -126,8 +128,21 @@ const myHandler = async (event: any, context: any) => {
       throw new Error('page number less than 1 not allowed')
     }
 
-    const checkPrivilege = (scope: string, privilege: string[]) => {
-      if (!privilege.includes(scope)) {
+    const checkPrivilege = (
+      scope: Record<string, any>,
+      privilege: string[],
+      society_id: string = ''
+    ) => {
+      if (
+        privilege.length === 1 &&
+        privilege[0] === 'sysadmin' &&
+        scope.root !== true
+      ) {
+        throw HttpError(403, 'not allowed')
+      } else if (
+        scope.root !== true &&
+        !privilege.includes(scope[society_id])
+      ) {
         throw HttpError(403, 'not allowed')
       }
     }
@@ -147,7 +162,7 @@ const myHandler = async (event: any, context: any) => {
         break
       case 'pending_approval':
         // check admin privilege
-        checkPrivilege(scope, ['admin', 'sysadmin'])
+        checkPrivilege(scope, ['admin', 'sysadmin'], value)
         responseBody = await listUsersNotApproved(
           user_id,
           value,

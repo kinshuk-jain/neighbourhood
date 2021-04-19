@@ -3,7 +3,7 @@ export const getDetails = async (
 ): Promise<{ [key: string]: any }> => {
   console.log('getting user details: ', {
     user_id,
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     first_name: 'first name',
     last_name: 'last name',
     address: {
@@ -35,7 +35,7 @@ export const getDetails = async (
       postal_code: '122245',
       country: 'IN',
     },
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     phone: '1231231231',
     email: '123@example.com',
     first_login: true,
@@ -56,7 +56,7 @@ export const getDetailsByEmail = async (
 
   console.log('getting user details by email: ', {
     user_id,
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     first_name: 'first name',
     last_name: 'last name',
     address: {
@@ -79,7 +79,7 @@ export const getDetailsByEmail = async (
 
   return {
     user_id,
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     first_name: 'first name',
     last_name: 'last name',
     address: {
@@ -107,7 +107,7 @@ export const getDetailsByAlias = async (
   const user_id = '12312'
   console.log('getting user details by alias: ', {
     user_id,
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     first_name: 'first name',
     last_name: 'last name',
     address: {
@@ -130,7 +130,7 @@ export const getDetailsByAlias = async (
 
   return {
     user_id,
-    scope: 'user',
+    scope: '{ "society_id": "user" }',
     first_name: 'first name',
     last_name: 'last name',
     address: {

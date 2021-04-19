@@ -41,7 +41,7 @@ export const createNewUser = async ({
     show_phone: true,
     user_agent: '', // user agent with which user logs in
     ip_address: '', // ip with which user logs in
-    scope: 'user',
+    scope: '{}', // when a user signs up he has no access to any of the societies
     billing_id: '12312',
     is_reported: false,
     reported_count: [], // list of feeds of this user that were reported
@@ -58,7 +58,7 @@ export const createNewUser = async ({
     first_name,
     last_name,
     address,
-    scope: 'user',
+    phone,
     pending_approval: true,
   })
 
