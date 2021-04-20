@@ -6,3 +6,5 @@
 - '/services/user-data/comms-api/staging/pass-key'
 - '/services/user-data/authentication-api/production/pass-key'
 - '/services/user-data/authentication-api/staging/pass-key'
+- '/services/user-data/society-mgmt/production/pass-key'
+- '/services/user-data/society-mgmt/staging/pass-key'

@@ -11,11 +11,13 @@ import {
   updateUserData,
   updateUserSocietyApprovalStatus,
   updatePostLoginUserData,
+  updateAddress,
 } from './db'
 
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
   authentication: 'AUTHENTICATION_SERVICE_TOKEN',
+  society_mgmt: 'SOCIETY_MGMT_SERVICE_TOKEN',
 }
 
 // should be first middleware
@@ -165,6 +167,7 @@ const myHandler = async (event: any, context: any) => {
         throw HttpError(400, 'invalid society id')
       }
     }
+
     let responseBody
     const route_path_tokens = (route_path || [])[1].split('/')
 
@@ -225,9 +228,18 @@ const myHandler = async (event: any, context: any) => {
       // if generic society, removal is simple. In case of addition, send notification to admins
       // add to list of pending approval in db
       case 'address':
-        // remove from all residential societies first
-        // even if admin, remove
-        // then update address
+        if (!/^[a-zA-Z0-9-,\s\/]{2,60}$/i.test(event.body.street_address)) {
+          throw HttpError(400, 'invalid street address')
+        } else if (!/^[\w-\s]{2,40}$/i.test(event.body.state)) {
+          throw HttpError(400, 'invalid state')
+        } else if (!/^[\w-\s]{2,40}$/i.test(event.body.city)) {
+          throw HttpError(400, 'invalid city')
+        } else if (!/^[\w-\s]{2,40}$/i.test(event.body.country)) {
+          throw HttpError(400, 'invalid country')
+        } else if (!/^[0-9]{4,8}$/.test(event.body.address.postal_code)) {
+          throw HttpError(400, 'invalid postal code')
+        }
+        await updateAddress(event.body)
         break
       case 'approval-status':
         // only admin privilege

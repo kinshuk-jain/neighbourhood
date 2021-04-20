@@ -81,6 +81,7 @@ const getUserIdFromAlias = async (alias: string): Promise<string> => {
     alias
   )
   // if alias not found, return error
+
   return 'ssssssss'
 }
 

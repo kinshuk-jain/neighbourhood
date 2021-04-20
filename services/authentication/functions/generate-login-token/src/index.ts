@@ -132,14 +132,16 @@ const myHandler: APIGatewayProxyHandler = async (
       response_type.toLowerCase() !== 'code' ||
       !code_challenge ||
       !/^[\w-]+$/.test(code_challenge) ||
-      code_challenge_method !== 'S256'
+      !['S256', 'RS512'].includes(code_challenge_method)
     ) {
       throw HttpError(400, 'request has invalid params')
     }
     let userData: IAuthUserData
+    let isAliasAuth = false
 
     if (!email && alias) {
-      userData = await getUserDataFromAlias(alias.toLowerCase())
+      isAliasAuth = true
+      userData = await getUserDataFromAlias(alias)
     } else if (email) {
       // note: if called after signup this needs strong consistency
       userData = await getUserDataFromEmail(email)
@@ -173,37 +175,39 @@ const myHandler: APIGatewayProxyHandler = async (
       for_blacklisted_user: userData.is_blacklisted,
     })
 
-    const link = `https://${redirect_link}/?${querystring.stringify({
-      code: authCode,
-      scope: userData.scope,
-      state,
-      user_id,
-      first_login: userData.first_login,
-    })}`
+    if (!isAliasAuth) {
+      const link = `https://${redirect_link}/?${querystring.stringify({
+        code: authCode,
+        scope: userData.scope,
+        state,
+        user_id,
+        first_login: userData.first_login,
+      })}`
 
-    const { status, data } = await axios.post(
-      `${config[ENV].comms_domain}/comms/email/send`,
-      {
-        template: 'login-email',
-        recipients: [userData.email],
-        subject: 'Log in to Neighbourhood',
-        params: {
-          link,
-          first_name: userData.first_name,
-          last_name: userData.last_name,
+      const { status, data } = await axios.post(
+        `${config[ENV].comms_domain}/comms/email/send`,
+        {
+          template: 'login-email',
+          recipients: [userData.email],
+          subject: 'Log in to Neighbourhood',
+          params: {
+            link,
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+          },
         },
-      },
-      {
-        timeout: 10000, // 10s timeout
-        auth: {
-          username: 'authentication',
-          password: process.env.COMMS_API_KEY || '',
-        },
+        {
+          timeout: 10000, // 10s timeout
+          auth: {
+            username: 'authentication',
+            password: process.env.COMMS_API_KEY || '',
+          },
+        }
+      )
+
+      if (status < 200 || status >= 300) {
+        throw HttpError(500, 'Could not send email', data.data)
       }
-    )
-
-    if (status < 200 || status >= 300) {
-      throw HttpError(500, 'Could not send email', data.data)
     }
 
     response = {
@@ -212,7 +216,10 @@ const myHandler: APIGatewayProxyHandler = async (
       headers: {
         'content-type': 'application/json',
       },
-      body: JSON.stringify({ status: 'success', message: 'email sent' }),
+      body: JSON.stringify({
+        status: 'success',
+        message: isAliasAuth ? 'authenticated' : 'email sent',
+      }),
     }
     return response
   } catch (e) {

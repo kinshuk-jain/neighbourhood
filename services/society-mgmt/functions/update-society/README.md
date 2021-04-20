@@ -13,3 +13,5 @@ APIs
 - '/services/society-mgmt/comms-api/production/pass-key'
 - '/services/society-mgmt/google-api/production/pass-key'
 - '/services/society-mgmt/google-api/staging/pass-key'
+- '/services/society-mgmt/user-data-api/staging/pass-key'
+- '/services/society-mgmt/user-data-api/production/pass-key'

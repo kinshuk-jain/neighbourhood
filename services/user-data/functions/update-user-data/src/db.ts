@@ -39,3 +39,29 @@ export const updatePostLoginUserData = async ({
   })
   return true
 }
+
+export const updateAddress = async ({
+  street_address,
+  city,
+  state,
+  country,
+  postal_code,
+}: {
+  street_address: string
+  city: string
+  state: string
+  country: string
+  postal_code: string
+}): Promise<boolean> => {
+  console.log(
+    'remove user from all residential societies, and then update address',
+    {
+      street_address,
+      city,
+      state,
+      country,
+      postal_code,
+    }
+  )
+  return true
+}

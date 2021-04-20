@@ -5,8 +5,8 @@ Cannot have shared packages with aws sam till this is merged - https://github.co
 add sns access to comms lambda, comms to have sendnotification
 update user data
 user account deletion reason
-skip sending email link for alias authentication
 contacts module
+skip sending email link for alias authentication
 
 Create common cloudformation for
 

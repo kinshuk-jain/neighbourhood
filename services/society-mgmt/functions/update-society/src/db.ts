@@ -1,5 +1,6 @@
 import logger from './logger'
 import axios from 'axios'
+import { config, ENV } from './config'
 
 export const updateSocietyPendingDeletionStatus = async (
   society_id: string,
@@ -69,12 +70,27 @@ export const updateSocietyAddress = async (
 export const updateSocietyVerifiedStatus = async (
   society_id: string,
   user_id: string,
-  status: boolean
+  verificationStatus: boolean
 ) => {
-  // TODO: add this society to society_list of admin in user-data
-  // update scope in user-data for admin
   // add this user in admin list of current society
-  logger.info({ society_id, user_id, verified: status })
+  logger.info({ society_id, user_id, verified: verificationStatus })
+
+  // update scope, society_list in user-data for admin
+  const { status } = await axios.post(
+    `${config[ENV].user_domain}/user/${user_id}/society-list/add`,
+    { society_id, user_id, privilege: 'admin' },
+    {
+      timeout: 10000, // 10s timeout
+      auth: {
+        username: 'society_mgmt',
+        password: process.env.USER_DATA_API_KEY || '',
+      },
+    }
+  )
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Could not update user society list')
+  }
 }
 export const updateSocietyShowDirectoryFlag = async (
   society_id: string,

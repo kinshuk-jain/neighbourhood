@@ -77,6 +77,12 @@ Resources:
   UserDataAuthServiceTokenProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/authentication/production/pass-key'
+  UserDataSocietyMgmtServiceTokenStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/society-mgmt/staging/pass-key'
+  UserDataSocietyMgmtServiceTokenProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/society-mgmt/production/pass-key'
   UserDataAuthApiKeyStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/authentication-api/production/pass-key'
@@ -250,6 +256,16 @@ Resources:
               !If [
                 CreateStagingResources,
                 !Ref UserDataAuthServiceTokenStaging,
+                '',
+              ],
+            ]
+          SOCIETY_MGMT_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataSocietyMgmtServiceTokenProduction,
+              !If [
+                CreateStagingResources,
+                !Ref UserDataSocietyMgmtServiceTokenStaging,
                 '',
               ],
             ]

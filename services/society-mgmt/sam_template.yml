@@ -83,6 +83,12 @@ Resources:
   SocietyMgmtGeocodingApiKeyProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/society-mgmt/google-api/production/pass-key'
+  SocietyMgmtUserDataApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/user-data-api/production/pass-key'
+  SocietyMgmtUserDataApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/society-mgmt/user-data-api/staging/pass-key'
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -289,6 +295,16 @@ Resources:
               !If [
                 CreateStagingResources,
                 !Ref SocietyMgmtCommsApiKeyStaging,
+                '',
+              ],
+            ]
+          USER_DATA_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref SocietyMgmtUserDataApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref SocietyMgmtUserDataApiKeyStaging,
                 '',
               ],
             ]

@@ -15,6 +15,7 @@ import {
   getContacts,
   getStatus,
   getVerificationStatus,
+  getDetails,
 } from './db'
 import { verifyToken } from './verifyAuthToken'
 
@@ -133,6 +134,10 @@ const myHandler: APIGatewayProxyHandler = async (
     } else if (route_path_tokens[0] === 'name') {
       // return name of society
       responseBody = getName(society_id)
+    } else if (route_path_tokens[0] === 'details') {
+      // return details of society like type, name, address for now
+      checkAdminPrivilege(scope)
+      responseBody = getDetails(society_id)
     } else if (route_path_tokens[0] === 'blacklist') {
       // admin privilege
       checkAdminPrivilege(scope)
