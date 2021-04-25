@@ -43,6 +43,7 @@ export const getRefreshTokenData = async (
   ip_address: string
   user_agent: string
   scope: string
+  generated_at: number
   for_blacklisted_user: boolean
 }> => {
   console.log('getting refresh token data: ' + token)
@@ -55,6 +56,7 @@ export const getRefreshTokenData = async (
     last_used_on: 0,
     ip_address: '121231',
     user_agent: '12312312',
+    generated_at: 123123,
     scope: '1111', // it is stringified scope object
     for_blacklisted_user: false,
   }
@@ -122,7 +124,15 @@ export const saveDataInRefreshTokenTable = async ({
     user_agent,
     for_blacklisted_user,
   })
+  return true
+}
 
+export const updateUserScope = async (
+  refresh_token: string,
+  user_id: string,
+  scope: string,
+  for_blacklisted_user: boolean
+) => {
   // if scope changed between issue of auth code and issue of refresh token, we need to update
   // it in refresh token. It needs to happen after token has been issued as status can change
   // after we check and before refresh token is issued
@@ -132,6 +142,7 @@ export const saveDataInRefreshTokenTable = async ({
     // if update fails delete refresh token and do not log user in
     // if deletion also fails simply throw and token will not be sent to the user
   }
+  console.log(refresh_token)
 
   return true
 }

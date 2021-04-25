@@ -14,6 +14,7 @@ import {
   deleteRefreshToken,
   updateRefreshTokenDataOnAccessToken,
   updateUserInfoOnLogin,
+  updateUserScope,
 } from './db'
 import { createHash, publicDecrypt } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
@@ -124,6 +125,7 @@ const myHandler: APIGatewayProxyHandler = async (
         revoked,
         last_used_on,
         scope,
+        generated_at,
         for_blacklisted_user,
       } = await getRefreshTokenData(queryParams.refresh_token)
 
@@ -134,6 +136,18 @@ const myHandler: APIGatewayProxyHandler = async (
         stored_user_id !== queryParams.user_id
       ) {
         throw HttpError(401, 'invalid refresh token')
+      }
+
+      if (Date.now() - generated_at < 5 * 60 * 1000 || times_used === 0) {
+        // due to eventual consistency, it is possible user scope was updated
+        // but did not get reflected in refresh_token scope
+        // so we check for user scope here and update if necessary.
+        await updateUserScope(
+          token,
+          stored_user_id,
+          scope,
+          for_blacklisted_user
+        )
       }
 
       if (
@@ -182,8 +196,8 @@ const myHandler: APIGatewayProxyHandler = async (
           })),
         })
       }
-      // user id can also be alias
-      const { code, code_verifier, user_id, is_alias } = queryParams
+
+      const { code, code_verifier, user_id } = queryParams
 
       if (!user_id || !/^[\w-]{5,40}$/i.test(user_id)) {
         throw HttpError(400, 'invalid user_id')
@@ -219,19 +233,13 @@ const myHandler: APIGatewayProxyHandler = async (
         throw HttpError(401, 'authorization code does not belong to this user')
       }
 
-      if (code_challenge_method === 'RS512') {
-        // decrypt the encryptedRandomString using public key
-        // get PUBKEY from user_id as user_id is alias in this case
-        // user_id = user_id returned by querying alias
-        // const decrypted = publicDecrypt(PUBKEY, Buffer.from(code_challenge, 'base64'));
-        // if (decrypted !== code_verifier) { throw 'error' }
-      } else if (
+      if (
         code_challenge !==
         createHash(code_challenge_method)
           .update(code_verifier, 'utf-8')
           .digest('hex')
       ) {
-        throw HttpError(401, 'invalid code_verifier')
+        throw HttpError(401, 'invalid code_verifier or code_challenge_method')
       }
 
       await removeAuthCode(code)

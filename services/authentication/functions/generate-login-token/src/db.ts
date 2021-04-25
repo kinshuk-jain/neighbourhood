@@ -75,20 +75,30 @@ export const removeAuthCode = async (code: string[]) => {
   return true
 }
 
-const getUserIdFromAlias = async (alias: string): Promise<string> => {
+export const getDataFromAlias = async (
+  alias: string
+): Promise<{
+  user_id: string
+  imei: string
+  pub_key: string
+}> => {
   console.log(
     'get user_id from alias by retrieving it from alias table in authentication',
     alias
   )
   // if alias not found, return error
 
-  return 'ssssssss'
+  return {
+    user_id: 'ssssssss',
+    imei: '1231231',
+    pub_key: '141212',
+  }
 }
 
 export const getUserDataFromAlias = async (
   alias: string
 ): Promise<IAuthUserData> => {
-  const user_id = await getUserIdFromAlias(alias)
+  const { user_id } = await getDataFromAlias(alias)
   const { status, data } = await axios.post(
     `${config[ENV].user_domain}/user/details`,
     {

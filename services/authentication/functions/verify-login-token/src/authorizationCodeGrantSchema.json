@@ -6,8 +6,7 @@
     "scope": { "type": "string" },
     "code": { "type": "string" },
     "code_verifier": { "type": "string" },
-    "user_id": { "type": "string" },
-    "is_alias": { "type": "boolean" }
+    "user_id": { "type": "string" }
   },
   "required": ["grant_type", "code", "code_verifier", "user_id"]
 }

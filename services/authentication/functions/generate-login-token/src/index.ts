@@ -4,7 +4,7 @@
 import middy from '@middy/core'
 import querystring from 'querystring'
 import axios from 'axios'
-import { randomBytes } from 'crypto'
+import { randomBytes, publicDecrypt } from 'crypto'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { validate } from 'jsonschema'
 import { v4 as uuidv4 } from 'uuid'
@@ -14,6 +14,7 @@ import {
   saveAuthCode,
   removeAuthCode,
   getUserDataFromAlias,
+  getDataFromAlias,
 } from './db'
 import logger from './logger'
 import { decryptedEnv } from './getDecryptedEnvs'
@@ -126,13 +127,14 @@ const myHandler: APIGatewayProxyHandler = async (
       state,
       code_challenge = '',
       code_challenge_method = '',
+      encrypted_verifier,
     } = event.queryStringParameters
 
     if (
       response_type.toLowerCase() !== 'code' ||
       !code_challenge ||
       !/^[\w-]+$/.test(code_challenge) ||
-      !['S256', 'RS512'].includes(code_challenge_method)
+      code_challenge_method !== 'S256'
     ) {
       throw HttpError(400, 'request has invalid params')
     }
@@ -164,6 +166,27 @@ const myHandler: APIGatewayProxyHandler = async (
     const authCode = randomBytes(32).toString('base64')
     if (userData.auth_code) {
       await removeAuthCode(userData.auth_code)
+    }
+
+    if (isAliasAuth) {
+      // encrypted_verifier is imei:curent_time:random_string encrypted with pvt key on user device and then result is base64 encoded
+      if (!encrypted_verifier) {
+        throw HttpError(404, 'not found')
+      }
+
+      const { imei, pub_key } = await getDataFromAlias(alias)
+      // decrypt the encrypted_verifier using public key
+      const decrypted = publicDecrypt(
+        pub_key,
+        Buffer.from(encrypted_verifier, 'base64')
+      ).toString('utf-8')
+      const decrypted_verifier = decrypted.split(':')
+      if (
+        decrypted_verifier[0] !== imei ||
+        Date.now() - parseInt(decrypted_verifier[1]) > 5 * 60 * 1000
+      ) {
+        throw HttpError(401, 'invalid encrypted_verifier')
+      }
     }
 
     await saveAuthCode({
@@ -218,7 +241,15 @@ const myHandler: APIGatewayProxyHandler = async (
       },
       body: JSON.stringify({
         status: 'success',
-        message: isAliasAuth ? 'authenticated' : 'email sent',
+        message: isAliasAuth
+          ? {
+              code: authCode,
+              scope: userData.scope,
+              state,
+              user_id,
+              first_login: userData.first_login,
+            }
+          : 'email sent',
       }),
     }
     return response

@@ -4,10 +4,10 @@ export const addUserAlias = async (
   imei: string,
   pub_key: string
 ): Promise<boolean> => {
-  // alias is user device imei encrypted with pvt key stored on user device
+  // alias is user device_imei:date.now() encrypted with pvt key stored on user device
   // verify the alias is signed imei of user device (alias is base64 encoded)
   // const signed_imei = crypto.publicDecrypt(pub_key, Buffer.from(alias, 'base64'))
-  // if (signed_imei !== imei) throw new Error('invalid operation')
+  // if (signed_imei.split(':')[0] !== imei) throw new Error('invalid operation')
   console.log(
     'adding alias for user in alias_table: ',
     alias,

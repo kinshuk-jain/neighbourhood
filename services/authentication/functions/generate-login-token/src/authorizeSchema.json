@@ -5,7 +5,8 @@
     "response_type": { "type": "string" },
     "state": { "type": "string" },
     "code_challenge": { "type": "string" },
-    "code_challenge_method": { "type": "string" }
+    "code_challenge_method": { "type": "string" },
+    "encrypted_verifier": { "type": "string" }
   },
   "required": [
     "response_type",
