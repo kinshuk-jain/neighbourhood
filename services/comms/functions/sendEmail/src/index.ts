@@ -60,14 +60,15 @@ export const handler: APIGatewayProxyHandler = async (
       ])
     }
 
-    // first login template
-    // delete user template
-    // blacklist user template
-    // unblacklust user template
-    // scope change template
-    // email change template
-    // society created email
-    // create society request received
+    // first-login template
+    // delete-user template
+    // blacklist-user template
+    // unblacklist-user template
+    // make-admin template
+    // remove-admin template
+    // email-change template
+    // society-created email
+    // create-society-request received
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Basic')) {
@@ -111,7 +112,7 @@ export const handler: APIGatewayProxyHandler = async (
       throw HttpError(400, 'invalid template name')
     }
 
-    await templateNameToFuncMapping[template](recipients, params)
+    await templateNameToFuncMapping[template](recipients, params, subject)
 
     response = {
       statusCode: 200,

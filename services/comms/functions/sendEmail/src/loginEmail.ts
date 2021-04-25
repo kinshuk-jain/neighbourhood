@@ -6,7 +6,8 @@ import React from 'react'
 
 export function sendLoginCredsEmail(
   recipient: string[] = [''],
-  params: { [key: string]: string }
+  params: { [key: string]: string },
+  subject: string
 ) {
   if (!Array.isArray(recipient)) {
     throw new Error('recipient must be an array of recipients')
@@ -18,7 +19,6 @@ export function sendLoginCredsEmail(
     throw new Error('input missing: last_name')
   }
 
-  const subject = 'Your login for neighbourhood.com'
   const sender = 'Neighbourhood Login <no-reply@neighbourhood.com>'
 
   if (process.env.ENVIRONMENT === 'development') {
@@ -31,7 +31,7 @@ export function sendLoginCredsEmail(
   return sendEmail({
     from: sender,
     to: recipient,
-    subject,
+    subject: subject ? subject : LoginEmail.getDefaultSubject(),
     bodyText: LoginEmail.getNonHtmlSupportText(),
     // FIXME: optimize this, We can store a stringified version already
     // can create a template in SES and sendTemplatedEmail

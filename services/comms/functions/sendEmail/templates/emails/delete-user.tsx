@@ -14,6 +14,10 @@ export class DeleteUserEmail extends React.Component {
     super(props)
   }
 
+  static getDefaultSubject() {
+    return 'Your login for neighbourhood.com'
+  }
+
   static getName() {
     return 'DeleteUserEmailProps'
   }

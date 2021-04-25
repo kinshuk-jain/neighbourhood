@@ -72,13 +72,17 @@ export const updateSocietyVerifiedStatus = async (
   user_id: string,
   verificationStatus: boolean
 ) => {
+  console.log(
+    'update society verified status and get society data from DB. Society_type will be passed below'
+  )
+
   // add this user in admin list of current society
   logger.info({ society_id, user_id, verified: verificationStatus })
 
   // update scope, society_list in user-data for admin
   const { status } = await axios.post(
     `${config[ENV].user_domain}/user/${user_id}/society-list/add`,
-    { society_id, user_id, privilege: 'admin' },
+    { society_id, user_id, privilege: 'admin', society_type: 'residential' },
     {
       timeout: 10000, // 10s timeout
       auth: {

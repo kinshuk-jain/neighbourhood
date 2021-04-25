@@ -15,7 +15,7 @@ import {
   updateRefreshTokenDataOnAccessToken,
   updateUserInfoOnLogin,
 } from './db'
-import { createHash } from 'crypto'
+import { createHash, publicDecrypt } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
 import { decryptedEnv } from './getDecryptedEnvs'
 
@@ -182,8 +182,8 @@ const myHandler: APIGatewayProxyHandler = async (
           })),
         })
       }
-
-      const { code, code_verifier, user_id } = queryParams
+      // user id can also be alias
+      const { code, code_verifier, user_id, is_alias } = queryParams
 
       if (!user_id || !/^[\w-]{5,40}$/i.test(user_id)) {
         throw HttpError(400, 'invalid user_id')
@@ -219,7 +219,13 @@ const myHandler: APIGatewayProxyHandler = async (
         throw HttpError(401, 'authorization code does not belong to this user')
       }
 
-      if (
+      if (code_challenge_method === 'RS512') {
+        // decrypt the encryptedRandomString using public key
+        // get PUBKEY from user_id as user_id is alias in this case
+        // user_id = user_id returned by querying alias
+        // const decrypted = publicDecrypt(PUBKEY, Buffer.from(code_challenge, 'base64'));
+        // if (decrypted !== code_verifier) { throw 'error' }
+      } else if (
         code_challenge !==
         createHash(code_challenge_method)
           .update(code_verifier, 'utf-8')

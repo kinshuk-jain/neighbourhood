@@ -8,3 +8,5 @@
 - '/services/user-data/authentication-api/staging/pass-key'
 - '/services/user-data/society-mgmt/production/pass-key'
 - '/services/user-data/society-mgmt/staging/pass-key'
+- '/services/user-data/society-mgmt-api/staging/pass-key'
+- '/services/user-data/society-mgmt-api/production/pass-key'

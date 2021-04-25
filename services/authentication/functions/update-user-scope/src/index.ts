@@ -95,7 +95,7 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'missing body')
     }
 
-    const { user_id, prev_scope, new_scope } = JSON.parse(event.body)
+    const { user_id, prev_scope, new_scope, blacklist } = JSON.parse(event.body)
 
     if (!/^[\w-]{5,40}$/.test(user_id)) {
       throw HttpError(400, 'invalid user id')
@@ -123,7 +123,8 @@ const myHandler = async (event: any, context: any) => {
     await updateUserScope(
       user_id,
       JSON.stringify(prev_scope),
-      JSON.stringify(new_scope)
+      JSON.stringify(new_scope),
+      blacklist
     )
 
     response = {

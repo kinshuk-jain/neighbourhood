@@ -6,12 +6,19 @@ import { validate } from 'jsonschema'
 import updateUserPostLoginSchema from './updateSchema.json'
 import { decryptedEnv } from './getDecryptedEnvs'
 import { verifyToken } from './verifyAuthToken'
+import { getSocietyData, sendEmail } from './helpers'
 
 import {
   updateUserData,
   updateUserSocietyApprovalStatus,
   updatePostLoginUserData,
   updateAddress,
+  updateUserScope,
+  updateUserBlacklistStatus,
+  removeUserFromSociety,
+  addSocietyToUserSocietyList,
+  addUserToPendingListOfSociety,
+  getUserData,
 } from './db'
 
 // map of usernames to their password keys - allowed to access this service
@@ -168,7 +175,6 @@ const myHandler = async (event: any, context: any) => {
       }
     }
 
-    let responseBody
     const route_path_tokens = (route_path || [])[1].split('/')
 
     switch (route_path_tokens[0]) {
@@ -188,15 +194,9 @@ const myHandler = async (event: any, context: any) => {
             })),
           })
         }
-        if (await updatePostLoginUserData(event.body)) {
-          responseBody = {
-            status: 'success',
-            message: 'successfully updated',
-          }
-        } else {
+        if (!(await updatePostLoginUserData(event.body))) {
           throw HttpError(500, 'error updating user')
         }
-        // update post login - just update it
         break
       case 'phone':
         checkPrivilege(accessScope, ['sysadmin', 'user'])
@@ -224,9 +224,43 @@ const myHandler = async (event: any, context: any) => {
         // TODO: do when feeds are done
         break
       case 'society-list':
-      // if residential society, simply add/remove society_id to users society list
-      // if generic society, removal is simple. In case of addition, send notification to admins
-      // add to list of pending approval in db
+        verifySocietyId(event.body.society_id)
+        if (!event.body.user_id.match(/^[\w-]{5,40}$/)) {
+          throw HttpError(400, 'invalid user id')
+        }
+        const privilegedAccess = isServiceRequest || accessScope.root === true
+        if (route_path_tokens[1] === 'add') {
+          // get society data
+          const { society_type } = !privilegedAccess
+            ? await getSocietyData(event.body.society_id)
+            : event.body
+          if (society_type === 'residential') {
+            await addSocietyToUserSocietyList(
+              event.body.society_id,
+              privilegedAccess ? event.body.user_id : userId,
+              privilegedAccess ? event.body.privilege : 'user'
+            )
+          } else if (society_type === 'general') {
+            // add to list of pending approval
+            await addUserToPendingListOfSociety(
+              event.body.society_id,
+              privilegedAccess ? event.body.user_id : userId
+            )
+            // send notification to admins
+          } else {
+            throw HttpError(400, 'invalid society_type')
+          }
+        } else if (route_path_tokens[1] === 'remove') {
+          await removeUserFromSociety(
+            event.body.society_id,
+            isServiceRequest || accessScope[event.body.society_id] === 'admin'
+              ? event.body.user_id
+              : userId
+          )
+        } else {
+          throw HttpError(404, 'Not found')
+        }
+        break
       case 'address':
         if (!/^[a-zA-Z0-9-,\s\/]{2,60}$/i.test(event.body.street_address)) {
           throw HttpError(400, 'invalid street address')
@@ -244,7 +278,7 @@ const myHandler = async (event: any, context: any) => {
       case 'approval-status':
         // only admin privilege
         verifySocietyId(event.body.society_id)
-        if (accessScope[event.body.society_id]) {
+        if (accessScope[event.body.society_id] === 'admin') {
           await updateUserSocietyApprovalStatus(
             event.body.society_id,
             event.body.user_id
@@ -253,13 +287,63 @@ const myHandler = async (event: any, context: any) => {
           throw HttpError(403, 'Forbidden')
         }
         break
+      case 'scope':
+        verifySocietyId(event.body.society_id)
+        if (
+          !event.body.user_id.match(/^[\w-]{5,40}$/) ||
+          typeof event.body.increase_scope !== 'boolean'
+        ) {
+          throw HttpError(400, 'invalid value for user_id or increase_scope')
+        }
+        if (accessScope[event.body.society_id] === 'admin') {
+          await updateUserScope(
+            event.body.society_id,
+            event.body.user_id,
+            event.body.increase_scope
+          )
+          const userData = await getUserData(event.body.user_id)
+          const societyData = await getSocietyData(event.body.society_id)
+          await sendEmail(
+            [userData.email],
+            '',
+            event.body.increase_scope ? 'make-admin' : 'remove-admin',
+            {
+              first_name: userData.first_name,
+              society_name: societyData.name,
+            },
+            event.body.user_id
+          )
+          // send notification
+        }
+        break
+      case 'blacklist':
+        checkPrivilege(accessScope, ['sysadmin'])
+        if (
+          !event.body.user_id.match(/^[\w-]{5,40}$/) ||
+          typeof event.body.is_blacklisted !== 'boolean'
+        ) {
+          throw HttpError(400, 'invalid value for user_id or is_blacklisted')
+        }
+        await updateUserBlacklistStatus(
+          event.body.user_id,
+          event.body.is_blacklisted
+        )
+        const userData = await getUserData(event.body.user_id)
+        await sendEmail(
+          [userData.email],
+          '',
+          event.body.is_blacklisted ? 'blacklist-user' : 'unblacklist-user',
+          {
+            first_name: userData.first_name,
+          },
+          event.body.user_id
+        )
+        break
+      // send notification
       default:
         throw HttpError(404, 'not found')
     }
-
-    // update user black list status - send email and signout if refresh_token is present after making call to auth
-    // update user scope - can only be promoted to admin or demoted to user, send email on scope update and signout if refresh_token is present after making call to auth
-    // update email
+    // TODO: add update user email flow
 
     response = {
       isBase64Encoded: false,
@@ -269,7 +353,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully logged out',
+        message: 'successfully updated',
       }),
     }
     return response

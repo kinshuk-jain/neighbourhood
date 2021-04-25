@@ -1,7 +1,11 @@
-export const deleteUser = async (user_id: string): Promise<boolean> => {
+export const deleteUser = async (
+  user_id: string,
+  deletion_reason: string
+): Promise<boolean> => {
   // do not throw error if user is not present
   // if user present delete user
-  console.log('deleting user..: ', user_id)
+  // save deletion_reason to db
+  console.log('deleting user..: ', user_id, deletion_reason)
   return true
 }
 

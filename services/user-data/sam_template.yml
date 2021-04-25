@@ -95,6 +95,12 @@ Resources:
   UserDataCommsApiKeyProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/comms-api/production/pass-key'
+  UserDataSocietyMgmtApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/society-mgmt-api/staging/pass-key'
+  UserDataSocietyMgmtApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/society-mgmt-api/production/pass-key'
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -266,6 +272,16 @@ Resources:
               !If [
                 CreateStagingResources,
                 !Ref UserDataSocietyMgmtServiceTokenStaging,
+                '',
+              ],
+            ]
+          SOCIETY_MGMT_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataSocietyMgmtApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref UserDataSocietyMgmtApiKeyStaging,
                 '',
               ],
             ]

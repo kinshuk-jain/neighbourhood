@@ -18,6 +18,12 @@ import {
   getDetails,
 } from './db'
 import { verifyToken } from './verifyAuthToken'
+import { decryptedEnv } from './getDecryptedEnvs'
+
+// map of usernames to their password keys - allowed to access this service
+const USER_NAMES: { [key: string]: string } = {
+  user_data: 'USER_DATA_SERVICE_TOKEN',
+}
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -76,25 +82,55 @@ const myHandler: APIGatewayProxyHandler = async (
 
     const authToken = event.headers['Authorization']
 
-    if (!authToken || !authToken.startsWith('Bearer')) {
+    if (!authToken) {
       throw HttpError(401, 'unauthorized')
     }
 
-    // get user id from authToken
-    const { blacklisted, user_id, scope: serializedScope } =
-      (await verifyToken(authToken.split(' ')[1])) || {}
+    let isServiceRequest = false
+    let accessScope: Record<string, any> = {},
+      userId = ''
 
-    const scope = JSON.parse(serializedScope)
+    if (authToken.startsWith('Basic')) {
+      // wait for resolution for 1s
+      if (!process.env.USER_DATA_SERVICE_TOKEN) {
+        await Promise.race([
+          decryptedEnv,
+          new Promise((_, reject) => {
+            setTimeout(() => {
+              reject('internal error: env vars not loaded')
+            }, 1000)
+          }),
+        ])
+      }
 
-    if (!user_id) {
-      throw HttpError(
-        500,
-        'internal service error: error decoding access token'
-      )
-    }
+      // verify basic auth and get scope from token
+      const token = authToken.split(' ')[1]
+      const [user = '', pass] = Buffer.from(token, 'base64')
+        .toString('ascii')
+        .split(':')
 
-    if (blacklisted) {
-      throw HttpError(403, 'user blacklisted, not allowed')
+      if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
+        throw HttpError(401, 'unauthorized')
+      }
+      isServiceRequest = true
+    } else if (authToken.startsWith('Bearer')) {
+      // decode token
+      const { blacklisted, user_id, scope } =
+        (await verifyToken(authToken.split(' ')[1])) || {}
+
+      if (!user_id) {
+        throw HttpError(
+          500,
+          'internal service error: error decoding access token'
+        )
+      }
+      if (blacklisted) {
+        throw HttpError(403, 'user blacklisted, not allowed')
+      }
+      accessScope = JSON.parse(scope)
+      userId = user_id
+    } else {
+      throw HttpError(401, 'unauthorized')
     }
 
     if (
@@ -112,12 +148,20 @@ const myHandler: APIGatewayProxyHandler = async (
       throw HttpError(404, 'not found')
     }
 
-    if (scope.root !== true && !scope[society_id]) {
+    if (
+      !isServiceRequest &&
+      accessScope.root !== true &&
+      !accessScope[society_id]
+    ) {
       throw HttpError(404, 'not found')
     }
 
     const checkAdminPrivilege = (scope: Record<string, any>) => {
-      if (scope.root !== true && scope[society_id] !== 'admin')
+      if (
+        !isServiceRequest &&
+        scope.root !== true &&
+        scope[society_id] !== 'admin'
+      )
         throw HttpError(403, 'not allowed')
     }
 
@@ -127,37 +171,37 @@ const myHandler: APIGatewayProxyHandler = async (
     let responseBody
     if (route_path_tokens[0] === 'contacts') {
       // return imp contacts of society
-      responseBody = getContacts(society_id)
+      responseBody = await getContacts(society_id)
     } else if (route_path_tokens[0] === 'address') {
       // return address of society
-      responseBody = getAddress(society_id)
+      responseBody = await getAddress(society_id)
     } else if (route_path_tokens[0] === 'name') {
       // return name of society
-      responseBody = getName(society_id)
+      responseBody = await getName(society_id)
     } else if (route_path_tokens[0] === 'details') {
       // return details of society like type, name, address for now
-      checkAdminPrivilege(scope)
-      responseBody = getDetails(society_id)
+      checkAdminPrivilege(accessScope)
+      responseBody = await getDetails(society_id)
     } else if (route_path_tokens[0] === 'blacklist') {
       // admin privilege
-      checkAdminPrivilege(scope)
+      checkAdminPrivilege(accessScope)
       // return blacklist status of society
-      responseBody = getStatus(society_id)
+      responseBody = await getStatus(society_id)
     } else if (route_path_tokens[0] === 'invoice') {
       // admin privilege
-      checkAdminPrivilege(scope)
+      checkAdminPrivilege(accessScope)
       // return invoice of society
-      responseBody = getInvoice(society_id)
+      responseBody = await getInvoice(society_id)
     } else if (route_path_tokens[0] === 'admins') {
       // admin privilege
-      checkAdminPrivilege(scope)
+      checkAdminPrivilege(accessScope)
       // return admins of society
-      responseBody = getAdmins(society_id)
+      responseBody = await getAdmins(society_id)
     } else if (route_path_tokens[0] === 'verification') {
       // admin privilege
-      checkAdminPrivilege(scope)
+      checkAdminPrivilege(accessScope)
       // return verification status of society
-      responseBody = getVerificationStatus(society_id)
+      responseBody = await getVerificationStatus(society_id)
     } else {
       throw HttpError(404, 'not found')
     }

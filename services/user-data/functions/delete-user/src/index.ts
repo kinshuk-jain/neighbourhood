@@ -104,9 +104,19 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(403, 'not allowed')
     }
 
+    if (!event.body) {
+      throw HttpError(400, 'cannot delete user. reason not specified')
+    }
+
+    const { deletion_reason } = JSON.parse(event.body)
+
+    if (!deletion_reason) {
+      throw HttpError(400, 'deletion_reason not present in body')
+    }
+
     const userData = await getUserData(user_id)
 
-    await deleteUser(user_id)
+    await deleteUser(user_id, deletion_reason)
     try {
       const { status } = await axios.post(
         `${config[ENV].comms_domain}/comms/email/send`,
