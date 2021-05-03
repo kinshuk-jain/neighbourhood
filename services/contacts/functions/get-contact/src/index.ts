@@ -1,6 +1,8 @@
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import logger from './logger'
+import { verifyToken } from './verifyAuthToken'
+import { getContactData } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -54,11 +56,50 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.society_id ||
+      !event.pathParameters.contact_id
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    if (
+      !event.pathParameters.contact_id.match(/^\+[0-9]{2,3}\s[0-9]{6,18}$/) ||
+      !event.pathParameters.society_id.match(/^[\w-]{5,40}$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
+
+    // get user id from authToken
+    const { user_id, scope: serializedScope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    const scope = JSON.parse(serializedScope)
+
+    // this checks if user has permission to access the society
+    if (!scope[event.pathParameters.society_id] && scope.root !== true) {
+      throw HttpError(404, 'Not found')
+    }
+
+    const data = await getContactData(
+      event.pathParameters.society_id,
+      event.pathParameters.contact_id
+    )
 
     response = {
       isBase64Encoded: false,
@@ -68,7 +109,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully deleted user',
+        data,
       }),
     }
     return response

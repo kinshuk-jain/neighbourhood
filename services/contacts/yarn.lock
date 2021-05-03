@@ -502,6 +502,13 @@
     content-type "^1.0.4"
     http-errors "^1.6.3"
 
+"@middy/http-json-body-parser@^2.2.0":
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/@middy/http-json-body-parser/-/http-json-body-parser-2.2.0.tgz#b9043618f880c5ad6babf6b0545f1222ca1ab639"
+  integrity sha512-T1MSjjg8HxD0zvE8Uwh3/5ncKSUtqgHFJ55neBUBiNzo+5xipcwQDvMFOrxpTqabEpbgdcVKnIfrYxyGnungdg==
+  dependencies:
+    http-errors "1.8.0"
+
 "@sinonjs/commons@^1.7.0":
   version "1.8.2"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.2.tgz#858f5c4b48d80778fde4b9d541f27edc0d56488b"
@@ -1721,7 +1728,7 @@ html-escaper@^2.0.0:
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
   integrity sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==
 
-http-errors@^1.6.3:
+http-errors@1.8.0, http-errors@^1.6.3:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/http-errors/-/http-errors-1.8.0.tgz#75d1bbe497e1044f51e4ee9e704a62f28d336507"
   integrity sha512-4I8r0C5JDhT5VkvI47QktDW75rNlGVsUf/8hzjCC/wkWI/jdTRmBb9aI7erSG82r1bjKY3F6k28WnsVxB1C73A==
@@ -2367,6 +2374,11 @@ jest@^26.6.3:
     "@jest/core" "^26.6.3"
     import-local "^3.0.2"
     jest-cli "^26.6.3"
+
+"jose@npm:jose-node-cjs-runtime@3.11.3":
+  version "3.11.3"
+  resolved "https://registry.yarnpkg.com/jose-node-cjs-runtime/-/jose-node-cjs-runtime-3.11.3.tgz#3ef85ce528b00bd03c7c358517252d34ad02f881"
+  integrity sha512-BMlluOSxexKyqugN24mrcHCkyG8/ES1uqBgTo6h9UVXdsWCPYMwyREVZ2zNSZRtUIAcI4ot0MBgCu7WipIZ5BQ==
 
 js-tokens@^4.0.0:
   version "4.0.0"

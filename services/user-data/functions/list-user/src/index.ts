@@ -92,7 +92,7 @@ const myHandler = async (event: any, context: any) => {
     const { valid, errors } = validate(event.queryStringParameters, schema)
 
     if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
+      throw HttpError(400, 'query params missing required parameters', {
         missing_params: errors.map((error) => ({
           property: error.property,
           message: error.message,

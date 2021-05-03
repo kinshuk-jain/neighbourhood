@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './updateSchema.json'
+import { verifyToken } from './verifyAuthToken'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -59,8 +60,30 @@ const myHandler = async (event: any, context: any) => {
     logger.info(event)
     const authToken = event.headers['Authorization']
 
-    if (!authToken) {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
+    }
+
+    // get user id from authToken
+    const { blacklisted, user_id, scope } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+
+    const { society_id } = event.pathParameters
+
+    // only society admin can create a contact
+    if (!scope || scope[society_id] !== 'admin') {
+      throw HttpError(404, 'not found')
+    }
+
+    if (blacklisted) {
+      throw HttpError(403, 'User blacklisted. Cannot create contact')
     }
 
     const { valid, errors } = validate(event.body, schema)

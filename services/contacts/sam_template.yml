@@ -96,14 +96,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /contacts/{contact_id}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudContactHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /contacts/{contact_id}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudContactHttpApiStaging
         ApiProd:
@@ -111,7 +111,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudContactHttpApiProduction
-            Path: /contacts/{contact_id}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: DELETE
 
   getContactFunction:
@@ -137,14 +137,14 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /contacts/{contact_id}/{proxy+}
+              Path: /contacts/{contact_id}/society/{society_id}
               Method: GET
               ApiId: !Ref crudContactHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /contacts/{contact_id}/{proxy+}
+              Path: /contacts/{contact_id}/society/{society_id}
               Method: GET
               ApiId: !Ref crudContactHttpApiStaging
           ApiProd:
@@ -152,7 +152,7 @@ Resources:
             Condition: CreateProdResources
             Properties:
               ApiId: !Ref crudContactHttpApiProduction
-              Path: /contacts/{contact_id}/{proxy+}
+              Path: /contacts/{contact_id}/society/{society_id}
               Method: GET
 
   listContactFunction:
@@ -178,14 +178,14 @@ Resources:
             Type: HttpApi
             Condition: CreateDevResources
             Properties:
-              Path: /contacts/list
+              Path: /contacts/society/{society_id}/list
               Method: GET
               ApiId: !Ref crudContactHttpApiDevelopment
           ApiStaging:
             Type: HttpApi
             Condition: CreateStagingResources
             Properties:
-              Path: /contacts/list
+              Path: /contacts/society/{society_id}/list
               Method: GET
               ApiId: !Ref crudContactHttpApiStaging
           ApiProd:
@@ -193,7 +193,7 @@ Resources:
             Condition: CreateProdResources
             Properties:
               ApiId: !Ref crudContactHttpApiProduction
-              Path: /contacts/list
+              Path: /contacts/society/{society_id}/list
               Method: GET
 
   updateContactFunction:
@@ -260,14 +260,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /contacts
+            Path: /contacts/society/{society_id}
             Method: POST
             ApiId: !Ref crudContactHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /contacts
+            Path: /contacts/society/{society_id}
             Method: POST
             ApiId: !Ref crudContactHttpApiStaging
         ApiProd:
@@ -275,26 +275,26 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudContactHttpApiProduction
-            Path: /contacts
+            Path: /contacts/society/{society_id}
             Method: POST
 
   crudContactHttpApiDevelopment:
     Type: AWS::Serverless::HttpApi
     Condition: CreateDevResources
     StageName: development
-    Description: delete user from system
+    Description: CRUD contact api development
     DisableExecuteApiEndpoint: false
 
   crudContactHttpApiStaging:
     Type: AWS::Serverless::HttpApi
     Condition: CreateStagingResources
     StageName: staging
-    Description: delete user from system
+    Description: CRUD contact api staging
     DisableExecuteApiEndpoint: false
 
   crudContactHttpApiProduction:
     Type: AWS::Serverless::HttpApi
     Condition: CreateProdResources
     StageName: production
-    Description: delete user from system
+    Description: CRUD contact api production
     DisableExecuteApiEndpoint: false

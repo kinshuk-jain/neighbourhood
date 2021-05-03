@@ -1,0 +1,12 @@
+{
+  "id": "/contacts/list",
+  "type": "object",
+  "properties": {
+    "page_number": { "type": "string" },
+    "page_size": { "type": "string" },
+    "filter": {
+      "enum": ["category", "postal_code"]
+    },
+    "value": { "type": "string" }
+  }
+}
