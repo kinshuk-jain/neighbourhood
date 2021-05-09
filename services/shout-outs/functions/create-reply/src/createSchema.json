@@ -3,10 +3,11 @@
   "type": "object",
   "properties": {
     "user_id": { "type": "string" },
+    "user_name": { "type": "string" },
     "society_id": { "type": "string" },
     "created_at": { "type": "string" },
     "post_id": { "type": "array", "items": { "type": "string" } },
     "content": { "type": "string" }
   },
-  "required": ["user_id", "created_at", "post_id", "content"]
+  "required": ["user_id", "user_name", "created_at", "post_id", "content"]
 }

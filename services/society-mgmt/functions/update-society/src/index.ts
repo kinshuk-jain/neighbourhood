@@ -19,8 +19,6 @@ import {
   updateSocietyVerifiedStatus,
   addSocietyAdmin,
   removeSocietyAdmin,
-  addSocietyImpContact,
-  removeSocietyImpContact,
 } from './db'
 
 import { v4 as uuidv4 } from 'uuid'
@@ -250,23 +248,6 @@ const myHandler: APIGatewayProxyHandler = async (
         await addSocietyAdmin(society_id, id, email)
       } else if (route_path_tokens[1] === 'remove') {
         await removeSocietyAdmin(society_id, id)
-      } else {
-        isRouteNotFound = true
-      }
-    } else if (route_path_tokens[0] === 'contact') {
-      // admin privilege
-      checkPrivilege(scope, ['admin', 'sysadmin'])
-      schemaValidation(event.body, updateMemberSchema)
-      const { id } = event.body
-
-      if (!id.match(/^[\w-]{5,40}$/)) {
-        throw HttpError(404, 'not found')
-      }
-
-      if (route_path_tokens[1] === 'add') {
-        await addSocietyImpContact(society_id, id)
-      } else if (route_path_tokens[1] === 'remove') {
-        await removeSocietyImpContact(society_id, id)
       } else {
         isRouteNotFound = true
       }

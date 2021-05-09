@@ -3,11 +3,19 @@
   "type": "object",
   "properties": {
     "user_id": { "type": "string" },
+    "user_name": { "type": "string" },
     "society_id": { "type": "string" },
     "type": { "type": "string" },
     "created_at": { "type": "number" },
     "image_urls": { "type": "array", "items": { "type": "string" } },
     "content": { "type": "string" }
   },
-  "required": ["user_id", "society_id", "type", "created_at", "content"]
+  "required": [
+    "user_id",
+    "user_name",
+    "society_id",
+    "type",
+    "created_at",
+    "content"
+  ]
 }

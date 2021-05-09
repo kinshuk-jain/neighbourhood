@@ -96,14 +96,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{type}/{id}
+            Path: /shout-outs/{type}/{id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{type}/{id}
+            Path: /shout-outs/{type}/{id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -111,7 +111,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{type}/{id}
+            Path: /shout-outs/{type}/{id}/society/{society_id}
             Method: DELETE
 
   getFunction:
@@ -137,14 +137,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -152,7 +152,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
             Method: GET
 
   listFunction:

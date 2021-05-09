@@ -12,7 +12,6 @@ import {
   getName,
   getInvoice,
   getAddress,
-  getContacts,
   getStatus,
   getVerificationStatus,
   getDetails,
@@ -169,10 +168,7 @@ const myHandler: APIGatewayProxyHandler = async (
     // this line should not throw as we have already verified url
     const route_path_tokens = (route_path || [])[1].split('/')
     let responseBody
-    if (route_path_tokens[0] === 'contacts') {
-      // return imp contacts of society
-      responseBody = await getContacts(society_id)
-    } else if (route_path_tokens[0] === 'address') {
+    if (route_path_tokens[0] === 'address') {
       // return address of society
       responseBody = await getAddress(society_id)
     } else if (route_path_tokens[0] === 'name') {

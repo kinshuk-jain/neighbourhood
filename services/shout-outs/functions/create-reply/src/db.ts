@@ -11,17 +11,21 @@ export const createReplyToPost = async ({
   post_id,
   created_at,
   content,
+  user_name,
 }: {
   user_id: string
   post_id: string
   created_at: string
   content: string
+  user_name: string
 }): Promise<Record<string, any>> => {
   return {
     reply_id: uuidv4(),
     user_id,
     post_id,
+    user_name,
     created_at,
+    // need to send this data to content moderation api before saving
     content: encodeURIComponent(content), // decode the content before returning back to frontend
     reported_by: [], // list of user_id's
   }

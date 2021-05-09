@@ -68,7 +68,6 @@ export const addSocietyRecord = async ({
     latitude: lat,
     longitude: lng,
     address,
-    imp_contacts: [], // array of contact ids
     society_type,
     show_directory,
     delete_request_by: [], // list of users who have requested deletion of this society

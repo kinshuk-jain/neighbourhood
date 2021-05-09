@@ -119,15 +119,3 @@ export const removeSocietyAdmin = async (
   // jsut remove user from admin list
   logger.info({ society_id, user_id }) // remove this user_id from list of admins
 }
-export const addSocietyImpContact = async (
-  society_id: string,
-  contact_id: string
-) => {
-  logger.info({ society_id, contact_id }) // add this contact_id to list of imp_contacts
-}
-export const removeSocietyImpContact = async (
-  society_id: string,
-  contact_id: string
-) => {
-  logger.info({ society_id, contact_id }) // remove this contact_id from list of imp_contacts
-}

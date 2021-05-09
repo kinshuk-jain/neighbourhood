@@ -62,6 +62,8 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'invalid post_id')
     } else if (event.body.created_at < Date.now() - 3600 * 1000) {
       throw HttpError(400, 'invalid created_at value')
+    } else if (!event.body.user_name.match(/^[\w-]{5,60}$/)) {
+      throw HttpError(400, 'invalid user_name')
     }
 
     const replyData = await createReplyToPost(event.body)

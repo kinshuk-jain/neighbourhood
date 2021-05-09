@@ -1,7 +1,3 @@
-export const getContacts = async (society_id: string) => {
-  // get only if society is not deleted
-  console.info('get contacts: ', society_id)
-}
 export const getStatus = async (society_id: string) => {
   // get only if society is not deleted
   console.info('get status: ', society_id)
