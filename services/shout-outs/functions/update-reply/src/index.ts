@@ -1,10 +1,11 @@
 import { HttpError } from './error'
 import logger from './logger'
 import middy from '@middy/core'
+import jsonBodyParser from '@middy/http-json-body-parser'
 import { setCorrelationId, errorHandler } from './middlewares'
 import { validate } from 'jsonschema'
 import { verifyToken } from './verifyAuthToken'
-import schema from './listSchema.json'
+import schema from './updateSchema.json'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -51,9 +52,6 @@ const myHandler = async (event: any, context: any) => {
         })),
       })
     }
-
-    // list posts by society, by user, by type
-
     return response
   } catch (e) {
     response = {
@@ -91,3 +89,4 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
+  .use(jsonBodyParser())

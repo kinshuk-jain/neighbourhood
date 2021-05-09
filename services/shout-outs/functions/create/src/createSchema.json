@@ -1,6 +1,13 @@
 {
   "id": "/create",
   "type": "object",
-  "properties": {},
-  "required": []
+  "properties": {
+    "user_id": { "type": "string" },
+    "society_id": { "type": "string" },
+    "type": { "type": "string" },
+    "created_at": { "type": "number" },
+    "image_urls": { "type": "array", "items": { "type": "string" } },
+    "content": { "type": "string" }
+  },
+  "required": ["user_id", "society_id", "type", "created_at", "content"]
 }

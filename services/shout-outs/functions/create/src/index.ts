@@ -6,6 +6,7 @@ import { setCorrelationId, errorHandler } from './middlewares'
 import { validate } from 'jsonschema'
 import { verifyToken } from './verifyAuthToken'
 import schema from './createSchema.json'
+import { createPost } from './db'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -37,10 +38,6 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(403, 'User blacklisted. Cannot create a post')
     }
 
-    // if (!scope[society_id] && scope.root !== true) {
-    //   throw HttpError(404, 'not found')
-    // }
-
     const { valid, errors } = validate(event.body, schema)
 
     if (!valid) {
@@ -52,6 +49,36 @@ const myHandler = async (event: any, context: any) => {
         })),
       })
     }
+
+    if (!scope[event.body.society_id] && scope.root !== true) {
+      throw HttpError(404, 'not found')
+    }
+
+    if (!event.body.society_id.match(/^[\w-]{5,40}$/)) {
+      throw HttpError(400, 'invalid society_id')
+    } else if (!event.body.user_id.match(/^[\w-]{5,40}$/)) {
+      throw HttpError(400, 'invalid user_id')
+    } else if (!event.body.type.match(/^[\w-]{5,40}$/)) {
+      throw HttpError(400, 'invalid type')
+    } else if (event.body.created_at < Date.now() - 3600 * 1000) {
+      throw HttpError(400, 'invalid created_at value')
+    }
+
+    const postData = await createPost(event.body)
+
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'success',
+        message: 'successfully created post',
+        data: postData,
+      }),
+    }
+
     return response
   } catch (e) {
     response = {
@@ -64,19 +91,6 @@ const myHandler = async (event: any, context: any) => {
         status: 'failure',
         error: e.message || 'Something went wrong',
         ...(e.body ? { body: e.body } : {}),
-      }),
-    }
-
-    response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'success',
-        message: '',
-        data: {},
       }),
     }
 

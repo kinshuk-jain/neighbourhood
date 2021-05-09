@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <invoke|run> <create|list|delete|get|update>"
+  echo "Usage: $0 <invoke|run> <create|list|delete|get|update|create-reply|update-reply>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(create|list|delete|get|update)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(create|list|delete|get|update|create-reply|update-reply)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -35,6 +35,10 @@ elif [[ "$FUNCTION" =~ ^(delete)$ ]]; then
   function_name="deleteFunction"
 elif [[ "$FUNCTION" =~ ^(list)$ ]]; then
   function_name="listFunction"
+elif [[ "$FUNCTION" =~ ^(create-reply)$ ]]; then
+  function_name="createReplyFunction"
+elif [[ "$FUNCTION" =~ ^(update-reply)$ ]]; then
+  function_name="updateReplyFunction"
 else
   display_usage
 fi

@@ -1,0 +1,12 @@
+{
+  "id": "/create-reply",
+  "type": "object",
+  "properties": {
+    "user_id": { "type": "string" },
+    "society_id": { "type": "string" },
+    "created_at": { "type": "string" },
+    "post_id": { "type": "array", "items": { "type": "string" } },
+    "content": { "type": "string" }
+  },
+  "required": ["user_id", "created_at", "post_id", "content"]
+}

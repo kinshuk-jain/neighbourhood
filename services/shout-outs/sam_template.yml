@@ -96,14 +96,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/{type}/{id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/{type}/{id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -111,7 +111,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/{type}/{id}
             Method: DELETE
 
   getFunction:
@@ -137,14 +137,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -152,7 +152,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: GET
 
   listFunction:
@@ -178,14 +178,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/list
+            Path: /shout-outs/post/list
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/list
+            Path: /shout-outs/post/list
             Method: GET
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -193,7 +193,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/list
+            Path: /shout-outs/post/list
             Method: GET
 
   updateFunction:
@@ -219,14 +219,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -234,7 +234,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
+            Path: /shout-outs/post/{post_id}
             Method: PUT
 
   createFunction:
@@ -260,14 +260,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs
+            Path: /shout-outs/post
             Method: POST
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs
+            Path: /shout-outs/post
             Method: POST
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -275,7 +275,89 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs
+            Path: /shout-outs/post
+            Method: POST
+
+  updateReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/update-reply/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: update replies
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/reply/{reply_id}
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/reply/{reply_id}
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/reply/{reply_id}
+            Method: PUT
+
+  createReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/create-reply/dist
+      Runtime: nodejs12.x
+      Role: ShoutOutsLambdaRole
+      MemorySize: 128
+      Timeout: 100
+      Description: create replies to posts
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/reply
+            Method: POST
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/reply
+            Method: POST
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/reply
             Method: POST
 
   crudShoutOutsHttpApiDevelopment:
