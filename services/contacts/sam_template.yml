@@ -219,14 +219,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /contacts/{contact_id}/{proxy+}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: POST
             ApiId: !Ref crudContactHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /contacts/{contact_id}/{proxy+}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: POST
             ApiId: !Ref crudContactHttpApiStaging
         ApiProd:
@@ -234,7 +234,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudContactHttpApiProduction
-            Path: /contacts/{contact_id}/{proxy+}
+            Path: /contacts/{contact_id}/society/{society_id}
             Method: POST
 
   createContactFunction:

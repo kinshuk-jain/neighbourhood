@@ -1,9 +1,11 @@
 const getCountryCodeFromCountry = (country: string): string => {
   const countryCodes: Record<string, string> = {
-    IN: '+91',
+    IN: '91',
   }
   return countryCodes[country]
 }
+
+const defaultCountry = 'IN'
 
 export const createContact = async (
   society_id: string,
@@ -32,16 +34,18 @@ export const createContact = async (
     if (phoneToken[1].startsWith('0')) {
       phoneToken[1] = phoneToken[1].slice(1)
     }
-    contact_id = phoneToken.join(' ')
+    contact_id = phoneToken.join('-').slice(1)
   } else {
-    let country_code = getCountryCodeFromCountry(address.country)
+    let country_code = getCountryCodeFromCountry(
+      address ? address.country : defaultCountry
+    )
     if (!country_code) {
       throw new Error('Phone country not supported')
     }
     if (contact_id.startsWith('0')) {
       contact_id = contact_id.slice(1)
     }
-    contact_id = country_code + ' ' + contact_id
+    contact_id = country_code + '-' + contact_id
   }
 
   console.log('creating contact for society', contact_id, society_id)
@@ -50,7 +54,7 @@ export const createContact = async (
     contact_id,
     first_name,
     last_name,
-    phone,
+    phone: '+' + contact_id,
     address,
     category,
   }

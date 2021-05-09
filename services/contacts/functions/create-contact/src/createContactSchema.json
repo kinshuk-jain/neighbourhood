@@ -15,7 +15,7 @@
         "country": { "type": "string" },
         "street_address": { "type": "string" }
       },
-      "required": ["postal_code", "city", "state", "street_address"]
+      "required": ["postal_code", "city", "state", "street_address", "country"]
     }
   },
   "required": ["phone", "last_name", "first_name", "category"]

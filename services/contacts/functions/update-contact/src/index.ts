@@ -5,6 +5,7 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import { validate } from 'jsonschema'
 import schema from './updateSchema.json'
 import { verifyToken } from './verifyAuthToken'
+import { updateContactsInSociety } from './db'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -58,6 +59,22 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.contact_id ||
+      !event.pathParameters.society_id
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    if (
+      !event.pathParameters.contact_id.match(/^\+[0-9]{2,3}\s[0-9]{6,18}$/) ||
+      !event.pathParameters.society_id.match(/^[\w-]{5,40}$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
@@ -65,7 +82,7 @@ const myHandler = async (event: any, context: any) => {
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope } =
+    const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
 
     if (!user_id) {
@@ -75,15 +92,17 @@ const myHandler = async (event: any, context: any) => {
       )
     }
 
-    const { society_id } = event.pathParameters
-
-    // only society admin can create a contact
-    if (!scope || scope[society_id] !== 'admin') {
-      throw HttpError(404, 'not found')
+    if (blacklisted) {
+      throw HttpError(403, 'User blacklisted. Cannot update contact')
     }
 
-    if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create contact')
+    const scope = JSON.parse(serializedScope)
+
+    if (
+      scope[event.pathParameters.society_id] !== 'admin' &&
+      scope.root !== true
+    ) {
+      throw HttpError(404, 'not found')
     }
 
     const { valid, errors } = validate(event.body, schema)
@@ -97,6 +116,12 @@ const myHandler = async (event: any, context: any) => {
       })
     }
 
+    const contactData = await updateContactsInSociety(
+      event.pathParameters.society_id,
+      event.pathParameters.contact_id,
+      event.body
+    )
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,
@@ -105,7 +130,8 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully logged out',
+        message: 'successfully udpated contact',
+        data: contactData,
       }),
     }
     return response

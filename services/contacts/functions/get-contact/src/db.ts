@@ -4,10 +4,10 @@ export const getContactData = async (
 ): Promise<Record<string, any>> => {
   console.log('get details for', society_id, contact_id)
   return {
-    contact_id: '+211231231231',
+    contact_id: '21-1231231231',
     first_name: 'value',
     last_name: 'value',
-    phone: '1231231231',
+    phone: '+12-1231231231',
     address: {},
     category: 'vendor',
   }
