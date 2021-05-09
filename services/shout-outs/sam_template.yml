@@ -1,0 +1,300 @@
+# This is the SAM template that represents the architecture of your serverless application
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-template-basics.html
+
+# The AWSTemplateFormatVersion identifies the capabilities of the template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  shout outs api
+
+# Transform section specifies one or more macros that AWS CloudFormation uses to process your template
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  EnvType:
+    Description: Environment type.
+    Default: development
+    Type: String
+    AllowedValues:
+      - production
+      - staging
+      - development
+    ConstraintDescription: must specify production or staging or development.
+
+Conditions:
+  CreateProdResources: !Equals
+    - !Ref EnvType
+    - production
+  CreateStagingResources: !Equals
+    - !Ref EnvType
+    - staging
+  CreateDevResources: !Equals
+    - !Ref EnvType
+    - development
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  ShoutOutsLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+        Version: '2012-10-17'
+      Policies:
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - kms:Decrypt
+                Effect: Allow
+                Resource:
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+            Version: '2012-10-17'
+          PolicyName: ShoutOutsLambdaKmsAccess
+        - PolicyDocument:
+            Statement:
+              - Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+            Version: '2012-10-17'
+          PolicyName: ShoutOutsLambdaBasicExecution
+
+  # Each Lambda function is defined by properties:
+  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  deleteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/delete/dist
+      Runtime: nodejs12.x
+      Role: ShoutOutsLambdaRole
+      MemorySize: 128
+      Timeout: 100
+      Description: delete post
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: DELETE
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: DELETE
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/{post_id}
+            Method: DELETE
+
+  getFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/get/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: get data for a post
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/{post_id}
+            Method: GET
+
+  listFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/list/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: list posts that belong to a set
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/list
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/list
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/list
+            Method: GET
+
+  updateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/update/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: update posts
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/{post_id}
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/{post_id}
+            Method: PUT
+
+  createFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/create/dist
+      Runtime: nodejs12.x
+      Role: ShoutOutsLambdaRole
+      MemorySize: 128
+      Timeout: 100
+      Description: create posts
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs
+            Method: POST
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs
+            Method: POST
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs
+            Method: POST
+
+  crudShoutOutsHttpApiDevelopment:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateDevResources
+    StageName: development
+    Description: CRUD shout outs api development
+    DisableExecuteApiEndpoint: false
+
+  crudShoutOutsHttpApiStaging:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateStagingResources
+    StageName: staging
+    Description: CRUD shout outs api staging
+    DisableExecuteApiEndpoint: false
+
+  crudShoutOutsHttpApiProduction:
+    Type: AWS::Serverless::HttpApi
+    Condition: CreateProdResources
+    StageName: production
+    Description: CRUD shout outs production
+    DisableExecuteApiEndpoint: false
