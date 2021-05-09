@@ -96,14 +96,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{type}/{id}/society/{society_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{type}/{id}/society/{society_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
             Method: DELETE
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -111,7 +111,48 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{type}/{id}/society/{society_id}
+            Path: /shout-outs/post/{post_id}/society/{society_id}
+            Method: DELETE
+
+  deleteReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/delete-reply/dist
+      Runtime: nodejs12.x
+      Role: ShoutOutsLambdaRole
+      MemorySize: 128
+      Timeout: 100
+      Description: delete reply
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/reply/{reply_id}/post/{post_id}
+            Method: DELETE
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/reply/{reply_id}/post/{post_id}
+            Method: DELETE
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/reply/{reply_id}/post/{post_id}
             Method: DELETE
 
   getFunction:

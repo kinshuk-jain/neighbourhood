@@ -35,7 +35,7 @@ const myHandler = async (event: any, context: any) => {
     }
 
     if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create a post')
+      throw HttpError(403, 'User blacklisted. Cannot create reply')
     }
 
     const { valid, errors } = validate(event.body, schema)

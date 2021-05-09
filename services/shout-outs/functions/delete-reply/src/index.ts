@@ -1,12 +1,9 @@
 import { HttpError } from './error'
 import logger from './logger'
 import middy from '@middy/core'
-import jsonBodyParser from '@middy/http-json-body-parser'
 import { setCorrelationId, errorHandler } from './middlewares'
-import { validate } from 'jsonschema'
 import { verifyToken } from './verifyAuthToken'
-import schema from './createSchema.json'
-import { createPost } from './db'
+import { deleteReply } from './db'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -15,6 +12,22 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.reply_id ||
+      !event.pathParameters.post_id
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    if (
+      !event.pathParameters.reply_id.match(/^[\w-]{5,40}$/) ||
+      !event.pathParameters.post_id.match(/^[\w-]{5,40}$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
@@ -25,8 +38,6 @@ const myHandler = async (event: any, context: any) => {
     const { blacklisted, user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
 
-    const scope = JSON.parse(serializedScope)
-
     if (!user_id) {
       throw HttpError(
         500,
@@ -35,38 +46,17 @@ const myHandler = async (event: any, context: any) => {
     }
 
     if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create a post')
+      throw HttpError(403, 'User blacklisted. Cannot delete reply')
     }
 
-    const { valid, errors } = validate(event.body, schema)
+    const scope = JSON.parse(serializedScope)
 
-    if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      })
-    }
-
-    if (!scope[event.body.society_id] && scope.root !== true) {
-      throw HttpError(404, 'not found')
-    }
-
-    if (!event.body.society_id.match(/^[\w-]{5,40}$/)) {
-      throw HttpError(400, 'invalid society_id')
-    } else if (!event.body.user_id.match(/^[\w-]{5,40}$/)) {
-      throw HttpError(400, 'invalid user_id')
-    } else if (!event.body.type.match(/^(post|notice)$/)) {
-      throw HttpError(400, 'invalid type')
-    } else if (event.body.created_at < Date.now() - 3600 * 1000) {
-      throw HttpError(400, 'invalid created_at value')
-    } else if (!event.body.user_name.match(/^[\w-]{5,60}$/)) {
-      throw HttpError(400, 'invalid user_name')
-    }
-
-    const postData = await createPost(event.body)
+    await deleteReply(
+      event.pathParameters.post_id,
+      event.pathParameters.reply_id,
+      user_id,
+      scope.root === true
+    )
 
     response = {
       isBase64Encoded: false,
@@ -76,8 +66,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully created post',
-        data: postData,
+        message: 'successfully deleted reply',
       }),
     }
 
@@ -105,4 +94,3 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

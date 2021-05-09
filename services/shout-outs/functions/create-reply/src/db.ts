@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Create a reply table
- * reply table has reply_id, content, post_id
+ * reply table has reply_id, content, post_id, user_id, user_name, created_at, reported_by
  * post_id is partition key and reply_id is sort key
  */
 
