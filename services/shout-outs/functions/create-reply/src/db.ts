@@ -25,6 +25,7 @@ export const createReplyToPost = async ({
     post_id,
     user_name,
     created_at,
+    edited: false,
     // need to send this data to content moderation api before saving
     content: encodeURIComponent(content), // decode the content before returning back to frontend
     reported_by: [], // list of user_id's

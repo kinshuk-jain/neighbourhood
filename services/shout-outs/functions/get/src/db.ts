@@ -8,6 +8,7 @@ export const getPostData = async (
     society_id,
     user_name: 'ballu baba',
     type: 'post',
+    edited: false,
     created_at: Date.now(),
     image_urls: [],
     content: decodeURIComponent('content'), // decode the content before returning back to frontend
@@ -17,6 +18,7 @@ export const getPostData = async (
       {
         reply_id: '123-123-123-123',
         post_id,
+        edited: false,
         user_name: 'babu bhaiya',
         created_at: Date.now(),
         content: decodeURIComponent('content'),

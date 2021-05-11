@@ -2,9 +2,8 @@ import { HttpError } from './error'
 import logger from './logger'
 import middy from '@middy/core'
 import { setCorrelationId, errorHandler } from './middlewares'
-import { validate } from 'jsonschema'
 import { verifyToken } from './verifyAuthToken'
-import schema from './listSchema.json'
+import { getPostsBySociety, getPostsByType, getPostsByUser } from './db'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -13,6 +12,7 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
@@ -20,7 +20,7 @@ const myHandler = async (event: any, context: any) => {
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope: serializedScope } =
+    const { user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
 
     const scope = JSON.parse(serializedScope)
@@ -32,27 +32,73 @@ const myHandler = async (event: any, context: any) => {
       )
     }
 
-    if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create a post')
+    const {
+      society_id,
+      filter,
+      value,
+      page_size = 20,
+      page_number = 1,
+    } = event.queryStringParameters
+
+    if (!/^[\w-]+$/i.test(filter) || (value && !/^[\w-.=;]+$/i.test(value))) {
+      throw HttpError(400, 'invalid filter value in query param')
     }
 
-    // if (!scope[society_id] && scope.root !== true) {
-    //   throw HttpError(404, 'not found')
-    // }
+    if (filter !== 'user') {
+      if (!society_id.match(/^[\w-]{5,40}$/)) {
+        throw HttpError(400, 'invalid society_id')
+      }
 
-    const { valid, errors } = validate(event.body, schema)
-
-    if (!valid) {
-      throw HttpError(400, 'body missing required parameters', {
-        missing_params: errors.map((error) => ({
-          property: error.property,
-          message: error.message,
-          name: error.name,
-        })),
-      })
+      if (!scope[society_id] && scope.root !== true) {
+        throw HttpError(404, 'not found')
+      }
     }
 
-    // list posts by society, by user, by type
+    let pageSize, pageNumber
+    try {
+      pageSize = parseInt(page_size)
+      pageNumber = parseInt(page_number)
+    } catch (e) {
+      throw new Error('page_size or page_number not an integer')
+    }
+
+    if (pageSize < 20) {
+      throw new Error('page size less than 20 now allowed')
+    } else if (pageSize > 200) {
+      throw new Error('page size more than 200 not allowed')
+    } else if (pageNumber < 1) {
+      throw new Error('page number less than 1 not allowed')
+    }
+
+    let posts: Record<string, any>[] = []
+
+    switch (filter) {
+      case 'society':
+        posts = await getPostsBySociety(society_id, pageNumber, pageSize)
+        break
+      case 'user':
+        posts = await getPostsByUser(
+          scope.root === true ? value : user_id,
+          pageNumber,
+          pageSize
+        )
+        break
+      case 'type':
+        posts = await getPostsByType(society_id, value, pageNumber, pageSize)
+        break
+    }
+
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'success',
+        data: posts,
+      }),
+    }
 
     return response
   } catch (e) {
@@ -66,19 +112,6 @@ const myHandler = async (event: any, context: any) => {
         status: 'failure',
         error: e.message || 'Something went wrong',
         ...(e.body ? { body: e.body } : {}),
-      }),
-    }
-
-    response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'success',
-        message: '',
-        data: {},
       }),
     }
 

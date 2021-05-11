@@ -12,11 +12,9 @@
   "dependencies": {
     "@middy/core": "^1.5.2",
     "jose": "npm:jose-node-cjs-runtime@3.11.3",
-    "jsonschema": "^1.4.0",
     "pino": "^6.11.2"
   },
   "devDependencies": {
-    "@types/jsonschema": "^1.1.1",
     "@types/pino": "^6.3.6"
   }
 }

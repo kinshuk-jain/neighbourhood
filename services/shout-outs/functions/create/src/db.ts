@@ -28,6 +28,7 @@ export const createPost = async ({
     user_name,
     society_id,
     type,
+    edited: false,
     created_at,
     image_urls: (image_urls || []).map((url) => encodeURI(url)),
     // need to send this data to content moderation api before saving

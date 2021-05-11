@@ -41,6 +41,14 @@ const myHandler = async (event: any, context: any) => {
     //   throw HttpError(404, 'not found')
     // }
 
+    // update report count
+    // update content
+    // edited flag
+    // images
+    // name
+    // reported_by: update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
+    // num_comments
+
     const { valid, errors } = validate(event.body, schema)
 
     if (!valid) {

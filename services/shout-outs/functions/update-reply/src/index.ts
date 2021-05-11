@@ -41,6 +41,10 @@ const myHandler = async (event: any, context: any) => {
     //   throw HttpError(404, 'not found')
     // }
 
+    // update report count
+    // update content
+    // edited flag
+
     const { valid, errors } = validate(event.body, schema)
 
     if (!valid) {

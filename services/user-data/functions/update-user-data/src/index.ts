@@ -219,10 +219,6 @@ const myHandler = async (event: any, context: any) => {
         verifyStatus(event.body.status)
         await updateUserData(userId, 'email_verified', event.body.status)
         break
-      case 'report-post':
-        // update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
-        // TODO: do when feeds are done
-        break
       case 'society-list':
         verifySocietyId(event.body.society_id)
         if (!event.body.user_id.match(/^[\w-]{5,40}$/)) {
