@@ -7,7 +7,8 @@ export const getPostData = async (
   return {
     post_id,
     society_id,
-    user_name: 'ballu baba',
+    first_name: 'ballu',
+    last_name: 'baba',
     type: 'post',
     edited: false,
     created_at: Date.now(),
@@ -20,7 +21,8 @@ export const getPostData = async (
         reply_id: '123-123-123-123',
         post_id,
         edited: false,
-        user_name: 'babu bhaiya',
+        first_name: 'ballu',
+        last_name: 'baba',
         created_at: Date.now(),
         content: decodeURIComponent('content'),
         reported_by: [], // list of user_id's

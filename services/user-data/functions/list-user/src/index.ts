@@ -8,7 +8,6 @@ import {
   listUsersBySociety,
   listUsersInRegion,
   listUsersBlacklisted,
-  listUsersReported,
   listUsersNotApproved,
 } from './db'
 
@@ -73,8 +72,11 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(401, 'unauthorized')
     }
 
-    const { blacklisted, user_id, scope: serializedScope } =
-      (await verifyToken(authToken.split(' ')[1])) || {}
+    const {
+      blacklisted,
+      user_id,
+      scope: serializedScope,
+    } = (await verifyToken(authToken.split(' ')[1])) || {}
 
     const scope = JSON.parse(serializedScope)
 
@@ -175,11 +177,6 @@ const myHandler = async (event: any, context: any) => {
         // check sysadmin privilege
         checkPrivilege(scope, ['sysadmin'])
         responseBody = await listUsersBlacklisted(pageNumber, pageSize)
-        break
-      case 'reported':
-        // check sysadmin privilege
-        checkPrivilege(scope, ['sysadmin'])
-        responseBody = await listUsersReported(pageNumber, pageSize)
         break
       case 'pending_email_verification':
         // check sysadmin privilege

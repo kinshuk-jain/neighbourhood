@@ -18,7 +18,8 @@ export const getPostsBySociety = async (
     {
       post_id: '123123',
       society_id,
-      user_name: 'ballu baba',
+      first_name: 'ballu',
+      last_name: 'baba',
       type: 'post',
       created_at: Date.now(),
       image_urls: [],
@@ -32,7 +33,8 @@ export const getPostsBySociety = async (
           reply_id: '123-123-123-123',
           post_id: '123123',
           edited: false,
-          user_name: 'babu bhaiya',
+          first_name: 'ballu',
+          last_name: 'baba',
           created_at: Date.now(),
           content: decodeURIComponent('content'),
           reported_by: [], // list of user_id's
@@ -62,7 +64,8 @@ export const getPostsByUser = async (
     {
       post_id: '123123',
       society_id: '1342342',
-      user_name: 'ballu baba',
+      first_name: 'ballu',
+      last_name: 'baba',
       type: 'post',
       created_at: Date.now(),
       edited: false,
@@ -76,7 +79,8 @@ export const getPostsByUser = async (
           reply_id: '123-123-123-123',
           post_id: '123123',
           edited: false,
-          user_name: 'babu bhaiya',
+          first_name: 'ballu',
+          last_name: 'baba',
           created_at: Date.now(),
           content: decodeURIComponent('content'),
           reported_by: [], // list of user_id's
@@ -109,7 +113,8 @@ export const getPostsByType = async (
     {
       post_id: '123123',
       society_id: '1342342',
-      user_name: 'ballu baba',
+      first_name: 'ballu',
+      last_name: 'baba',
       type: 'post',
       created_at: Date.now(),
       image_urls: [],
@@ -123,7 +128,8 @@ export const getPostsByType = async (
           reply_id: '123-123-123-123',
           post_id: '123123',
           edited: false,
-          user_name: 'babu bhaiya',
+          first_name: 'ballu',
+          last_name: 'baba',
           created_at: Date.now(),
           content: decodeURIComponent('content'),
           reported_by: [], // list of user_id's

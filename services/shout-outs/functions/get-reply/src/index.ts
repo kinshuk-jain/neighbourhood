@@ -1,14 +1,9 @@
 import { HttpError } from './error'
 import logger from './logger'
 import middy from '@middy/core'
-import jsonBodyParser from '@middy/http-json-body-parser'
 import { setCorrelationId, errorHandler } from './middlewares'
 import { verifyToken } from './verifyAuthToken'
-import {
-  updateReplyContent,
-  updateReplyEditedStatus,
-  updatePostReported,
-} from './db'
+import { getRepliesForPost } from './db'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -18,19 +13,19 @@ const myHandler = async (event: any, context: any) => {
   try {
     logger.info(event)
 
-    if (
-      !event.pathParameters ||
-      !event.pathParameters.post_id ||
-      !event.pathParameters.reply_id ||
-      !event.pathParameters.update_key
-    ) {
+    if (!event.pathParameters || !event.pathParameters.post_id) {
       throw HttpError(404, 'not found')
     }
 
+    const {
+      society_id,
+      page_size = 20,
+      page_number = 1,
+    } = event.queryStringParameters
+
     if (
       !event.pathParameters.post_id.match(/^[\w-]{5,40}$/) ||
-      !event.pathParameters.reply_id.match(/^[\w-]{5,40}$/) ||
-      !event.pathParameters.update_key.match(/^\/?[\w-]+\/?([\?#].*)?$/)
+      !society_id.match(/^[\w-]{5,40}$/)
     ) {
       throw HttpError(404, 'not found')
     }
@@ -42,8 +37,10 @@ const myHandler = async (event: any, context: any) => {
     }
 
     // get user id from authToken
-    const { blacklisted, user_id } =
+    const { user_id, scope: serializedScope } =
       (await verifyToken(authToken.split(' ')[1])) || {}
+
+    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -52,45 +49,31 @@ const myHandler = async (event: any, context: any) => {
       )
     }
 
-    if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot update post')
+    if (!scope[society_id] && scope.root !== true) {
+      throw HttpError(404, 'not found')
     }
 
-    let route_path = (event.pathParameters.update_key.match(
-      /^\/?([\w-]+)\/?/
-    ) || [])[1]
-
-    switch (route_path) {
-      case 'content':
-        // verify content with content moderation
-        await updateReplyContent(
-          event.pathParameters.post_id,
-          event.pathParameters.reply_id,
-          user_id,
-          event.body.content
-        )
-        break
-      case 'edited':
-        if (typeof event.body.status !== 'boolean') {
-          throw HttpError(400, 'invalid status')
-        }
-        await updateReplyEditedStatus(
-          event.pathParameters.post_id,
-          event.pathParameters.reply_id,
-          user_id,
-          event.body.status
-        )
-        break
-      case 'report':
-        await updatePostReported(
-          event.pathParameters.post_id,
-          event.pathParameters.reply_id,
-          user_id
-        )
-        break
-      default:
-        throw HttpError(400, 'invalid update operation')
+    let pageSize, pageNumber
+    try {
+      pageSize = parseInt(page_size)
+      pageNumber = parseInt(page_number)
+    } catch (e) {
+      throw new Error('page_size or page_number not an integer')
     }
+
+    if (pageSize < 20) {
+      throw new Error('page size less than 20 now allowed')
+    } else if (pageSize > 200) {
+      throw new Error('page size more than 200 not allowed')
+    } else if (pageNumber < 1) {
+      throw new Error('page number less than 1 not allowed')
+    }
+
+    const replies = await getRepliesForPost(
+      event.pathParameters.post_id,
+      pageNumber,
+      pageSize
+    )
 
     response = {
       isBase64Encoded: false,
@@ -100,7 +83,7 @@ const myHandler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        message: 'successfully updated',
+        data: replies,
       }),
     }
 
@@ -128,4 +111,3 @@ const myHandler = async (event: any, context: any) => {
 export const handler = middy(myHandler)
   .use(setCorrelationId())
   .use(errorHandler())
-  .use(jsonBodyParser())

@@ -77,6 +77,12 @@ Resources:
   ShoutOutsUserDataApiKeyProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/shout-outs/user-data-api/production/pass-key'
+  ShoutOutsUserDataServiceTokenStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/shout-outs/user-data/staging/pass-key'
+  ShoutOutsUserDataServiceTokenProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/shout-outs/user-data/production/pass-key'
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -307,6 +313,16 @@ Resources:
                 '',
               ],
             ]
+          USER_DATA_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataServiceTokenProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataServiceTokenStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -318,14 +334,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/post/{post_id}/{update_key}
+            Path: /shout-outs/post/{post_id}/society/{society_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/post/{post_id}/{update_key}
+            Path: /shout-outs/post/{post_id}/society/{society_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -333,7 +349,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/post/{post_id}/{update_key}
+            Path: /shout-outs/post/{post_id}/society/{society_id}/{update_key}
             Method: PUT
 
   createFunction:
@@ -420,14 +436,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/reply/{reply_id}
+            Path: /shout-outs/post/{post_id}/reply/{reply_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/reply/{reply_id}
+            Path: /shout-outs/post/{post_id}/reply/{reply_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -435,7 +451,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/reply/{reply_id}
+            Path: /shout-outs/post/{post_id}/reply/{reply_id}/{update_key}
             Method: PUT
 
   createReplyFunction:

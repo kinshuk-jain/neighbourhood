@@ -50,7 +50,8 @@ export const createPost = async ({
   return {
     post_id: uuidv4(),
     user_id,
-    user_name: data.data.first_name + ' ' + data.data.last_name,
+    first_name: data.data.first_name,
+    last_name: data.data.last_name,
     society_id,
     type,
     edited: false,

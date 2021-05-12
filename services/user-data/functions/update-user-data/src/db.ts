@@ -9,6 +9,16 @@ export const updateUserData = async (
   return true
 }
 
+export const updateUserName = async (
+  user_id: string,
+  first_name: string,
+  last_name: any
+): Promise<boolean> => {
+  //
+  console.log(`updating ${first_name} ${last_name} for user ${user_id}`)
+  return true
+}
+
 export const getUserData = async (user_id: string) => {
   console.log('get user data', user_id)
   return {

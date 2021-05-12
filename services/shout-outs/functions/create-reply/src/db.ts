@@ -4,7 +4,7 @@ import { ENV, config } from './config'
 
 /**
  * Create a reply table
- * reply table has reply_id, content, post_id, user_id, user_name, created_at, reported_by
+ * reply table has reply_id, content, post_id, user_id, first_name, last_name, created_at, reported_by
  * post_id is partition key and reply_id is sort key
  */
 
@@ -13,13 +13,16 @@ export const createReplyToPost = async ({
   post_id,
   created_at,
   content,
+  society_id,
 }: {
   user_id: string
   post_id: string
   created_at: string
   content: string
+  society_id: string
 }): Promise<Record<string, any>> => {
   // if post_id is of type notice, do not allow replies
+  // do not forget to update num_comments in posts table
   const { status, data } =
     process.env.ENVIRONMENT !== 'development'
       ? await axios.post(
@@ -48,8 +51,10 @@ export const createReplyToPost = async ({
   return {
     reply_id: uuidv4(),
     user_id,
+    society_id,
     post_id,
-    user_name: data.data.first_name + ' ' + data.data.last_name,
+    first_name: data.data.first_name,
+    last_name: data.data.last_name,
     created_at,
     edited: false,
     // need to send this data to content moderation api before saving
