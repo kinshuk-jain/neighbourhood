@@ -244,6 +244,47 @@ Resources:
             Path: /shout-outs/post/list
             Method: GET
 
+  getReplyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/get-reply/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: get replies to a post
+      Environment:
+        Variables:
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/post/{post_id}/reply
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/post/{post_id}/reply
+            Method: GET
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/post/{post_id}/reply
+            Method: GET
+
   updateFunction:
     Type: AWS::Serverless::Function
     Properties:

@@ -1,0 +1,20 @@
+{
+  "name": "get-reply",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke get-reply -e 'test-events/getReplyEvent.json'",
+    "start:run": "../../scripts/run.sh run get-reply"
+  },
+  "dependencies": {
+    "@middy/core": "^1.5.2",
+    "jose": "npm:jose-node-cjs-runtime@3.11.3",
+    "pino": "^6.11.2"
+  },
+  "devDependencies": {
+    "@types/pino": "^6.3.6"
+  }
+}

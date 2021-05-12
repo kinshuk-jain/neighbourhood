@@ -19,6 +19,7 @@ import {
   addSocietyToUserSocietyList,
   addUserToPendingListOfSociety,
   getUserData,
+  updateUserName,
 } from './db'
 
 // map of usernames to their password keys - allowed to access this service
@@ -206,6 +207,24 @@ const myHandler = async (event: any, context: any) => {
           throw HttpError(400, 'invalid phone')
         }
         await updateUserData(userId, 'phone', phone)
+        break
+      case 'name':
+        checkPrivilege(accessScope, ['sysadmin', 'user'])
+        if (
+          !/^[a-zA-Z0-9-]{2,20}\s?[a-zA-Z0-9-]{0,20}$/i.test(
+            event.body.first_name
+          ) ||
+          !/^[a-zA-Z0-9-]{2,20}\s?[a-zA-Z0-9-]{0,20}$/i.test(
+            event.body.last_name
+          )
+        ) {
+          throw HttpError(400, 'invalid first_name or last_name')
+        }
+        await updateUserName(
+          userId,
+          event.body.first_name,
+          event.body.last_name
+        )
         break
       case 'thumbnail':
         // just update it
