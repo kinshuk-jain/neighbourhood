@@ -14,6 +14,22 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    if (
+      !event.pathParameters ||
+      !event.pathParameters.post_id ||
+      !event.pathParameters.update_key
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
+    if (
+      !event.pathParameters.post_id.match(/^[\w-]{5,40}$/) ||
+      !event.pathParameters.update_key.match(/^\/?[\w-]+\/?([\?#].*)?$/)
+    ) {
+      throw HttpError(404, 'not found')
+    }
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
@@ -21,10 +37,8 @@ const myHandler = async (event: any, context: any) => {
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope: serializedScope } =
+    const { blacklisted, user_id } =
       (await verifyToken(authToken.split(' ')[1])) || {}
-
-    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -34,20 +48,35 @@ const myHandler = async (event: any, context: any) => {
     }
 
     if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create a post')
+      throw HttpError(403, 'User blacklisted. Cannot update post')
     }
 
-    // if (!scope[society_id] && scope.root !== true) {
-    //   throw HttpError(404, 'not found')
-    // }
+    let route_path = (event.pathParameters.update_key.match(
+      /^\/?([\w-]+)\/?/
+    ) || [])[1]
 
-    // update report count
-    // update content
-    // edited flag
-    // images
-    // name
-    // reported_by: update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
-    // num_comments
+    switch (route_path) {
+      case 'content':
+        // verify content with content moderation
+        break
+      case 'edited':
+        break
+      case 'comments':
+        break
+      case 'images':
+        // no need to verify the images with content moderation
+        // as we do that on image upload. If someone tries to call this api directly
+        // without going through our upload and pushes any random images in here, we will not
+        // show them on the UI as it shows only images from our domain
+        break
+      case 'user-name':
+        break
+      case 'report':
+        // reported_by: update report - just update it and if number of reports becomes more than 10, we flag the user for super admin to check
+        break
+      default:
+        throw HttpError(400, 'invalid update operation')
+    }
 
     const { valid, errors } = validate(event.body, schema)
 
@@ -60,6 +89,20 @@ const myHandler = async (event: any, context: any) => {
         })),
       })
     }
+
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'success',
+        message: '',
+        data: {},
+      }),
+    }
+
     return response
   } catch (e) {
     response = {
@@ -72,19 +115,6 @@ const myHandler = async (event: any, context: any) => {
         status: 'failure',
         error: e.message || 'Something went wrong',
         ...(e.body ? { body: e.body } : {}),
-      }),
-    }
-
-    response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'success',
-        message: '',
-        data: {},
       }),
     }
 

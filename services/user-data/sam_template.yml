@@ -77,6 +77,12 @@ Resources:
   UserDataAuthServiceTokenProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/authentication/production/pass-key'
+  UserDataShoutOutsServiceTokenStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/shout-outs/staging/pass-key'
+  UserDataShoutOutsServiceTokenProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/shout-outs/production/pass-key'
   UserDataSocietyMgmtServiceTokenStaging:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/society-mgmt/staging/pass-key'
@@ -101,6 +107,13 @@ Resources:
   UserDataSocietyMgmtApiKeyProduction:
     Type: AWS::SSM::Parameter::Value<String>
     Default: '/services/user-data/society-mgmt-api/production/pass-key'
+  UserDataShoutOutsApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: - '/services/user-data/shout-outs-api/staging/pass-key'
+  UserDataShoutOutsApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/user-data/shout-outs-api/production/pass-key'
+
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -214,6 +227,16 @@ Resources:
                 '',
               ],
             ]
+          SHOUT_OUTS_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataShoutOutsServiceTokenProduction,
+              !If [
+                CreateStagingResources,
+                !Ref UserDataShoutOutsServiceTokenStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -262,6 +285,26 @@ Resources:
               !If [
                 CreateStagingResources,
                 !Ref UserDataAuthServiceTokenStaging,
+                '',
+              ],
+            ]
+          SHOUT_OUTS_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref UserDataShoutsOutsApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref UserDataShoutOutsApiKeyStaging,
+                '',
+              ],
+            ]
+          SHOUT_OUTS_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref UserDataShoutOutsServiceTokenProduction,
+              !If [
+                CreateStagingResources,
+                !Ref UserDataShoutOutsServiceTokenStaging,
                 '',
               ],
             ]

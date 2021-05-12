@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from 'uuid'
+import axios from 'axios'
+import { ENV, config } from './config'
 
 /**
  * Create a reply table
@@ -11,19 +13,43 @@ export const createReplyToPost = async ({
   post_id,
   created_at,
   content,
-  user_name,
 }: {
   user_id: string
   post_id: string
   created_at: string
   content: string
-  user_name: string
 }): Promise<Record<string, any>> => {
+  // if post_id is of type notice, do not allow replies
+  const { status, data } =
+    process.env.ENVIRONMENT !== 'development'
+      ? await axios.post(
+          `${config[ENV].user_domain}/user/details`,
+          {
+            id_type: 'user_id',
+            id_value: user_id,
+          },
+          {
+            timeout: 10000, // 10s timeout
+            auth: {
+              username: 'shout-outs',
+              password: process.env.USER_DATA_API_KEY || '',
+            },
+          }
+        )
+      : {
+          status: 200,
+          data: { data: { first_name: 'test', last_name: 'user' } },
+        }
+
+  if (status < 200 || status >= 300) {
+    throw new Error('Internal service error. Could not fetch user data')
+  }
+
   return {
     reply_id: uuidv4(),
     user_id,
     post_id,
-    user_name,
+    user_name: data.data.first_name + ' ' + data.data.last_name,
     created_at,
     edited: false,
     // need to send this data to content moderation api before saving

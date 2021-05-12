@@ -8,6 +8,7 @@ import { verifyToken } from './verifyAuthToken'
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
   authentication: 'AUTHENTICATION_SERVICE_TOKEN',
+  'shout-outs': 'SHOUT_OUTS_SERVICE_TOKEN',
 }
 
 // should be first middleware

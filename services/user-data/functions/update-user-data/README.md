@@ -10,3 +10,5 @@
 - '/services/user-data/society-mgmt/staging/pass-key'
 - '/services/user-data/society-mgmt-api/staging/pass-key'
 - '/services/user-data/society-mgmt-api/production/pass-key'
+- '/services/user-data/shout-outs-api/staging/pass-key'
+- '/services/user-data/shout-outs-api/production/pass-key'

@@ -10,6 +10,8 @@ const encryptedEnvironmentVariableNames =
         'AUTHENTICATION_SERVICE_TOKEN',
         'SOCIETY_MGMT_SERVICE_TOKEN',
         'SOCIETY_MGMT_API_KEY',
+        'SHOUT_OUTS_API_KEY',
+        'SHOUT_OUTS_SERVICE_TOKEN',
       ]
 
 encryptedEnvironmentVariableNames.forEach((name) => {

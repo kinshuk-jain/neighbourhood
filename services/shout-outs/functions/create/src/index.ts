@@ -7,6 +7,7 @@ import { validate } from 'jsonschema'
 import { verifyToken } from './verifyAuthToken'
 import schema from './createSchema.json'
 import { createPost } from './db'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -15,6 +16,19 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.USER_DATA_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
@@ -22,8 +36,11 @@ const myHandler = async (event: any, context: any) => {
     }
 
     // get user id from authToken
-    const { blacklisted, user_id, scope: serializedScope } =
-      (await verifyToken(authToken.split(' ')[1])) || {}
+    const {
+      blacklisted,
+      user_id,
+      scope: serializedScope,
+    } = (await verifyToken(authToken.split(' ')[1])) || {}
 
     const scope = JSON.parse(serializedScope)
 
@@ -62,8 +79,6 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'invalid type')
     } else if (event.body.created_at < Date.now() - 3600 * 1000) {
       throw HttpError(400, 'invalid created_at value')
-    } else if (!event.body.user_name.match(/^[\w-]{5,60}$/)) {
-      throw HttpError(400, 'invalid user_name')
     }
 
     const postData = await createPost(event.body)

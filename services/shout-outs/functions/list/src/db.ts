@@ -26,6 +26,7 @@ export const getPostsBySociety = async (
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's
       num_comments: 0,
+      // get only first 5 replies for the post
       replies: [
         {
           reply_id: '123-123-123-123',
@@ -69,6 +70,7 @@ export const getPostsByUser = async (
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's
       num_comments: 0,
+      // get only first 5 replies for the post
       replies: [
         {
           reply_id: '123-123-123-123',
@@ -115,6 +117,7 @@ export const getPostsByType = async (
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's
       num_comments: 0,
+      // get only first 5 replies for the post
       replies: [
         {
           reply_id: '123-123-123-123',

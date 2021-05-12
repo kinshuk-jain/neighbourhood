@@ -71,6 +71,13 @@ Resources:
             Version: '2012-10-17'
           PolicyName: ShoutOutsLambdaBasicExecution
 
+  ShoutOutsUserDataApiKeyStaging:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/shout-outs/user-data-api/staging/pass-key'
+  ShoutOutsUserDataApiKeyProduction:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: '/services/shout-outs/user-data-api/production/pass-key'
+
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
   deleteFunction:
@@ -249,6 +256,16 @@ Resources:
       Description: update posts
       Environment:
         Variables:
+          USER_DATA_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -260,14 +277,14 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/{update_key}
             Method: PUT
             ApiId: !Ref crudShoutOutsHttpApiStaging
         ApiProd:
@@ -275,7 +292,7 @@ Resources:
           Condition: CreateProdResources
           Properties:
             ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/post/{post_id}
+            Path: /shout-outs/post/{post_id}/{update_key}
             Method: PUT
 
   createFunction:
@@ -290,6 +307,16 @@ Resources:
       Description: create posts
       Environment:
         Variables:
+          USER_DATA_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -331,6 +358,16 @@ Resources:
       Description: update replies
       Environment:
         Variables:
+          USER_DATA_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -372,6 +409,16 @@ Resources:
       Description: create replies to posts
       Environment:
         Variables:
+          USER_DATA_API_KEY:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataApiKeyProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataApiKeyStaging,
+                '',
+              ],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,

@@ -2,7 +2,8 @@ export const getPostData = async (
   society_id: string,
   post_id: string
 ): Promise<Record<string, any>> => {
-  // get replies for the post_id
+  // get only first 5 replies for the post_id
+  // rest replies need not be fetched
   return {
     post_id,
     society_id,

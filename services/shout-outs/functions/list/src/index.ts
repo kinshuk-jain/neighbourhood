@@ -86,6 +86,8 @@ const myHandler = async (event: any, context: any) => {
       case 'type':
         posts = await getPostsByType(society_id, value, pageNumber, pageSize)
         break
+      default:
+        throw HttpError(400, 'invalid filter')
     }
 
     response = {

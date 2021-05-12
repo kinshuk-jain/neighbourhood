@@ -25,6 +25,7 @@ import {
 const USER_NAMES: { [key: string]: string } = {
   authentication: 'AUTHENTICATION_SERVICE_TOKEN',
   society_mgmt: 'SOCIETY_MGMT_SERVICE_TOKEN',
+  'shout-outs': 'SHOUT_OUTS_SERVICE_TOKEN',
 }
 
 // should be first middleware
