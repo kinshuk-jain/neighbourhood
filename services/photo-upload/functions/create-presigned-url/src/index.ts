@@ -1,27 +1,31 @@
-import { HttpError } from './error'
 import logger from './logger'
-import middy from '@middy/core'
-import { setCorrelationId, errorHandler } from './middlewares'
 import { verifyToken } from './verifyAuthToken'
+import { getUploadURL } from './getS3UploadUrl'
 
-const myHandler = async (event: any, context: any) => {
+const HttpError = (status: number, message: string, body?: object): Error => {
+  const e: any = new Error(message)
+  e.statusCode = status
+  e.body = body
+  return e
+}
+
+export const handler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
 
   const requestStartTime = Date.now()
   let response
+
   try {
     logger.info(event)
+
     const authToken = event.headers['Authorization']
 
     if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
     }
 
-    // get user id from authToken
-    const { blacklisted, user_id, scope: serializedScope } =
+    const { blacklisted, user_id } =
       (await verifyToken(authToken.split(' ')[1])) || {}
-
-    const scope = JSON.parse(serializedScope)
 
     if (!user_id) {
       throw HttpError(
@@ -30,15 +34,23 @@ const myHandler = async (event: any, context: any) => {
       )
     }
 
+    // do not check for blacklisting when downloading photo
+    // check only on upload
     if (blacklisted) {
-      throw HttpError(403, 'User blacklisted. Cannot create a post')
+      throw HttpError(403, 'User blacklisted. Cannot upload photo')
     }
 
-    // if (!scope[society_id] && scope.root !== true) {
-    //   throw HttpError(404, 'not found')
-    // }
+    // start upload or download
 
-    return response
+    // download - use pre-signed urls
+    // var params = {Bucket: 'bucket', Key: 'key', Expires: 60};
+    // var promise = s3.getSignedUrlPromise('getObject', params);
+    // promise.then(function(url) {
+    // console.log('The URL is', url);
+    // }, function(err) { ... });
+
+    // upload
+    // await getUploadURL()
   } catch (e) {
     response = {
       isBase64Encoded: false,
@@ -53,25 +65,8 @@ const myHandler = async (event: any, context: any) => {
       }),
     }
 
-    response = {
-      isBase64Encoded: false,
-      statusCode: 200,
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        status: 'success',
-        message: '',
-        data: {},
-      }),
-    }
-
     return response
   } finally {
     logger.info({ ...response, response_time: Date.now() - requestStartTime })
   }
 }
-
-export const handler = middy(myHandler)
-  .use(setCorrelationId())
-  .use(errorHandler())
