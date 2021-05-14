@@ -9,13 +9,8 @@ import {
   updatePostEditedStatus,
   updatePostImageUrls,
   updatePostReported,
-  updateUserName,
 } from './db'
-
-// map of usernames to their password keys - allowed to access this service
-const USER_NAMES: { [key: string]: string } = {
-  user_data: 'USER_DATA_SERVICE_TOKEN',
-}
+import { decryptedEnv } from './getDecryptedEnvs'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -24,6 +19,18 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.USER_DATA_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
 
     if (
       !event.pathParameters ||
@@ -43,38 +50,23 @@ const myHandler = async (event: any, context: any) => {
     }
 
     const authToken = event.headers['Authorization']
-    let isServiceRequest = false
-    let user_id = ''
 
-    if (authToken.startsWith('Basic')) {
-      // verify basic auth and get scope from token
-      const token = authToken.split(' ')[1]
-      const [user = '', pass] = Buffer.from(token, 'base64')
-        .toString('ascii')
-        .split(':')
-
-      if (!USER_NAMES[user] || process.env[USER_NAMES[user]] !== pass) {
-        throw HttpError(401, 'unauthorized')
-      }
-      isServiceRequest = true
-    } else if (authToken.startsWith('Bearer')) {
-      // decode token
-      const { blacklisted, user_id: userId } =
-        (await verifyToken(authToken.split(' ')[1])) || {}
-
-      if (!userId) {
-        throw HttpError(
-          500,
-          'internal service error: error decoding access token'
-        )
-      }
-      if (blacklisted) {
-        throw HttpError(403, 'user blacklisted, not allowed')
-      }
-
-      user_id = userId
-    } else {
+    if (!authToken || !authToken.startsWith('Bearer')) {
       throw HttpError(401, 'unauthorized')
+    }
+
+    // get user id from authToken
+    const { user_id, blacklisted } =
+      (await verifyToken(authToken.split(' ')[1])) || {}
+
+    if (!user_id) {
+      throw HttpError(
+        500,
+        'internal service error: error decoding access token'
+      )
+    }
+    if (blacklisted) {
+      throw HttpError(403, 'user blacklisted, not allowed')
     }
 
     let route_path = (event.pathParameters.update_key.match(
@@ -119,24 +111,6 @@ const myHandler = async (event: any, context: any) => {
           event.pathParameters.society_id,
           event.pathParameters.post_id,
           user_id
-        )
-        break
-      case 'user-name':
-        // only sysadmin privilege
-        if (!isServiceRequest) {
-          throw HttpError(404, 'Not found')
-        }
-        if (
-          !event.body.user_id ||
-          !event.body.first_name ||
-          !event.body.last_name
-        ) {
-          throw HttpError(400, 'invalid society_ids or first_name or last_name')
-        }
-        await updateUserName(
-          event.body.user_id,
-          event.body.first_name,
-          event.body.last_name
         )
         break
       default:

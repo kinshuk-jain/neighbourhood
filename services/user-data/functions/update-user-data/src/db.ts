@@ -1,4 +1,6 @@
 import { updateUserScopeInAuth } from './helpers'
+import { config, ENV } from './config'
+import axios from 'axios'
 
 export const updateUserData = async (
   user_id: string,
@@ -14,7 +16,26 @@ export const updateUserName = async (
   first_name: string,
   last_name: any
 ): Promise<boolean> => {
-  //
+  // notify shout outs module of name change
+  if (process.env.ENVIRONMENT !== 'development') {
+    await axios.post(
+      `${config[ENV].shout_outs_domain}/shout-outs/user/${user_id}/update`,
+      {
+        first_name,
+        last_name,
+      },
+      {
+        timeout: 10000, // 10s timeout
+        auth: {
+          username: 'user_data',
+          password: process.env.SHOUT_OUTS_API_KEY || '',
+        },
+      }
+    )
+  } else {
+    console.log('notified shout-outs of name update')
+  }
+
   console.log(`updating ${first_name} ${last_name} for user ${user_id}`)
   return true
 }

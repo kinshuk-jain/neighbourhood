@@ -313,16 +313,6 @@ Resources:
                 '',
               ],
             ]
-          USER_DATA_SERVICE_TOKEN:
-            !If [
-              CreateProdResources,
-              !Ref ShoutOutsUserDataServiceTokenProduction,
-              !If [
-                CreateStagingResources,
-                !Ref ShoutOutsUserDataServiceTokenStaging,
-                '',
-              ],
-            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -504,6 +494,57 @@ Resources:
             ApiId: !Ref crudShoutOutsHttpApiProduction
             Path: /shout-outs/reply
             Method: POST
+
+  updateNameFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/update-name/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: ShoutOutsLambdaRole
+      Timeout: 100
+      Description: update user name in posts
+      Environment:
+        Variables:
+          USER_DATA_SERVICE_TOKEN:
+            !If [
+              CreateProdResources,
+              !Ref ShoutOutsUserDataServiceTokenProduction,
+              !If [
+                CreateStagingResources,
+                !Ref ShoutOutsUserDataServiceTokenStaging,
+                '',
+              ],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /shout-outs/user/{user_id}/update
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /shout-outs/user/{user_id}/update
+            Method: PUT
+            ApiId: !Ref crudShoutOutsHttpApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref crudShoutOutsHttpApiProduction
+            Path: /shout-outs/user/{user_id}/update
+            Method: PUT
 
   crudShoutOutsHttpApiDevelopment:
     Type: AWS::Serverless::HttpApi

@@ -9,6 +9,7 @@ import {
   updateReplyEditedStatus,
   updatePostReported,
 } from './db'
+import { decryptedEnv } from './getDecryptedEnvs'
 
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
@@ -17,6 +18,18 @@ const myHandler = async (event: any, context: any) => {
   let response
   try {
     logger.info(event)
+
+    // wait for resolution for 1s
+    if (!process.env.USER_DATA_API_KEY) {
+      await Promise.race([
+        decryptedEnv,
+        new Promise((_, reject) => {
+          setTimeout(() => {
+            reject('internal error: env vars not loaded')
+          }, 1000)
+        }),
+      ])
+    }
 
     if (
       !event.pathParameters ||
