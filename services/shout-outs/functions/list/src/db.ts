@@ -22,7 +22,7 @@ export const getPostsBySociety = async (
       last_name: 'baba',
       type: 'post',
       created_at: Date.now(),
-      image_urls: [],
+      img_keys: [],
       edited: false,
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's
@@ -69,7 +69,7 @@ export const getPostsByUser = async (
       type: 'post',
       created_at: Date.now(),
       edited: false,
-      image_urls: [],
+      img_keys: [],
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's
       num_comments: 0,
@@ -117,7 +117,7 @@ export const getPostsByType = async (
       last_name: 'baba',
       type: 'post',
       created_at: Date.now(),
-      image_urls: [],
+      img_keys: [],
       edited: false,
       content: decodeURIComponent('content'), // decode the content before returning back to frontend
       reported_by: [], // list of user_id's

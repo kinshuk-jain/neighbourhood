@@ -103,7 +103,7 @@ const myHandler = async (event: any, context: any) => {
           event.pathParameters.society_id,
           event.pathParameters.post_id,
           user_id,
-          event.body.img_urls
+          event.body.img_keys
         )
         break
       case 'report':

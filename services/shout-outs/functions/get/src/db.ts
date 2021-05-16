@@ -12,7 +12,7 @@ export const getPostData = async (
     type: 'post',
     edited: false,
     created_at: Date.now(),
-    image_urls: [],
+    img_keys: [],
     content: decodeURIComponent('content'), // decode the content before returning back to frontend
     reported_by: [], // list of user_id's
     num_comments: 0,

@@ -1,6 +1,6 @@
 import logger from './logger'
 import { verifyToken } from './verifyAuthToken'
-import { getUploadURL } from './getS3UploadUrl'
+import { getUploadURL } from './getS3PreSignedUrl'
 
 const HttpError = (status: number, message: string, body?: object): Error => {
   const e: any = new Error(message)
@@ -34,23 +34,23 @@ export const handler = async (event: any, context: any) => {
       )
     }
 
-    // do not check for blacklisting when downloading photo
-    // check only on upload
     if (blacklisted) {
       throw HttpError(403, 'User blacklisted. Cannot upload photo')
     }
 
-    // start upload or download
+    response = {
+      isBase64Encoded: false,
+      statusCode: 200,
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: 'success',
+        data: JSON.stringify(await getUploadURL(user_id)),
+      }),
+    }
 
-    // download - use pre-signed urls
-    // var params = {Bucket: 'bucket', Key: 'key', Expires: 60};
-    // var promise = s3.getSignedUrlPromise('getObject', params);
-    // promise.then(function(url) {
-    // console.log('The URL is', url);
-    // }, function(err) { ... });
-
-    // upload
-    // await getUploadURL()
+    return response
   } catch (e) {
     response = {
       isBase64Encoded: false,

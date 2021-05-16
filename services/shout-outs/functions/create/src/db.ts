@@ -12,14 +12,14 @@ export const createPost = async ({
   society_id,
   type,
   created_at,
-  image_urls,
+  img_keys,
   content,
 }: {
   user_id: string
   society_id: string
   type: string
   created_at: string
-  image_urls?: string[]
+  img_keys?: string[]
   content: string
 }): Promise<Record<string, any>> => {
   const { status, data } =
@@ -60,7 +60,7 @@ export const createPost = async ({
     // as we do that on image upload. If someone tries to call this api directly
     // without going through our upload and pushes any random images in here, we will not
     // show them on the UI as it shows only images from our domain
-    image_urls: (image_urls || []).map((url) => encodeURI(url)),
+    img_keys: (img_keys || []).map((key) => encodeURI(key)),
     // need to send this data to content moderation api before saving
     content: encodeURIComponent(content), // decode the content before returning back to frontend
     reported_by: [], // list of user_id's

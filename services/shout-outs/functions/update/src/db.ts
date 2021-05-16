@@ -34,13 +34,13 @@ export const updatePostImageUrls = async (
   society_id: string,
   post_id: string,
   user_id: string,
-  img_urls: string[]
+  img_keys: string[]
 ): Promise<boolean> => {
   console.log(
     'status will be updated only if user_id created the post',
     user_id
   )
-  const urls = (img_urls || []).map((url) => encodeURI(url))
+  const urls = (img_keys || []).map((key) => encodeURI(key))
   console.log('saving', society_id, post_id)
   return true
 }

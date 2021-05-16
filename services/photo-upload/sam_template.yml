@@ -5,7 +5,7 @@
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/format-version-structure.html
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  shout outs api
+  photo upload api
 
 # Transform section specifies one or more macros that AWS CloudFormation uses to process your template
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-section-structure.html
@@ -37,7 +37,7 @@ Conditions:
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
-  ShoutOutsLambdaRole:
+  PhotoUploadLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -59,7 +59,7 @@ Resources:
                   Fn::Sub:
                     - arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
             Version: '2012-10-17'
-          PolicyName: ShoutOutsLambdaKmsAccess
+          PolicyName: PhotoUploadLambdaKmsAccess
         - PolicyDocument:
             Statement:
               - Action:
@@ -69,22 +69,44 @@ Resources:
                 Effect: Allow
                 Resource: '*'
             Version: '2012-10-17'
-          PolicyName: ShoutOutsLambdaBasicExecution
+          PolicyName: PhotoUploadLambdaBasicExecution
 
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-  deleteFunction:
+  S3UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            # TODO: set allowed origin
+            AllowedOrigins:
+              - '*'
+
+  createPresignedUrlFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      CodeUri: functions/delete/dist
+      CodeUri: functions/create-presigned-url/dist
       Runtime: nodejs12.x
-      Role: ShoutOutsLambdaRole
+      Role: PhotoUploadLambdaRole
       MemorySize: 128
       Timeout: 100
-      Description: delete post
+      Description: create pre signed post url for uploading photos
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref S3UploadBucket
+        - Statement:
+            - Effect: Allow
+              Resource: !Sub 'arn:aws:s3:::${S3UploadBucket}/'
+              Action:
+                - s3:putObjectAcl
       Environment:
         Variables:
+          UPLOAD_BUCKET_NAME: !Ref S3UploadBucket
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -96,205 +118,117 @@ Resources:
           Type: HttpApi
           Condition: CreateDevResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /photo-upload/uploads
+            Method: GET
+            ApiId: !Ref GetPresignedUrlApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /photo-upload/uploads
+            Method: GET
+            ApiId: !Ref GetPresignedUrlApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref GetPresignedUrlApiProduction
+            Path: /photo-upload/uploads
+            Method: GET
+
+  deletePhotoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/delete-photo/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: PhotoUploadLambdaRole
+      Timeout: 100
+      Description: delete photo
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref S3UploadBucket
+      Environment:
+        Variables:
+          UPLOAD_BUCKET_NAME: !Ref S3UploadBucket
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /photo-upload/uploads/{user_id}/{photo_id}
             Method: DELETE
-            ApiId: !Ref crudShoutOutsHttpApiDevelopment
+            ApiId: !Ref GetPresignedUrlApiDevelopment
         ApiStaging:
           Type: HttpApi
           Condition: CreateStagingResources
           Properties:
-            Path: /shout-outs/{post_id}
+            Path: /photo-upload/uploads/{user_id}/{photo_id}
             Method: DELETE
-            ApiId: !Ref crudShoutOutsHttpApiStaging
+            ApiId: !Ref GetPresignedUrlApiStaging
         ApiProd:
           Type: HttpApi
           Condition: CreateProdResources
           Properties:
-            ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
+            ApiId: !Ref GetPresignedUrlApiProduction
+            Path: /photo-upload/uploads/{user_id}/{photo_id}
             Method: DELETE
 
-  getFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: functions/get/dist
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Role: ShoutOutsLambdaRole
-      Timeout: 100
-      Description: get data for a post
-      Environment:
-        Variables:
-          ENVIRONMENT:
-            !If [
-              CreateProdResources,
-              production,
-              !If [CreateStagingResources, staging, development],
-            ]
-      Events:
-        ApiDevelopment:
-          Type: HttpApi
-          Condition: CreateDevResources
-          Properties:
-            Path: /shout-outs/{post_id}
-            Method: GET
-            ApiId: !Ref crudShoutOutsHttpApiDevelopment
-        ApiStaging:
-          Type: HttpApi
-          Condition: CreateStagingResources
-          Properties:
-            Path: /shout-outs/{post_id}
-            Method: GET
-            ApiId: !Ref crudShoutOutsHttpApiStaging
-        ApiProd:
-          Type: HttpApi
-          Condition: CreateProdResources
-          Properties:
-            ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
-            Method: GET
-
-  listFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: functions/list/dist
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Role: ShoutOutsLambdaRole
-      Timeout: 100
-      Description: list posts that belong to a set
-      Environment:
-        Variables:
-          ENVIRONMENT:
-            !If [
-              CreateProdResources,
-              production,
-              !If [CreateStagingResources, staging, development],
-            ]
-      Events:
-        ApiDevelopment:
-          Type: HttpApi
-          Condition: CreateDevResources
-          Properties:
-            Path: /shout-outs/list
-            Method: GET
-            ApiId: !Ref crudShoutOutsHttpApiDevelopment
-        ApiStaging:
-          Type: HttpApi
-          Condition: CreateStagingResources
-          Properties:
-            Path: /shout-outs/list
-            Method: GET
-            ApiId: !Ref crudShoutOutsHttpApiStaging
-        ApiProd:
-          Type: HttpApi
-          Condition: CreateProdResources
-          Properties:
-            ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/list
-            Method: GET
-
-  updateFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: functions/update/dist
-      Runtime: nodejs12.x
-      MemorySize: 128
-      Role: ShoutOutsLambdaRole
-      Timeout: 100
-      Description: update posts
-      Environment:
-        Variables:
-          ENVIRONMENT:
-            !If [
-              CreateProdResources,
-              production,
-              !If [CreateStagingResources, staging, development],
-            ]
-      Events:
-        ApiDevelopment:
-          Type: HttpApi
-          Condition: CreateDevResources
-          Properties:
-            Path: /shout-outs/{post_id}
-            Method: PUT
-            ApiId: !Ref crudShoutOutsHttpApiDevelopment
-        ApiStaging:
-          Type: HttpApi
-          Condition: CreateStagingResources
-          Properties:
-            Path: /shout-outs/{post_id}
-            Method: PUT
-            ApiId: !Ref crudShoutOutsHttpApiStaging
-        ApiProd:
-          Type: HttpApi
-          Condition: CreateProdResources
-          Properties:
-            ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs/{post_id}
-            Method: PUT
-
-  createFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: index.handler
-      CodeUri: functions/create/dist
-      Runtime: nodejs12.x
-      Role: ShoutOutsLambdaRole
-      MemorySize: 128
-      Timeout: 100
-      Description: create posts
-      Environment:
-        Variables:
-          ENVIRONMENT:
-            !If [
-              CreateProdResources,
-              production,
-              !If [CreateStagingResources, staging, development],
-            ]
-      Events:
-        ApiDevelopment:
-          Type: HttpApi
-          Condition: CreateDevResources
-          Properties:
-            Path: /shout-outs
-            Method: POST
-            ApiId: !Ref crudShoutOutsHttpApiDevelopment
-        ApiStaging:
-          Type: HttpApi
-          Condition: CreateStagingResources
-          Properties:
-            Path: /shout-outs
-            Method: POST
-            ApiId: !Ref crudShoutOutsHttpApiStaging
-        ApiProd:
-          Type: HttpApi
-          Condition: CreateProdResources
-          Properties:
-            ApiId: !Ref crudShoutOutsHttpApiProduction
-            Path: /shout-outs
-            Method: POST
-
-  crudShoutOutsHttpApiDevelopment:
+  GetPresignedUrlApiDevelopment:
     Type: AWS::Serverless::HttpApi
     Condition: CreateDevResources
     StageName: development
-    Description: CRUD shout outs api development
+    Description: manage photos in development
     DisableExecuteApiEndpoint: false
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        AllowOrigins:
+          - '*'
 
-  crudShoutOutsHttpApiStaging:
+  GetPresignedUrlApiStaging:
     Type: AWS::Serverless::HttpApi
     Condition: CreateStagingResources
     StageName: staging
-    Description: CRUD shout outs api staging
+    Description: manage photos in staging
     DisableExecuteApiEndpoint: false
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        AllowOrigins:
+          - '*'
 
-  crudShoutOutsHttpApiProduction:
+  GetPresignedUrlApiProduction:
     Type: AWS::Serverless::HttpApi
     Condition: CreateProdResources
     StageName: production
-    Description: CRUD shout outs production
+    Description: manage photos in production
     DisableExecuteApiEndpoint: false
+    Properties:
+      CorsConfiguration:
+        AllowMethods:
+          - GET
+          - DELETE
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        # TODO: set allowed origin for all allowed origin values in this template
+        AllowOrigins:
+          - '*'
