@@ -1,13 +1,13 @@
 {
-  "name": "delete",
+  "name": "delete-photo",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "scripts": {
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
-    "start:invoke": "../../scripts/run.sh invoke delete -e 'test-events/deleteEvent.json'",
-    "start:run": "../../scripts/run.sh run delete"
+    "start:invoke": "../../scripts/run.sh invoke delete-photo -e 'test-events/deletePhotoEvent.json'",
+    "start:run": "../../scripts/run.sh run delete-photo"
   },
   "dependencies": {
     "@middy/core": "^1.5.2",

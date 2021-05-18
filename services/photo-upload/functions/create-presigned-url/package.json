@@ -5,6 +5,11 @@
   "main": "index.js",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke create-presigned-url -e 'test-events/createPresignedUrlEvent.json'",
+    "start:run": "../../scripts/run.sh run create-presigned-url"
+  },
   "dependencies": {
     "jose": "npm:jose-node-cjs-runtime@3.11.3",
     "pino": "^6.11.3",

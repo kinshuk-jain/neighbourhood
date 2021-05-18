@@ -1,0 +1,12 @@
+{
+  "name": "verify-photo-upload",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "start:invoke": "../../scripts/run.sh invoke verify-photo-upload -e 'test-events/verifyPhotoUploadEvent.json'",
+    "start:run": "../../scripts/run.sh run verify-photo-upload"
+  }
+}

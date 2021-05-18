@@ -1,14 +1,14 @@
 #! /bin/sh
 
 function display_usage {
-  echo "Usage: $0 <deploy> <create|list|delete|get|update>"
+  echo "Usage: $0 <invoke|run> <check-photo|create-presigned-url|delete-photo|verify-photo-upload>"
   exit 1
 }
 
 FUNCTION=$2
 COMMAND=$1
 
-if ! [[ "$FUNCTION" =~ ^(create|list|delete|get|update)$ && "$COMMAND" =~ ^(deploy)$ ]]; then
+if ! [[ "$FUNCTION" =~ ^(check-photo|create-presigned-url|delete-photo|verify-photo-upload)$ && "$COMMAND" =~ ^(invoke|run)$ ]]; then
   display_usage
 fi
 
@@ -25,16 +25,14 @@ cd "$script_path"
 cd "../functions/$FUNCTION" && yarn build
 cd ../../
 
-if [[ "$FUNCTION" =~ ^(update)$ ]]; then
-  function_name="updateFunction"
-elif [[ "$FUNCTION" =~ ^(get)$ ]]; then
-  function_name="getFunction"
-elif [[ "$FUNCTION" =~ ^(delete)$ ]]; then
-  function_name="deleteFunction"
-elif [[ "$FUNCTION" =~ ^(list)$ ]]; then
-  function_name="listFunction"
-elif [[ "$FUNCTION" =~ ^(create)$ ]]; then
-  function_name="createFunction"
+if [[ "$FUNCTION" =~ ^(check-photo)$ ]]; then
+  function_name="checkPhotoFunction"
+elif [[ "$FUNCTION" =~ ^(create-presigned-url)$ ]]; then
+  function_name="createPresignedUrlFunction"
+elif [[ "$FUNCTION" =~ ^(delete-photo)$ ]]; then
+  function_name="deletePhotoFunction"
+elif [[ "$FUNCTION" =~ ^(verify-photo-upload)$ ]]; then
+  function_name="verifyPhotoUploadFunction"
 else
   display_usage
 fi

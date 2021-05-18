@@ -12,3 +12,4 @@ Create common cloudformation for
 - SES - create receipt rules, create domains etc
 - SNS - create topics
 - KMS - create key
+- s3 - create bucket to store uploaded photos

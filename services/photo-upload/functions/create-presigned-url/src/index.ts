@@ -9,6 +9,16 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
+const allowedExtensions: string[] = [
+  'jpg',
+  'jpeg',
+  'png',
+  'bmp',
+  'ico',
+  'gif',
+  'webp',
+]
+
 export const handler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
 
@@ -38,6 +48,15 @@ export const handler = async (event: any, context: any) => {
       throw HttpError(403, 'User blacklisted. Cannot upload photo')
     }
 
+    const { ext } = event.queryStringParameters
+
+    if (!ext || !allowedExtensions.includes(ext)) {
+      throw HttpError(
+        400,
+        'photo format not supported. Please consider uploading photo in png, jpg, jpeg, webp or gif format'
+      )
+    }
+
     response = {
       isBase64Encoded: false,
       statusCode: 200,
@@ -46,7 +65,7 @@ export const handler = async (event: any, context: any) => {
       },
       body: JSON.stringify({
         status: 'success',
-        data: JSON.stringify(await getUploadURL(user_id)),
+        data: JSON.stringify(await getUploadURL(user_id, ext)),
       }),
     }
 

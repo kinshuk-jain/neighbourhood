@@ -7,8 +7,8 @@ const s3 = new AWS.S3()
 // Change this value to adjust the signed URL's expiration
 const URL_EXPIRATION_SECONDS = 300
 
-export const getUploadURL = async (user_id: string) => {
-  const key = `uploads/${user_id}/${uuidv4()}.jpg`
+export const getUploadURL = async (user_id: string, extension: string) => {
+  const key = `uploads/${user_id}/${uuidv4()}.${extension}`
 
   let params: AWS.S3.PresignedPost.Params = {
     Bucket: process.env.UPLOAD_BUCKET_NAME,
