@@ -8,5 +8,11 @@
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
     "start:invoke": "../../scripts/run.sh invoke check-photo -e 'test-events/checkPhotoEvent.json'",
     "start:run": "../../scripts/run.sh run check-photo"
+  },
+  "devDependencies": {
+    "@types/aws-sdk": "^2.7.0"
+  },
+  "dependencies": {
+    "file-type": "^16.4.0"
   }
 }

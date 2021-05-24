@@ -71,7 +71,21 @@ Resources:
             Version: '2012-10-17'
           PolicyName: PhotoUploadLambdaBasicExecution
 
-  S3UploadBucket:
+  S3UploadBucketStaging:
+    Type: AWS::S3::Bucket
+    Properties:
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - '*'
+
+  S3UploadBucketProduction:
     Type: AWS::S3::Bucket
     Properties:
       CorsConfiguration:
@@ -98,15 +112,38 @@ Resources:
       Description: create pre signed post url for uploading photos
       Policies:
         - S3WritePolicy:
-            BucketName: !Ref S3UploadBucket
+            BucketName:
+              !If [
+                CreateProdResources,
+                !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                !If [
+                  CreateStagingResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                  '',
+                ],
+              ]
         - Statement:
             - Effect: Allow
-              Resource: !Sub 'arn:aws:s3:::${S3UploadBucket}/'
+              Resource:
+                !If [
+                  CreateProdResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                  !If [
+                    CreateStagingResources,
+                    !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                    '',
+                  ],
+                ]
               Action:
                 - s3:putObjectAcl
       Environment:
         Variables:
-          UPLOAD_BUCKET_NAME: !Ref S3UploadBucket
+          UPLOAD_BUCKET_NAME:
+            !If [
+              CreateProdResources,
+              !Ref S3UploadBucketProduction,
+              !If [CreateStagingResources, !Ref S3UploadBucketStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -148,10 +185,24 @@ Resources:
       Description: delete photo
       Policies:
         - S3WritePolicy:
-            BucketName: !Ref S3UploadBucket
+            BucketName:
+              !If [
+                CreateProdResources,
+                !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                !If [
+                  CreateStagingResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                  '',
+                ],
+              ]
       Environment:
         Variables:
-          UPLOAD_BUCKET_NAME: !Ref S3UploadBucket
+          UPLOAD_BUCKET_NAME:
+            !If [
+              CreateProdResources,
+              !Ref S3UploadBucketProduction,
+              !If [CreateStagingResources, !Ref S3UploadBucketStaging, ''],
+            ]
           ENVIRONMENT:
             !If [
               CreateProdResources,
@@ -180,6 +231,138 @@ Resources:
             ApiId: !Ref GetPresignedUrlApiProduction
             Path: /photo-upload/uploads/{user_id}/{photo_id}
             Method: DELETE
+
+  verifyPhotoUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/verify-photo-upload/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: PhotoUploadLambdaRole
+      Timeout: 100
+      Description: verify whether photo was uploaded
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Resource:
+                !If [
+                  CreateProdResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                  !If [
+                    CreateStagingResources,
+                    !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                    '',
+                  ],
+                ]
+              Action:
+                - s3:GetObjectTagging
+      Environment:
+        Variables:
+          UPLOAD_BUCKET_NAME:
+            !If [
+              CreateProdResources,
+              !Ref S3UploadBucketProduction,
+              !If [CreateStagingResources, !Ref S3UploadBucketStaging, ''],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        ApiDevelopment:
+          Type: HttpApi
+          Condition: CreateDevResources
+          Properties:
+            Path: /photo-upload/uploads/{user_id}/{photo_id}/status
+            Method: GET
+            ApiId: !Ref GetPresignedUrlApiDevelopment
+        ApiStaging:
+          Type: HttpApi
+          Condition: CreateStagingResources
+          Properties:
+            Path: /photo-upload/uploads/{user_id}/{photo_id}/status
+            Method: GET
+            ApiId: !Ref GetPresignedUrlApiStaging
+        ApiProd:
+          Type: HttpApi
+          Condition: CreateProdResources
+          Properties:
+            ApiId: !Ref GetPresignedUrlApiProduction
+            Path: /photo-upload/uploads/{user_id}/{photo_id}/status
+            Method: GET
+
+  checkPhotoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      CodeUri: functions/check-photo/dist
+      Runtime: nodejs12.x
+      MemorySize: 128
+      Role: PhotoUploadLambdaRole
+      Timeout: 100
+      Description: check uploaded photos
+      Policies:
+        - S3CrudPolicy:
+            BucketName:
+              !If [
+                CreateProdResources,
+                !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                !If [
+                  CreateStagingResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                  '',
+                ],
+              ]
+        - Statement:
+            - Effect: Allow
+              Resource:
+                !If [
+                  CreateProdResources,
+                  !Sub 'arn:aws:s3:::${S3UploadBucketProduction}/',
+                  !If [
+                    CreateStagingResources,
+                    !Sub 'arn:aws:s3:::${S3UploadBucketStaging}/',
+                    '',
+                  ],
+                ]
+              Action:
+                - s3:PutObjectTagging
+      Environment:
+        Variables:
+          UPLOAD_BUCKET_NAME:
+            !If [
+              CreateProdResources,
+              !Ref S3UploadBucketProduction,
+              !If [CreateStagingResources, !Ref S3UploadBucketStaging, ''],
+            ]
+          ENVIRONMENT:
+            !If [
+              CreateProdResources,
+              production,
+              !If [CreateStagingResources, staging, development],
+            ]
+      Events:
+        s3Development:
+          Type: S3
+          Condition: CreateDevResources
+          Properties:
+            Bucket: !Ref S3UploadBucketStaging
+            Events: s3:ObjectCreated:*
+        s3Staging:
+          Type: S3
+          Condition: CreateStagingResources
+          Properties:
+            Bucket: !Ref S3UploadBucketStaging
+            Events: s3:ObjectCreated:*
+        s3Production:
+          Type: S3
+          Condition: CreateProdResources
+          Properties:
+            Bucket: !Ref S3UploadBucketProduction
+            Events: s3:ObjectCreated:*
 
   GetPresignedUrlApiDevelopment:
     Type: AWS::Serverless::HttpApi
