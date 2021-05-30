@@ -1,9 +1,15 @@
 import FilteType from 'file-type'
+import Jimp from 'jimp'
+import logger from './logger'
 import {
   getObjectBytesFromS3,
   deleteObjectFromS3,
   putTagsToObjectInS3,
+  getObjectFromS3,
+  putBlurredImageInS3,
 } from './s3'
+
+import { moderateImage } from './rekognition'
 
 export const handler = async (event: any) => {
   for (let record of event.Records) {
@@ -11,15 +17,7 @@ export const handler = async (event: any) => {
   }
 }
 
-const allowedExtensions: string[] = [
-  'jpg',
-  'jpeg',
-  'png',
-  'bmp',
-  'ico',
-  'gif',
-  'webp',
-]
+const allowedExtensions: string[] = ['jpg', 'jpeg', 'png', 'bmp', 'gif']
 
 async function checkPhoto(record: Record<string, any>) {
   const objectKey = record.s3.object.key
@@ -30,16 +28,28 @@ async function checkPhoto(record: Record<string, any>) {
     mime: string
   }
 
-  if (!allowedExtensions.includes(ext)) {
-    // file type not allowed
-    await deleteObjectFromS3(objectKey)
+  if (allowedExtensions.includes(ext)) {
     putTagsToObjectInS3(objectKey, [
       {
         Key: 'verification',
         Value: 'approved',
       },
     ])
+  } else {
+    // file type not allowed
+    await deleteObjectFromS3(objectKey)
   }
 
   // moderate content with rekognition
+  const blurImage = await moderateImage(objectKey)
+  if (blurImage) {
+    try {
+      const image = await Jimp.read(await getObjectFromS3(objectKey))
+      const imageBuf = await image.blur(40).getBufferAsync(image.getMIME())
+      await putBlurredImageInS3(objectKey, imageBuf)
+    } catch (e) {
+      logger.info('error blurring image with key: ' + objectKey)
+      logger.info(e)
+    }
+  }
 }

@@ -13,3 +13,4 @@ Create common cloudformation for
 - SNS - create topics
 - KMS - create key
 - s3 - create bucket to store uploaded photos
+- add vpc endpoints for faster comm between lambdas

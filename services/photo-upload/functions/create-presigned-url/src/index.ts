@@ -9,15 +9,7 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-const allowedExtensions: string[] = [
-  'jpg',
-  'jpeg',
-  'png',
-  'bmp',
-  'ico',
-  'gif',
-  'webp',
-]
+const allowedExtensions: string[] = ['jpg', 'jpeg', 'png', 'bmp', 'gif']
 
 export const handler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false

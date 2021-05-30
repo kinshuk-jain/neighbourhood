@@ -1,9 +1,20 @@
 import AWS from 'aws-sdk'
+import logger from './logger'
 
 const rekognition = new AWS.Rekognition()
 
-// detect text
-export const moderateImageContent = async (key: string) => {
+const BANNED_LABELS = [
+  'Explicit Nudity',
+  'Violence',
+  'Hate Symbols',
+  'Visually Disturbing',
+]
+
+const IMAGE_BLOCK_SCORE = 75
+
+// returns true or false depending on whether image should be deleted or not
+// if true, delete image
+export const moderateImage = async (key: string): Promise<boolean> => {
   const params = {
     Image: {
       S3Object: {
@@ -14,11 +25,29 @@ export const moderateImageContent = async (key: string) => {
     MinConfidence: 60,
   }
 
-  rekognition.detectModerationLabels(params, function (err, data) {
-    if (err) console.log(err, err.stack)
-    // an error occurred
-    else console.log(data) // successful response
-  })
+  return new Promise((res, rej) => {
+    rekognition.detectModerationLabels(
+      params,
+      function (err, data: AWS.Rekognition.DetectModerationLabelsResponse) {
+        if (err) {
+          logger.info(err)
+          rej(err)
+        }
 
-  //   rekognition.detectText()
+        data.ModerationLabels?.some(
+          (label: AWS.Rekognition.ModerationLabel) => {
+            const { Confidence = 0, Name = '', ParentName = '' } = label
+            if (
+              Confidence >= IMAGE_BLOCK_SCORE &&
+              (BANNED_LABELS.includes(ParentName) ||
+                BANNED_LABELS.includes(Name))
+            ) {
+              res(true)
+            }
+          }
+        )
+        res(false)
+      }
+    )
+  })
 }

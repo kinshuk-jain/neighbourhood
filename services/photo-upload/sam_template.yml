@@ -329,7 +329,8 @@ Resources:
                   ],
                 ]
               Action:
-                - s3:PutObjectTagging
+                - s3:putObjectTagging
+                - s3:putObjectAcl
       Environment:
         Variables:
           UPLOAD_BUCKET_NAME:

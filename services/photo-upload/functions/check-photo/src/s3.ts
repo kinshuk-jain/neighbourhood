@@ -37,6 +37,23 @@ export const getObjectBytesFromS3 = async (
   })
 }
 
+export const getObjectFromS3 = async (key: string): Promise<Buffer> => {
+  const params = {
+    Bucket: process.env.UPLOAD_BUCKET_NAME || '',
+    Key: key,
+  }
+
+  return new Promise((res, rej) => {
+    s3.getObject(
+      params,
+      function (err: AWS.AWSError, data: AWS.S3.GetObjectOutput) {
+        if (err) rej(err)
+        res(data.Body as Buffer)
+      }
+    )
+  })
+}
+
 export const deleteObjectFromS3 = async (key: string) => {
   const params = {
     Bucket: process.env.UPLOAD_BUCKET_NAME || '',
@@ -47,6 +64,26 @@ export const deleteObjectFromS3 = async (key: string) => {
     s3.deleteObject(
       params,
       function (err: AWS.AWSError, data: AWS.S3.DeleteObjectOutput) {
+        if (err) rej(err)
+        res(data)
+      }
+    )
+  })
+}
+
+export const putBlurredImageInS3 = async (key: string, body: Buffer) => {
+  const params = {
+    ACL: 'public-read',
+    Body: body,
+    Bucket: process.env.UPLOAD_BUCKET_NAME || '',
+    Key: key,
+    Tagging: 'verification=blurred',
+  }
+
+  return new Promise((res, rej) => {
+    s3.putObject(
+      params,
+      function (err: AWS.AWSError, data: AWS.S3.PutObjectTaggingOutput) {
         if (err) rej(err)
         res(data)
       }

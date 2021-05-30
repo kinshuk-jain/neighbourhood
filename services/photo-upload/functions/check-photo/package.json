@@ -10,9 +10,12 @@
     "start:run": "../../scripts/run.sh run check-photo"
   },
   "devDependencies": {
-    "@types/aws-sdk": "^2.7.0"
+    "@types/aws-sdk": "^2.7.0",
+    "@types/pino": "^6.3.8"
   },
   "dependencies": {
-    "file-type": "^16.4.0"
+    "file-type": "^16.4.0",
+    "jimp": "^0.16.1",
+    "pino": "^6.11.3"
   }
 }
