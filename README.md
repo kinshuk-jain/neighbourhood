@@ -4,6 +4,8 @@ Cannot have shared packages with aws sam till this is merged - https://github.co
 
 Understanding text content moderation - https://github.com/darwaishx/content-moderation/tree/master/2-custom-comprehend
 
+Understanding Dynamo data mapper - https://aws.amazon.com/blogs/developer/introducing-the-amazon-dynamodb-datamapper-for-javascript-developer-preview/
+
 add sns access to comms lambda, comms to have sendnotification
 contacts module
 

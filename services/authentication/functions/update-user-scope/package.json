@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
-    "start:invoke": "../../scripts/run.sh invoke update-user-scope -e 'test-events/updateUserScopeEvent.json'",
+    "start:invoke": "../../scripts/run.sh invoke update-user-scope false -e 'test-events/updateUserScopeEvent.json'",
     "start:run": "../../scripts/run.sh run update-user-scope"
   },
   "dependencies": {

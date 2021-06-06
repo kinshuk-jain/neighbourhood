@@ -12,7 +12,8 @@
     "typescript": "^4.2.3"
   },
   "workspaces": [
-    "functions/*"
+    "functions/*",
+    "service-common"
   ],
   "scripts": {
     "build": "yarn workspaces run build",

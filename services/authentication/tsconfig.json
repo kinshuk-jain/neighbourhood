@@ -5,6 +5,7 @@
     "lib": ["ES2019", "DOM"],
     "moduleResolution": "node",
     "strict": true,
+    "experimentalDecorators": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedParameters": true,

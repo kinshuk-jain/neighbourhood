@@ -445,23 +445,94 @@ Resources:
     DisableExecuteApiEndpoint: false
 
   refreshTokenDynamoDBTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
-      PrimaryKey:
-        Name: token
-        Type: String
+      AttributeDefinitions:
+        - AttributeName: 'token'
+          AttributeType: 'S'
+        - AttributeName: 'user_id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'token'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: '10'
+        WriteCapacityUnits: '5'
+      Tags:
+        - Key: 'Team'
+          Value: 'authentication'
+      TableName: 'authentication-refresh-token'
+      GlobalSecondaryIndexes:
+        - IndexName: 'authentication-refresh-token-user-index'
+          KeySchema:
+            - AttributeName: 'user_id'
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: 'KEYS_ONLY'
+          ProvisionedThroughput:
+            ReadCapacityUnits: '5'
+            WriteCapacityUnits: '5'
       SSESpecification:
         SSEEnabled: true
         SSEType: KMS
-      TableName: authentication-refresh-token
 
   authorizationCodeDynamoDBTable:
-    Type: AWS::Serverless::SimpleTable
+    Type: AWS::DynamoDB::Table
     Properties:
-      PrimaryKey:
-        Name: code
-        Type: String
+      AttributeDefinitions:
+        - AttributeName: 'code'
+          AttributeType: 'S'
+        - AttributeName: 'user_id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'code'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: '10'
+        WriteCapacityUnits: '5'
+      TableName: 'authentication-authorization-code'
+      GlobalSecondaryIndexes:
+        - IndexName: 'authentication-authorization-code-user-index'
+          KeySchema:
+            - AttributeName: 'user_id'
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: 'KEYS_ONLY'
+          ProvisionedThroughput:
+            ReadCapacityUnits: '5'
+            WriteCapacityUnits: '5'
       SSESpecification:
         SSEEnabled: true
         SSEType: KMS
-      TableName: authentication-authorization-code
+
+  aliasDynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: 'alias'
+          AttributeType: 'S'
+        - AttributeName: 'user_id'
+          AttributeType: 'S'
+      KeySchema:
+        - AttributeName: 'alias'
+          KeyType: 'HASH'
+      ProvisionedThroughput:
+        ReadCapacityUnits: '5'
+        WriteCapacityUnits: '5'
+      Tags:
+        - Key: 'Team'
+          Value: 'authentication'
+      TableName: 'authentication-user-alias'
+      GlobalSecondaryIndexes:
+        - IndexName: 'authentication-user-alias-user-index'
+          KeySchema:
+            - AttributeName: 'user_id'
+              KeyType: 'HASH'
+          Projection:
+            ProjectionType: 'KEYS_ONLY'
+          ProvisionedThroughput:
+            ReadCapacityUnits: '5'
+            WriteCapacityUnits: '5'
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS

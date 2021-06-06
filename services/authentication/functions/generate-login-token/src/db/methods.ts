@@ -1,6 +1,8 @@
 import axios from 'axios'
-import { ENV, config } from './config'
-import { IAuthUserData } from './interfaces'
+import { ENV, config } from '../config'
+import { IAuthUserData } from '../interfaces'
+import dbMapper from 'service-common/db/connect'
+import { AuthCodeModel, AliasModel } from 'service-common/db/model'
 
 export const getUserDataFromEmail = async (
   email: string
@@ -31,15 +33,24 @@ export const getUserDataFromEmail = async (
     auth_code: await getAuthCodeForUser(data.data.user_id),
     first_login: data.data.first_login,
     email: data.data.email,
-    first_name: '123123',
-    last_name: 'dfwfsd',
+    first_name: data.data.first_name,
+    last_name: data.data.last_name,
   }
 }
 
 const getAuthCodeForUser = async (user_id: string): Promise<string[]> => {
   // get all auth codes for this user_id from auth codes table
-  console.log('return auth code for user: ', user_id)
-  return ['auth-code']
+  const result = ['']
+  for await (const authCode of dbMapper.query(
+    AuthCodeModel,
+    {
+      user_id,
+    },
+    { indexName: 'authentication-authorization-code-user-index' }
+  )) {
+    result.push(authCode.code)
+  }
+  return result
 }
 
 export const saveAuthCode = async ({
@@ -50,28 +61,38 @@ export const saveAuthCode = async ({
   for_blacklisted_user,
   scope,
 }: {
-  [key: string]: string | boolean
+  [key: string]: any
 }): Promise<boolean> => {
-  // create a secondary index mapping auth code to user_id
-  const generated_at = Date.now()
-  const expiry_time = Date.now() + 10 * 60 * 1000 // 10min
-  console.log('save auth to db: ', {
+  const model = new AuthCodeModel()
+
+  Object.assign(model, {
     code,
     scope,
     code_challenge,
     code_challenge_method,
     user_id,
-    expiry_time, // exact time at which it will expire
-    generated_at,
+    expiry_time: Date.now() + 10 * 60 * 1000, // 10min
+    generated_at: Date.now(), // exact time at which it will expire
     for_blacklisted_user,
   })
 
-  return true
+  return new Promise((res, rej) => {
+    dbMapper
+      .put({ item: model })
+      .then(() => res(true))
+      .catch((e) => rej(e))
+  })
 }
 
-export const removeAuthCode = async (code: string[]) => {
-  // remove all codes in the code array from auth code table
-  console.log('remove this code: ', code)
+export const removeAuthCode = async (codeList: string[]): Promise<boolean> => {
+  const promiseList = codeList.map((code) =>
+    dbMapper.delete(
+      Object.assign(new AuthCodeModel(), {
+        code,
+      })
+    )
+  )
+  await Promise.all(promiseList)
   return true
 }
 
@@ -82,16 +103,12 @@ export const getDataFromAlias = async (
   imei: string
   pub_key: string
 }> => {
-  console.log(
-    'get user_id from alias by retrieving it from alias table in authentication',
-    alias
-  )
-  // if alias not found, return error
+  const data = await dbMapper.get(Object.assign(new AliasModel(), { alias }))
 
   return {
-    user_id: 'ssssssss',
-    imei: '1231231',
-    pub_key: '141212',
+    user_id: data.user_id,
+    imei: data.imei,
+    pub_key: data.pub_key,
   }
 }
 
@@ -125,7 +142,7 @@ export const getUserDataFromAlias = async (
     auth_code: await getAuthCodeForUser(data.data.user_id),
     first_login: data.data.first_login,
     email: data.data.email,
-    first_name: '123123',
-    last_name: 'dfwfsd',
+    first_name: data.data.first_name,
+    last_name: data.data.last_name,
   }
 }

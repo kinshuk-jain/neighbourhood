@@ -15,9 +15,9 @@ import {
   removeAuthCode,
   getUserDataFromAlias,
   getDataFromAlias,
-} from './db'
+} from './db/methods'
 import logger from './logger'
-import { decryptedEnv } from './getDecryptedEnvs'
+import { decryptedEnv } from 'service-common/getDecryptedEnvs'
 import { ENV, config } from './config'
 import { IAuthUserData } from './interfaces'
 // TODO: do we need to have a hosted page with this redirect link??
@@ -68,7 +68,15 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
-const validScopes = ['admin', 'sysadmin', 'user']
+const encryptedEnvironmentVariableNames =
+  process.env.ENVIRONMENT === 'development'
+    ? []
+    : ['COMMS_API_KEY', 'USER_DATA_API_KEY']
+
+const decryptedEnvPromise = decryptedEnv(
+  logger,
+  encryptedEnvironmentVariableNames
+)
 
 const myHandler: APIGatewayProxyHandler = async (
   event: any,
@@ -82,16 +90,14 @@ const myHandler: APIGatewayProxyHandler = async (
     logger.info(event)
 
     // wait for resolution for 1s
-    if (!process.env.USER_DATA_API_KEY) {
-      await Promise.race([
-        decryptedEnv,
-        new Promise((_, reject) => {
-          setTimeout(() => {
-            reject('internal error: env vars not loaded')
-          }, 1000)
-        }),
-      ])
-    }
+    await Promise.race([
+      decryptedEnvPromise,
+      new Promise((_, reject) => {
+        setTimeout(() => {
+          reject('internal error: env vars not loaded')
+        }, 1000)
+      }),
+    ])
 
     if (!event.body) {
       throw HttpError(400, 'missing required parameters')
