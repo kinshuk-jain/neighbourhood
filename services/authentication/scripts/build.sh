@@ -4,7 +4,9 @@ rm -rf dist/
 
 mkdir -p service-common
 
-cp -R ../../service-common/dist/. service-common/ 
+cp -R ../../service-common/dist/. service-common/
+
+yarn install
 
 tsc --build tsconfig-only-this.json 
 

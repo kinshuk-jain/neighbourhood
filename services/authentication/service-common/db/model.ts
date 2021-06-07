@@ -6,7 +6,7 @@ import {
 
 @table('authentication-authorization-code')
 export class AuthCodeModel {
-  @hashKey()
+  @hashKey({ type: 'String' })
   code!: string
 
   @attribute()
@@ -33,7 +33,7 @@ export class AuthCodeModel {
 
 @table('authentication-user-alias')
 export class AliasModel {
-  @hashKey()
+  @hashKey({ type: 'String' })
   alias!: string
 
   @attribute()
