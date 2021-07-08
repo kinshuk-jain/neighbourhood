@@ -5,17 +5,15 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "build": "../../scripts/build.sh",
     "start:invoke": "../../scripts/run.sh invoke update-user-scope false -e 'test-events/updateUserScopeEvent.json'",
     "start:run": "../../scripts/run.sh run update-user-scope"
   },
   "dependencies": {
     "@middy/core": "^1.5.2",
-    "pino": "^6.11.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "@types/pino": "^6.3.6",
     "@types/uuid": "^8.3.0"
   }
 }

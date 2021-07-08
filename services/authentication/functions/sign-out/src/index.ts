@@ -1,4 +1,4 @@
-import logger from './logger'
+import logger from 'service-common/logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { signoutUser } from './db'

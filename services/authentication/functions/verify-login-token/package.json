@@ -10,17 +10,15 @@
     "axios": "^0.21.1",
     "jose": "npm:jose-node-cjs-runtime@3.11.3",
     "jsonschema": "^1.4.0",
-    "pino": "^6.11.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/jsonschema": "^1.1.1",
-    "@types/pino": "^6.3.6",
     "@types/uuid": "^8.3.0"
   },
   "scripts": {
-    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "build": "../../scripts/build.sh",
     "start:invoke": "../../scripts/run.sh invoke verify-login-token -e 'test-events/verifyLoginTokenEvent.json'",
     "start:run": "../../scripts/run.sh run verify-login-token"
   }

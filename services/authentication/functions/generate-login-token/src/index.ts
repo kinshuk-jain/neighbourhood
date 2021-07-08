@@ -16,7 +16,7 @@ import {
   getUserDataFromAlias,
   getDataFromAlias,
 } from './db/methods'
-import logger from './logger'
+import logger from 'service-common/logger'
 import { decryptedEnv } from 'service-common/getDecryptedEnvs'
 import { ENV, config } from './config'
 import { IAuthUserData } from './interfaces'

@@ -10,17 +10,14 @@
     "start:run": "../../scripts/run.sh run generate-login-token"
   },
   "dependencies": {
-    "@aws/dynamodb-data-mapper": "^0.7.3",
     "@middy/core": "^1.5.2",
     "axios": "^0.21.1",
     "jsonschema": "^1.4.0",
-    "pino": "^6.11.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.72",
     "@types/aws-sdk": "^2.7.0",
-    "@types/pino": "^6.3.6",
     "@types/uuid": "^8.3.0"
   }
 }

@@ -1,8 +1,8 @@
-import logger from './logger'
+import logger from 'service-common/logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
 import { updateUserScope } from './db'
-import { decryptedEnv } from './getDecryptedEnvs'
+import { decryptedEnv } from 'service-common/getDecryptedEnvs'
 
 // map of usernames to their password keys - allowed to access this service
 const USER_NAMES: { [key: string]: string } = {
@@ -56,6 +56,14 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
+const encryptedEnvironmentVariableNames =
+  process.env.ENVIRONMENT === 'development' ? [] : ['USER_DATA_SERVICE_TOKEN']
+
+const decryptedEnvPromise = decryptedEnv(
+  logger,
+  encryptedEnvironmentVariableNames
+)
+
 const myHandler = async (event: any, context: any) => {
   context.callbackWaitsForEmptyEventLoop = false
 
@@ -67,7 +75,7 @@ const myHandler = async (event: any, context: any) => {
     // wait for resolution for 1s
     if (!process.env.USER_DATA_SERVICE_TOKEN) {
       await Promise.race([
-        decryptedEnv,
+        decryptedEnvPromise,
         new Promise((_, reject) => {
           setTimeout(() => {
             reject('internal error: env vars not loaded')

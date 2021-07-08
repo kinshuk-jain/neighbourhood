@@ -2,7 +2,7 @@ import middy from '@middy/core'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import { APIGatewayProxyHandler, APIGatewayProxyResult } from 'aws-lambda'
 import { validate } from 'jsonschema'
-import logger from './logger'
+import logger from 'service-common/logger'
 import { v4 as uuidv4 } from 'uuid'
 import authCodeSchema from './authorizationCodeGrantSchema.json'
 import refreshTokenSchema from './refreshTokenGrantSchema.json'
@@ -18,7 +18,7 @@ import {
 } from './db'
 import { createHash, publicDecrypt } from 'crypto'
 import { createAccessToken, createRefreshToken } from './token'
-import { decryptedEnv } from './getDecryptedEnvs'
+import { decryptedEnv } from 'service-common/getDecryptedEnvs'
 
 // should be first middleware
 const setCorrelationId = () => ({
@@ -65,6 +65,16 @@ const HttpError = (status: number, message: string, body?: object): Error => {
   return e
 }
 
+const encryptedEnvironmentVariableNames =
+  process.env.ENVIRONMENT === 'development'
+    ? []
+    : ['PVT_KEY', 'KEY_PASS', 'USER_DATA_API_KEY']
+
+const decryptedEnvPromise = decryptedEnv(
+  logger,
+  encryptedEnvironmentVariableNames
+)
+
 const myHandler: APIGatewayProxyHandler = async (
   event: any,
   context
@@ -79,7 +89,7 @@ const myHandler: APIGatewayProxyHandler = async (
     // wait for resolution for 1s
     if (!process.env.PVT_KEY) {
       await Promise.race([
-        decryptedEnv,
+        decryptedEnvPromise,
         new Promise((_, reject) => {
           setTimeout(() => {
             reject('internal error: env vars not loaded')
