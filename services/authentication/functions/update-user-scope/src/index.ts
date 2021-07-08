@@ -128,12 +128,7 @@ const myHandler = async (event: any, context: any) => {
       throw HttpError(400, 'invalid scope value or type')
     }
 
-    await updateUserScope(
-      user_id,
-      JSON.stringify(prev_scope),
-      JSON.stringify(new_scope),
-      blacklist
-    )
+    await updateUserScope(user_id, JSON.stringify(new_scope), blacklist)
 
     response = {
       isBase64Encoded: false,
