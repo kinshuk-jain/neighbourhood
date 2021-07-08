@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "rm -rf dist/ && tsc --build tsconfig-only-this.json && cp package.json dist/",
+    "build": "../../scripts/build.sh",
     "start:invoke": "../../scripts/run.sh invoke manage-alias -e 'test-events/manageAliasEvent.json'",
     "start:run": "../../scripts/run.sh run manage-alias"
   },

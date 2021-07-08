@@ -1,7 +1,7 @@
 import logger from './logger'
 import middy from '@middy/core'
 import { v4 as uuidv4 } from 'uuid'
-import { addUserAlias, removeUserAlias, updateUserAlias } from './db'
+import { addUserAlias, removeUserAlias } from './db'
 import { verifyToken } from './verifyAuthToken'
 
 // should be first middleware
@@ -96,17 +96,6 @@ const myHandler = async (event: any, context: any) => {
         throw HttpError(400, 'invalid request body')
       }
       await addUserAlias(body.alias, user_id, body.imei, body.public_key)
-    } else if (event.requestContext.http.method === 'PUT') {
-      // update alias
-      if (
-        !body.previous_alias ||
-        !body.new_alias ||
-        typeof body.previous_alias !== 'string' ||
-        typeof body.new_alias !== 'string'
-      ) {
-        throw HttpError(400, 'invalid request body')
-      }
-      await updateUserAlias(body.previous_alias, body.new_alias)
     } else if (event.requestContext.http.method === 'DELETE') {
       // remove alias
       if (!body.alias || typeof body.alias !== 'string') {

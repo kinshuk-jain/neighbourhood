@@ -15,7 +15,6 @@
     "axios": "^0.21.1",
     "jsonschema": "^1.4.0",
     "pino": "^6.11.2",
-    "service-common": "file:./service-common",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
