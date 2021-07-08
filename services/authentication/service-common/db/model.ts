@@ -10,7 +10,7 @@ export class AuthCodeModel {
   code!: string
 
   @attribute()
-  scope!: Record<string, any>
+  scope!: string
 
   @attribute()
   code_challenge!: string
@@ -37,16 +37,16 @@ export class RefreshTokenModel {
   token!: string
 
   @attribute()
-  user_id!: String
+  user_id!: string
 
   @attribute()
-  user_agent!: String
+  user_agent!: string
 
   @attribute()
-  ip_address!: String
+  ip_address!: string
 
   @attribute()
-  scope!: String
+  scope!: string
 
   @attribute()
   expiry_time!: number

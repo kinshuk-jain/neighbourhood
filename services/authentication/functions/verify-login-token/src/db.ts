@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { config, ENV } from './config'
+import dbMapper from 'service-common/db/connect'
+import { RefreshTokenModel, AuthCodeModel } from 'service-common/db/model'
 
 export const getAuthCodeData = async (
   code: string
@@ -12,23 +14,32 @@ export const getAuthCodeData = async (
   expiry_time: number
   for_blacklisted_user: boolean
 }> => {
-  // create a secondary index mapping user_id to code
-  console.log('returning auth data')
+  const authCodeData = await dbMapper.get(
+    Object.assign(new AuthCodeModel(), { code })
+  )
+
   return {
-    code,
-    code_challenge:
-      '15e2b0d3c33891ebb0f1ef609ec419420c20e320ce94c65fbc8c3312448eb225',
-    code_challenge_method: 'sha256',
-    user_id: '123-232-3232',
-    scope: 'user', // it is stringified scope object
-    expiry_time: Date.now() + 1000,
-    for_blacklisted_user: false,
+    code: authCodeData.code,
+    code_challenge: authCodeData.code_challenge,
+    code_challenge_method: authCodeData.code_challenge_method,
+    user_id: authCodeData.user_id,
+    scope: authCodeData.scope,
+    expiry_time: authCodeData.expiry_time,
+    for_blacklisted_user: authCodeData.for_blacklisted_user,
   }
 }
 
 export const removeAuthCode = async (code: string): Promise<boolean> => {
-  console.log('removing auth code data: ', code)
-  return true
+  return new Promise((res, rej) =>
+    dbMapper
+      .delete(
+        Object.assign(new AuthCodeModel(), {
+          code,
+        })
+      )
+      .then(() => res(true))
+      .catch((e) => rej(e))
+  )
 }
 
 export const getRefreshTokenData = async (
@@ -46,19 +57,22 @@ export const getRefreshTokenData = async (
   generated_at: number
   for_blacklisted_user: boolean
 }> => {
-  console.log('getting refresh token data: ' + token)
+  const refreshTokenData = await dbMapper.get(
+    Object.assign(new RefreshTokenModel(), { token })
+  )
+
   return {
-    token,
-    user_id: '123-232-3232',
-    expiry_time: Date.now() + 1000,
-    revoked: false,
-    times_used: 1,
-    last_used_on: 0,
-    ip_address: '121231',
-    user_agent: '12312312',
-    generated_at: 123123,
-    scope: '1111', // it is stringified scope object
-    for_blacklisted_user: false,
+    token: refreshTokenData.token,
+    user_id: refreshTokenData.user_id,
+    expiry_time: refreshTokenData.expiry_time,
+    revoked: refreshTokenData.revoked,
+    times_used: refreshTokenData.times_used,
+    last_used_on: refreshTokenData.last_used_on,
+    ip_address: refreshTokenData.ip_address,
+    user_agent: refreshTokenData.user_agent,
+    generated_at: refreshTokenData.generated_at,
+    scope: refreshTokenData.scope,
+    for_blacklisted_user: refreshTokenData.for_blacklisted_user,
   }
 }
 
@@ -75,29 +89,40 @@ export const updateRefreshTokenDataOnAccessToken = async ({
   times_used: number
   last_used_on: number
 }): Promise<boolean> => {
-  console.log(
-    'updating refresh token table on access token issue with refresh token: ',
-    {
-      token,
-      ip_address,
-      user_agent,
-      times_used,
-      last_used_on,
-    }
+  const refreshTokenData = await dbMapper.get(
+    Object.assign(new RefreshTokenModel(), { token })
   )
-  return true
+
+  return new Promise((res, rej) =>
+    dbMapper
+      .update(
+        Object.assign(refreshTokenData, {
+          token,
+          ip_address,
+          user_agent,
+          times_used,
+          last_used_on,
+        })
+      )
+      .then(() => res(true))
+      .catch((e) => rej(e))
+  )
 }
 
 export const deleteRefreshToken = async (token: string): Promise<boolean> => {
-  console.log('deleting refresh token: ', token)
-  return true
+  return new Promise((res, rej) =>
+    dbMapper
+      .delete(Object.assign(new RefreshTokenModel(), { token }))
+      .then(() => res(true))
+      .catch((e) => rej(e))
+  )
 }
 
 export const saveDataInRefreshTokenTable = async ({
   token,
   user_id,
-  ip_address,
-  user_agent,
+  ip_address = '',
+  user_agent = '',
   scope,
   for_blacklisted_user,
 }: {
@@ -108,23 +133,29 @@ export const saveDataInRefreshTokenTable = async ({
   scope: string
   for_blacklisted_user: boolean
 }): Promise<boolean> => {
-  // create a secondary index mapping user_id to token
-  const generated_at = Date.now()
-  const expiry_time = Date.now() + 31536000 * 1000 // 365 days
-  console.log('saving data for refresh token: ', {
-    token,
-    user_id,
-    expiry_time, // exact time at which token will expire
-    generated_at,
-    revoked: false,
-    scope,
-    times_used: 1,
-    last_used_on: 0,
-    ip_address,
-    user_agent,
-    for_blacklisted_user,
-  })
-  return true
+  const refreshTokenData: RefreshTokenModel = Object.assign(
+    new RefreshTokenModel(),
+    {
+      token,
+      user_id,
+      expiry_time: Date.now() + 31536000 * 1000, // exact time at which token will expire
+      generated_at: Date.now(),
+      revoked: false,
+      scope,
+      times_used: 1,
+      last_used_on: 0,
+      ip_address,
+      user_agent,
+      for_blacklisted_user,
+    }
+  )
+
+  return new Promise((res, rej) =>
+    dbMapper
+      .put(refreshTokenData)
+      .then(() => res(true))
+      .catch((e) => rej(e))
+  )
 }
 
 export const updateUserScope = async (
@@ -138,11 +169,26 @@ export const updateUserScope = async (
   // after we check and before refresh token is issued
   const { is_blacklisted, scope: storedScope } = await getUserInfo(user_id)
   if (is_blacklisted !== for_blacklisted_user || scope !== storedScope) {
+    const refreshTokenData = await dbMapper.get(
+      Object.assign(new RefreshTokenModel(), { token: refresh_token })
+    )
     // update refresh token table with is_blacklisted and/or scope
     // if update fails delete refresh token and do not log user in
     // if deletion also fails simply throw and token will not be sent to the user
+    return new Promise((res, rej) =>
+      dbMapper
+        .update(
+          Object.assign(refreshTokenData, {
+            scope: storedScope,
+            for_blacklisted_user: is_blacklisted,
+          })
+        )
+        .then(() => res(true))
+        .catch((e) => {
+          dbMapper.delete(refreshTokenData).then(() => rej(e))
+        })
+    )
   }
-  console.log(refresh_token)
 
   return true
 }
@@ -153,8 +199,6 @@ const getUserInfo = async (
   scope: string
   is_blacklisted: boolean
 }> => {
-  // makre request to user_data service to get this data
-  console.log('getting user data', user_id)
   let userData: { [key: string]: any } = {}
   if (process.env.ENVIRONMENT !== 'development') {
     const { status, data } = await axios.post(
@@ -200,14 +244,6 @@ export const updateUserInfoOnLogin = async ({
   ip_address: string
   user_agent: string
 }): Promise<boolean> => {
-  console.log('updating user info: ', {
-    user_id,
-    user_agent,
-    ip_address,
-    email_verified: true,
-    first_login: false,
-  })
-
   if (process.env.ENVIRONMENT !== 'development') {
     const { status } = await axios.post(
       `${config[ENV].user_domain}/user/${user_id}/post-login`,
